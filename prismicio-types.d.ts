@@ -46,7 +46,7 @@ type ContentRelationshipFieldWithData<
 		>
 }[Exclude<TCustomType[number], string>["id"]];
 
-type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice | FeaturedWorksSlice
+type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice | FeaturedWorksSlice | ContactSlice
 
 /**
  * Content for Home documents
@@ -266,6 +266,79 @@ type CollaboratorsSliceVariation = CollaboratorsSliceDefault
  * - **Documentation**: https://prismic.io/docs/slices
  */
 export type CollaboratorsSlice = prismic.SharedSlice<"collaborators", CollaboratorsSliceVariation>;
+
+/**
+ * Item in *Contact → Default → Primary → Contacts*
+ */
+export interface ContactSliceDefaultPrimaryContactsItem {
+	/**
+	 * Email or phone field in *Contact → Default → Primary → Contacts*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: info@noster.in or +91 88484 343 03
+	 * - **API ID Path**: contact.default.primary.contacts[].value
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	value: prismic.KeyTextField;
+}
+
+/**
+ * Primary content in *Contact → Default → Primary*
+ */
+export interface ContactSliceDefaultPrimary {
+	/**
+	 * Title field in *Contact → Default → Primary*
+	 *
+	 * - **Field Type**: Rich Text
+	 * - **Placeholder**: Let's Build Together
+	 * - **API ID Path**: contact.default.primary.title
+	 * - **Documentation**: https://prismic.io/docs/fields/rich-text
+	 */
+	title: prismic.RichTextField;
+	
+	/**
+	 * Intro text field in *Contact → Default → Primary*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: For new business inquiries contact us:
+	 * - **API ID Path**: contact.default.primary.intro
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	intro: prismic.KeyTextField;
+	
+	/**
+	 * Contacts field in *Contact → Default → Primary*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: contact.default.primary.contacts[]
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	contacts: prismic.GroupField<Simplify<ContactSliceDefaultPrimaryContactsItem>>;
+}
+
+/**
+ * Default variation for Contact Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type ContactSliceDefault = prismic.SharedSliceVariation<"default", Simplify<ContactSliceDefaultPrimary>, never>;
+
+/**
+ * Slice variation for *Contact*
+ */
+type ContactSliceVariation = ContactSliceDefault
+
+/**
+ * Contact Shared Slice
+ *
+ * - **API ID**: `contact`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type ContactSlice = prismic.SharedSlice<"contact", ContactSliceVariation>;
 
 /**
  * Item in *Featured Works → Default → Primary → Projects*
@@ -514,6 +587,11 @@ declare module "@prismicio/client" {
 			CollaboratorsSliceDefaultPrimary,
 			CollaboratorsSliceVariation,
 			CollaboratorsSliceDefault,
+			ContactSlice,
+			ContactSliceDefaultPrimaryContactsItem,
+			ContactSliceDefaultPrimary,
+			ContactSliceVariation,
+			ContactSliceDefault,
 			FeaturedWorksSlice,
 			FeaturedWorksSliceDefaultPrimaryProjectsItem,
 			FeaturedWorksSliceDefaultPrimary,

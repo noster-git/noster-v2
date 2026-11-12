@@ -1,0 +1,47 @@
+{
+  "id": "contact",
+  "name": "Contact",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "title": {
+          "config": {
+            "label": "Title",
+            "placeholder": "Let's Build Together",
+            "single": "heading2"
+          },
+          "type": "StructuredText"
+        },
+        "intro": {
+          "config": {
+            "label": "Intro text",
+            "placeholder": "For new business inquiries contact us:"
+          },
+          "type": "Text"
+        },
+        "contacts": {
+          "config": {
+            "fields": {
+              "value": {
+                "config": {
+                  "label": "Email or phone",
+                  "placeholder": "info@noster.in or +91 88484 343 03"
+                },
+                "type": "Text"
+              }
+            },
+            "label": "Contacts"
+          },
+          "type": "Group"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

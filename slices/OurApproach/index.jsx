@@ -14,7 +14,7 @@ const OurApproach = ({ slice }) => {
 		<Reveal
 			data-slice-type={slice.slice_type}
 			data-slice-variation={slice.variation}
-			className="bg-white font-haffer px-[3vw] pt-[8vw] pb-[4vw] text-[3vw] text-black md:px-[2vw] md:pt-[1.75vw] md:text-[1.6vw] lg:text-[1vw]"
+			className="font-haffer px-[3vw] pt-[8vw] pb-[4vw] text-[3vw] md:px-[2vw] md:pt-[1.75vw] md:text-[1.6vw] lg:text-[1vw]"
 		>
 			<div className="flex flex-col items-start justify-between md:flex-row">
 				<div data-reveal className="mb-[1em] w-full md:mb-0 md:w-[55%]">

@@ -86,7 +86,12 @@ function Row({ works, reverse, setCursorOn }) {
 	);
 }
 
-/** White "View →" tag that follows the mouse; wipes to black with lime text when over a photo. */
+/**
+ * "View →" tag that follows the mouse over the photos — timings copied from the old .cursor-A CSS
+ * (each step 0.2s, ease cubic-bezier(0.85,0,0.15,1)):
+ *   enter: white box scales in → 150ms: black fills left→right + text turns lime → 300ms: underline → 350ms: arrow
+ *   leave: arrow out → 150ms: text black + underline out → 300ms: black fill out → 600ms: box scales away
+ */
 function ViewCursor({ active }) {
 	const ref = useRef(null);
 
@@ -105,19 +110,17 @@ function ViewCursor({ active }) {
 		<div
 			ref={ref}
 			aria-hidden="true"
-			className={`pointer-events-none fixed z-[200] hidden bg-white text-[1vw] text-black transition-[scale] ${q} [@media(min-width:681px)_and_(hover:hover)]:block ${active ? "scale-100" : "scale-0"}`}
+			className={`pointer-events-none fixed z-[200] hidden bg-white text-[1vw] transition-[scale] ${q} [@media(min-width:681px)_and_(hover:hover)]:block ${active ? "scale-100" : "scale-0 delay-600"}`}
 		>
 			<div className="relative p-[0.4em]">
-				<div className={`relative z-10 flex items-center text-[0.875em] transition-colors delay-150 ${q} ${active ? "text-lime" : "text-black"}`}>
-					<span className="relative">
-						View
-						<span className={`absolute bottom-0 left-0 h-px bg-current transition-all ${q} ${active ? "w-full" : "w-0"}`} />
-					</span>
+				<div className={`absolute top-0 left-0 h-full bg-black transition-all ${q} ${active ? "w-full delay-150" : "w-0 delay-300"}`} />
+				<div className={`relative flex items-center text-[0.875em] transition-colors delay-150 ${q} ${active ? "text-lime" : "text-black"}`}>
+					View
 					<span className="overflow-hidden">
-						<span className={`block transition-transform ${q} ${active ? "translate-x-0" : "-translate-x-full"}`}>-&gt;</span>
+						<span className={`block text-lime transition-transform ${q} ${active ? "translate-x-0 delay-350" : "-translate-x-full"}`}>-&gt;</span>
 					</span>
+					<span className={`absolute bottom-0 left-0 h-px bg-lime transition-all ${q} ${active ? "w-full delay-300" : "w-0 delay-150"}`} />
 				</div>
-				<div className={`absolute top-0 left-0 h-full bg-black transition-all ${q} ${active ? "w-full delay-150" : "w-0"}`} />
 			</div>
 		</div>
 	);

@@ -17,6 +17,9 @@
             },
             "featured_works": {
               "type": "SharedSlice"
+            },
+            "contact": {
+              "type": "SharedSlice"
             }
           }
         },

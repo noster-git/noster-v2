@@ -19,8 +19,21 @@
   --font-haffer: var(--font-haffer-face), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Page colours. The Contact slice flips the whole page to dark (black ground, white text) as it scrolls in, like live. */
+html {
+  --paper: #fff;
+  --ink: #000;
+}
+html[data-theme="dark"] {
+  --paper: #000;
+  --ink: #fff;
+}
+
 body {
-  @apply bg-white font-sans text-black antialiased;
+  @apply font-sans antialiased;
+  background-color: var(--paper);
+  color: var(--ink);
+  transition: background-color 0.3s var(--ease-quart), color 0.3s var(--ease-quart);
   /* Live site never set a line-height, so text uses the browser default ("normal"), not Tailwind's 1.5. */
   line-height: normal;
 }

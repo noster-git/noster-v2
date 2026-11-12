@@ -31,7 +31,7 @@ const Collaborators = ({ slice }) => {
 		<Reveal
 			data-slice-type={slice.slice_type}
 			data-slice-variation={slice.variation}
-			className="px-[2vw] pt-[8vw] pb-[18vw] text-[3vw] text-black md:px-0 md:pb-[12vw] md:text-[1vw]"
+			className="px-[2vw] pt-[8vw] pb-[18vw] text-[3vw] md:px-0 md:pb-[12vw] md:text-[1vw]"
 		>
 			<div data-reveal className="mb-[6em] text-left md:mb-[12em] md:text-center">
 				<PrismicRichText
