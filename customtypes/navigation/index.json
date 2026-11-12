@@ -1,0 +1,51 @@
+{
+  "format": "custom",
+  "id": "navigation",
+  "json": {
+    "Main": {
+      "links": {
+        "config": {
+          "fields": {
+            "label": {
+              "config": {
+                "label": "Label"
+              },
+              "type": "Text"
+            },
+            "link": {
+              "config": {
+                "label": "Link"
+              },
+              "type": "Link"
+            }
+          },
+          "label": "Links"
+        },
+        "type": "Group"
+      },
+      "cta_label": {
+        "config": {
+          "label": "CTA label"
+        },
+        "type": "Text"
+      },
+      "cta_link": {
+        "config": {
+          "allowTargetBlank": true,
+          "label": "CTA link",
+          "select": "web"
+        },
+        "type": "Link"
+      },
+      "mobile_cta_label": {
+        "config": {
+          "label": "Mobile CTA label"
+        },
+        "type": "Text"
+      }
+    }
+  },
+  "label": "Navigation",
+  "repeatable": false,
+  "status": true
+}

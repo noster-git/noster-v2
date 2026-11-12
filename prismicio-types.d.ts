@@ -106,7 +106,92 @@ interface HomeDocumentData {
  */
 export type HomeDocument<Lang extends string = string> = prismic.PrismicDocumentWithoutUID<Simplify<HomeDocumentData>, "home", Lang>;
 
-export type AllDocumentTypes = HomeDocument;
+/**
+ * Item in *Navigation → Links*
+ */
+export interface NavigationDocumentDataLinksItem {
+	/**
+	 * Label field in *Navigation → Links*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.links[].label
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	label: prismic.KeyTextField;
+	
+	/**
+	 * Link field in *Navigation → Links*
+	 *
+	 * - **Field Type**: Link
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.links[].link
+	 * - **Documentation**: https://prismic.io/docs/fields/link
+	 */
+	link: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Content for Navigation documents
+ */
+interface NavigationDocumentData {
+	/**
+	 * Links field in *Navigation*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.links[]
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	links: prismic.GroupField<Simplify<NavigationDocumentDataLinksItem>>;
+	
+	/**
+	 * CTA label field in *Navigation*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.cta_label
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	cta_label: prismic.KeyTextField;
+	
+	/**
+	 * CTA link field in *Navigation*
+	 *
+	 * - **Field Type**: Link
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.cta_link
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/link
+	 */
+	cta_link: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+	
+	/**
+	 * Mobile CTA label field in *Navigation*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: navigation.mobile_cta_label
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	mobile_cta_label: prismic.KeyTextField;
+}
+
+/**
+ * Navigation document from Prismic
+ *
+ * - **API ID**: `navigation`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/content-modeling
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type NavigationDocument<Lang extends string = string> = prismic.PrismicDocumentWithoutUID<Simplify<NavigationDocumentData>, "navigation", Lang>;
+
+export type AllDocumentTypes = HomeDocument | NavigationDocument;
 
 /**
  * Primary content in *Hero → Default → Primary*
@@ -195,6 +280,9 @@ declare module "@prismicio/client" {
 			HomeDocument,
 			HomeDocumentData,
 			HomeDocumentDataSlicesSlice,
+			NavigationDocument,
+			NavigationDocumentData,
+			NavigationDocumentDataLinksItem,
 			AllDocumentTypes,
 			HeroSlice,
 			HeroSliceDefaultPrimary,

@@ -84,14 +84,17 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			<div className="relative z-10 w-full md:w-[60%] md:text-[0.8em] lg:text-[1em]">
 				<div data-hero-reveal>{title}</div>
 				{videoSrc && (
-					<button
-						type="button"
-						data-hero-reveal
-						onClick={openShowreel}
-						className="mt-[1em] cursor-pointer bg-black p-[1em] text-white transition-[scale,opacity] duration-300 ease-quart hover:scale-[0.96] hover:opacity-90"
-					>
-						View Showreel
-					</button>
+					// The wrapper takes the entrance animation; the button keeps its own CSS hover transition.
+					// Fixed 13.33px size and an instant hover, exactly as on the live site (it doesn't scale with the viewport).
+					<div data-hero-reveal className="mt-[1em] text-[13.333px] leading-[normal]">
+						<button
+							type="button"
+							onClick={openShowreel}
+							className="cursor-pointer bg-black p-[1em] text-white hover:scale-[0.96] hover:opacity-90"
+						>
+							View Showreel
+						</button>
+					</div>
 				)}
 			</div>
 
