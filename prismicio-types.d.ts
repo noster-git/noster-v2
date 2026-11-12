@@ -327,16 +327,6 @@ export interface FeaturedWorksSliceDefaultPrimary {
 	title: prismic.RichTextField;
 	
 	/**
-	 * Button text field in *Featured Works → Default → Primary*
-	 *
-	 * - **Field Type**: Text
-	 * - **Placeholder**: View all projects
-	 * - **API ID Path**: featured_works.default.primary.button_text
-	 * - **Documentation**: https://prismic.io/docs/fields/text
-	 */
-	button_text: prismic.KeyTextField;
-	
-	/**
 	 * Projects field in *Featured Works → Default → Primary*
 	 *
 	 * - **Field Type**: Group
@@ -345,6 +335,16 @@ export interface FeaturedWorksSliceDefaultPrimary {
 	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
 	 */
 	projects: prismic.GroupField<Simplify<FeaturedWorksSliceDefaultPrimaryProjectsItem>>;
+	
+	/**
+	 * Button text field in *Featured Works → Default → Primary*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: View all projects
+	 * - **API ID Path**: featured_works.default.primary.button_text
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	button_text: prismic.KeyTextField;
 }
 
 /**
