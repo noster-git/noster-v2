@@ -49,7 +49,7 @@ export default async function Navigation() {
 				<div className="hidden w-1/3 justify-end md:flex">
 					{hasCta && (
 						<PrismicNextLink field={cta_link} className="flex items-center">
-							{cta_label}
+							<span>{cta_label}</span>
 							<span
 								aria-hidden="true"
 								className="ml-[0.6em] flex size-[1.13em] items-center justify-center rounded-[0.13em] bg-white text-black"

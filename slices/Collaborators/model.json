@@ -1,0 +1,48 @@
+{
+  "id": "collaborators",
+  "name": "Collaborators",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "title": {
+          "config": {
+            "label": "Title",
+            "placeholder": "Our Collaborators",
+            "single": "heading2"
+          },
+          "type": "StructuredText"
+        },
+        "logos": {
+          "config": {
+            "fields": {
+              "logo": {
+                "config": {
+                  "label": "Logo"
+                },
+                "type": "Image"
+              },
+              "large": {
+                "config": {
+                  "default_value": false,
+                  "label": "Large",
+                  "placeholder_false": "Normal",
+                  "placeholder_true": "Large"
+                },
+                "type": "Boolean"
+              }
+            },
+            "label": "Logos"
+          },
+          "type": "Group"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

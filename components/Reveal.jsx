@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
+import { reveal } from "@/lib/motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
@@ -18,11 +19,7 @@ export default function Reveal({ as: Tag = "section", children, ...props }) {
 		() => {
 			gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
 				gsap.from("[data-reveal]", {
-					autoAlpha: 0,
-					y: 40,
-					duration: 1.2,
-					ease: "expo.out",
-					stagger: 0.12,
+					...reveal,
 					scrollTrigger: { trigger: scope.current, start: "top 80%", once: true },
 				});
 			});

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
+import { reveal } from "@/lib/motion";
 import { useGSAP } from "@gsap/react";
 import { useLenis } from "lenis/react";
 
@@ -23,11 +24,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 		() => {
 			gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
 				gsap.from("[data-hero-reveal]", {
-					autoAlpha: 0,
-					y: 40,
-					duration: 1.2,
-					ease: "expo.out",
-					stagger: 0.12,
+					...reveal,
 					delay: 0.2,
 				});
 			});
@@ -61,9 +58,9 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			ref={scope}
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
-			className="relative flex h-[60em] items-end overflow-hidden bg-black px-[3vw] pt-[38vw] pb-[12vw] text-[3vw] md:h-[50em] md:px-[2vw] md:pt-[14vw] md:pb-[4vw] md:text-[1.6vw] lg:py-[6vw] lg:text-[1vw]"
+			className="relative flex h-[60em] font-haffer items-end overflow-hidden bg-black px-[3vw] pt-[38vw] pb-[12vw] text-[3vw] md:h-[50em] md:px-[2vw] md:pt-[14vw] md:pb-[4vw] md:text-[1.6vw] lg:py-[6vw] lg:text-[1vw]"
 		>
-			<div className="absolute inset-0 mt-[5em] md:mt-0">
+			<div className="absolute inset-0">
 				{backdrop}
 				{videoSrc && (
 					<video
@@ -81,7 +78,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 				<div className="absolute inset-0 bg-black/10" />
 			</div>
 
-			<div className="relative z-10 w-full md:w-[60%] md:text-[0.8em] lg:text-[1em]">
+			<div className="relative z-10 w-full text-[0.8em] md:w-[60%] lg:text-[1em]">
 				<div data-hero-reveal>{title}</div>
 				{videoSrc && (
 					// The wrapper takes the entrance animation; the button keeps its own CSS hover transition.

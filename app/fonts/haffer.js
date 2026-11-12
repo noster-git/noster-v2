@@ -11,6 +11,6 @@ export const haffer = localFont({
     { path: "./Haffer-Bold.woff2", weight: "700", style: "normal" },
     { path: "./Haffer-Heavy.woff2", weight: "900", style: "normal" },
   ],
-  variable: "--font-haffer",
+  variable: "--font-haffer-face",
   display: "swap",
 });

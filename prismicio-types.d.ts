@@ -46,7 +46,7 @@ type ContentRelationshipFieldWithData<
 		>
 }[Exclude<TCustomType[number], string>["id"]];
 
-type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice
+type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice
 
 /**
  * Content for Home documents
@@ -194,6 +194,80 @@ export type NavigationDocument<Lang extends string = string> = prismic.PrismicDo
 export type AllDocumentTypes = HomeDocument | NavigationDocument;
 
 /**
+ * Item in *Collaborators → Default → Primary → Logos*
+ */
+export interface CollaboratorsSliceDefaultPrimaryLogosItem {
+	/**
+	 * Logo field in *Collaborators → Default → Primary → Logos*
+	 *
+	 * - **Field Type**: Image
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: collaborators.default.primary.logos[].logo
+	 * - **Documentation**: https://prismic.io/docs/fields/image
+	 */
+	logo: prismic.ImageField<never>;
+	
+	/**
+	 * Large field in *Collaborators → Default → Primary → Logos*
+	 *
+	 * - **Field Type**: Boolean
+	 * - **Placeholder**: *None*
+	 * - **Default Value**: false
+	 * - **API ID Path**: collaborators.default.primary.logos[].large
+	 * - **Documentation**: https://prismic.io/docs/fields/boolean
+	 */
+	large: prismic.BooleanField;
+}
+
+/**
+ * Primary content in *Collaborators → Default → Primary*
+ */
+export interface CollaboratorsSliceDefaultPrimary {
+	/**
+	 * Title field in *Collaborators → Default → Primary*
+	 *
+	 * - **Field Type**: Rich Text
+	 * - **Placeholder**: Our Collaborators
+	 * - **API ID Path**: collaborators.default.primary.title
+	 * - **Documentation**: https://prismic.io/docs/fields/rich-text
+	 */
+	title: prismic.RichTextField;
+	
+	/**
+	 * Logos field in *Collaborators → Default → Primary*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: collaborators.default.primary.logos[]
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	logos: prismic.GroupField<Simplify<CollaboratorsSliceDefaultPrimaryLogosItem>>;
+}
+
+/**
+ * Default variation for Collaborators Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type CollaboratorsSliceDefault = prismic.SharedSliceVariation<"default", Simplify<CollaboratorsSliceDefaultPrimary>, never>;
+
+/**
+ * Slice variation for *Collaborators*
+ */
+type CollaboratorsSliceVariation = CollaboratorsSliceDefault
+
+/**
+ * Collaborators Shared Slice
+ *
+ * - **API ID**: `collaborators`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type CollaboratorsSlice = prismic.SharedSlice<"collaborators", CollaboratorsSliceVariation>;
+
+/**
  * Primary content in *Hero → Default → Primary*
  */
 export interface HeroSliceDefaultPrimary {
@@ -332,6 +406,11 @@ declare module "@prismicio/client" {
 			NavigationDocumentData,
 			NavigationDocumentDataLinksItem,
 			AllDocumentTypes,
+			CollaboratorsSlice,
+			CollaboratorsSliceDefaultPrimaryLogosItem,
+			CollaboratorsSliceDefaultPrimary,
+			CollaboratorsSliceVariation,
+			CollaboratorsSliceDefault,
 			HeroSlice,
 			HeroSliceDefaultPrimary,
 			HeroSliceVariation,

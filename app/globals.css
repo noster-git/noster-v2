@@ -6,13 +6,27 @@
   --breakpoint-md: 681px;
   --breakpoint-lg: 1201px;
 
-  --font-sans: var(--font-haffer), ui-sans-serif, system-ui, sans-serif;
 
   --color-lime: #d3fd5e;
 
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --animate-marquee: marquee 30s linear infinite;
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+}
+
+/* Like the live site: Inter is the default; Haffer is opted into per section with `font-haffer`.
+   `inline` because these point at the next/font variables set on <html>. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-haffer: var(--font-haffer-face), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   @apply bg-white font-sans text-black antialiased;
+  /* Live site never set a line-height, so text uses the browser default ("normal"), not Tailwind's 1.5. */
+  line-height: normal;
 }
