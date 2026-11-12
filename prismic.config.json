@@ -1,4 +1,9 @@
 {
   "repositoryName": "noster-v2",
-  "routes": []
+  "routes": [
+    {
+      "type": "home",
+      "path": "/"
+    }
+  ]
 }
