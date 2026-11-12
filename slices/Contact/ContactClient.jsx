@@ -67,7 +67,8 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 			data-slice-variation={variation}
 			className="relative w-full overflow-hidden px-[1vw] pb-[5vw] text-[3vw] md:p-[2vw] md:text-[1.3vw] lg:text-[1vw]"
 		>
-			<div className="relative">
+			{/* transparent 1px border like live: keeps the inner 3em margins inside, so the lines sit clear of the text */}
+			<div className="relative border border-transparent">
 				<div className={`top-0 ${line}`} />
 				<div className={`bottom-0 ${line}`} />
 

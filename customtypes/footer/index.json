@@ -1,0 +1,88 @@
+{
+  "format": "custom",
+  "id": "footer",
+  "json": {
+    "Main": {
+      "rights_text": {
+        "config": {
+          "label": "Rights text",
+          "placeholder": "All rights reserved"
+        },
+        "type": "Text"
+      },
+      "copyright_text": {
+        "config": {
+          "label": "Copyright text",
+          "placeholder": "Noster Associates (c) 2024"
+        },
+        "type": "Text"
+      },
+      "offices": {
+        "config": {
+          "fields": {
+            "city": {
+              "config": {
+                "label": "City"
+              },
+              "type": "Text"
+            },
+            "address": {
+              "config": {
+                "label": "Address"
+              },
+              "type": "Text"
+            },
+            "phone": {
+              "config": {
+                "label": "Phone"
+              },
+              "type": "Text"
+            },
+            "directions_link": {
+              "config": {
+                "allowTargetBlank": true,
+                "label": "Directions link (optional)",
+                "select": "web"
+              },
+              "type": "Link"
+            }
+          },
+          "label": "Offices"
+        },
+        "type": "Group"
+      },
+      "socials_title": {
+        "config": {
+          "label": "Socials title",
+          "placeholder": "Follow us"
+        },
+        "type": "Text"
+      },
+      "socials": {
+        "config": {
+          "fields": {
+            "label": {
+              "config": {
+                "label": "Label"
+              },
+              "type": "Text"
+            },
+            "link": {
+              "config": {
+                "allowTargetBlank": true,
+                "label": "Link",
+                "select": "web"
+              },
+              "type": "Link"
+            }
+          },
+          "label": "Socials"
+        },
+        "type": "Group"
+      }
+    }
+  },
+  "label": "Footer",
+  "repeatable": false,
+  "status": true
+}

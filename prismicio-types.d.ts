@@ -46,6 +46,147 @@ type ContentRelationshipFieldWithData<
 		>
 }[Exclude<TCustomType[number], string>["id"]];
 
+/**
+ * Item in *Footer → Offices*
+ */
+export interface FooterDocumentDataOfficesItem {
+	/**
+	 * City field in *Footer → Offices*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.offices[].city
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	city: prismic.KeyTextField;
+	
+	/**
+	 * Address field in *Footer → Offices*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.offices[].address
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	address: prismic.KeyTextField;
+	
+	/**
+	 * Phone field in *Footer → Offices*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.offices[].phone
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	phone: prismic.KeyTextField;
+	
+	/**
+	 * Directions link (optional) field in *Footer → Offices*
+	 *
+	 * - **Field Type**: Link
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.offices[].directions_link
+	 * - **Documentation**: https://prismic.io/docs/fields/link
+	 */
+	directions_link: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Item in *Footer → Socials*
+ */
+export interface FooterDocumentDataSocialsItem {
+	/**
+	 * Label field in *Footer → Socials*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.socials[].label
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	label: prismic.KeyTextField;
+	
+	/**
+	 * Link field in *Footer → Socials*
+	 *
+	 * - **Field Type**: Link
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.socials[].link
+	 * - **Documentation**: https://prismic.io/docs/fields/link
+	 */
+	link: prismic.LinkField<string, string, unknown, prismic.FieldState, never>;
+}
+
+/**
+ * Content for Footer documents
+ */
+interface FooterDocumentData {
+	/**
+	 * Rights text field in *Footer*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: All rights reserved
+	 * - **API ID Path**: footer.rights_text
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	rights_text: prismic.KeyTextField;
+	
+	/**
+	 * Copyright text field in *Footer*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: Noster Associates (c) 2024
+	 * - **API ID Path**: footer.copyright_text
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	copyright_text: prismic.KeyTextField;
+	
+	/**
+	 * Offices field in *Footer*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.offices[]
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	offices: prismic.GroupField<Simplify<FooterDocumentDataOfficesItem>>;
+	
+	/**
+	 * Socials title field in *Footer*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: Follow us
+	 * - **API ID Path**: footer.socials_title
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	socials_title: prismic.KeyTextField;
+	
+	/**
+	 * Socials field in *Footer*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: footer.socials[]
+	 * - **Tab**: Main
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	socials: prismic.GroupField<Simplify<FooterDocumentDataSocialsItem>>;
+}
+
+/**
+ * Footer document from Prismic
+ *
+ * - **API ID**: `footer`
+ * - **Repeatable**: `false`
+ * - **Documentation**: https://prismic.io/docs/content-modeling
+ *
+ * @typeParam Lang - Language API ID of the document.
+ */
+export type FooterDocument<Lang extends string = string> = prismic.PrismicDocumentWithoutUID<Simplify<FooterDocumentData>, "footer", Lang>;
+
 type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice | FeaturedWorksSlice | ContactSlice
 
 /**
@@ -191,7 +332,7 @@ interface NavigationDocumentData {
  */
 export type NavigationDocument<Lang extends string = string> = prismic.PrismicDocumentWithoutUID<Simplify<NavigationDocumentData>, "navigation", Lang>;
 
-export type AllDocumentTypes = HomeDocument | NavigationDocument;
+export type AllDocumentTypes = FooterDocument | HomeDocument | NavigationDocument;
 
 /**
  * Item in *Collaborators → Default → Primary → Logos*
@@ -575,6 +716,10 @@ declare module "@prismicio/client" {
 	
 	namespace Content {
 		export type {
+			FooterDocument,
+			FooterDocumentData,
+			FooterDocumentDataOfficesItem,
+			FooterDocumentDataSocialsItem,
 			HomeDocument,
 			HomeDocumentData,
 			HomeDocumentDataSlicesSlice,
