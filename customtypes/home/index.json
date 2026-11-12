@@ -8,6 +8,9 @@
           "choices": {
             "hero": {
               "type": "SharedSlice"
+            },
+            "our_approach": {
+              "type": "SharedSlice"
             }
           }
         },

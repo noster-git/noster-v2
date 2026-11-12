@@ -46,7 +46,7 @@ type ContentRelationshipFieldWithData<
 		>
 }[Exclude<TCustomType[number], string>["id"]];
 
-type HomeDocumentDataSlicesSlice = HeroSlice
+type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice
 
 /**
  * Content for Home documents
@@ -262,6 +262,54 @@ type HeroSliceVariation = HeroSliceDefault
  */
 export type HeroSlice = prismic.SharedSlice<"hero", HeroSliceVariation>;
 
+/**
+ * Primary content in *Our Approach → Default → Primary*
+ */
+export interface OurApproachSliceDefaultPrimary {
+	/**
+	 * Title field in *Our Approach → Default → Primary*
+	 *
+	 * - **Field Type**: Rich Text
+	 * - **Placeholder**: Our Approach
+	 * - **API ID Path**: our_approach.default.primary.title
+	 * - **Documentation**: https://prismic.io/docs/fields/rich-text
+	 */
+	title: prismic.RichTextField;
+	
+	/**
+	 * Description field in *Our Approach → Default → Primary*
+	 *
+	 * - **Field Type**: Rich Text
+	 * - **Placeholder**: About the studio
+	 * - **API ID Path**: our_approach.default.primary.description
+	 * - **Documentation**: https://prismic.io/docs/fields/rich-text
+	 */
+	description: prismic.RichTextField;
+}
+
+/**
+ * Default variation for Our Approach Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type OurApproachSliceDefault = prismic.SharedSliceVariation<"default", Simplify<OurApproachSliceDefaultPrimary>, never>;
+
+/**
+ * Slice variation for *Our Approach*
+ */
+type OurApproachSliceVariation = OurApproachSliceDefault
+
+/**
+ * Our Approach Shared Slice
+ *
+ * - **API ID**: `our_approach`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type OurApproachSlice = prismic.SharedSlice<"our_approach", OurApproachSliceVariation>;
+
 declare module "@prismicio/client" {
 	interface CreateClient {
 		(repositoryNameOrEndpoint: string, options?: prismic.ClientConfig): prismic.Client<AllDocumentTypes>;
@@ -287,7 +335,11 @@ declare module "@prismicio/client" {
 			HeroSlice,
 			HeroSliceDefaultPrimary,
 			HeroSliceVariation,
-			HeroSliceDefault
+			HeroSliceDefault,
+			OurApproachSlice,
+			OurApproachSliceDefaultPrimary,
+			OurApproachSliceVariation,
+			OurApproachSliceDefault
 		}
 	}
 }

@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ReactLenis } from "lenis/react";
+import { ReactLenis, useLenis } from "lenis/react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Keeps ScrollTrigger in step with Lenis' smoothed scroll position (must render inside ReactLenis).
+function ScrollTriggerSync() {
+  useLenis(ScrollTrigger.update);
+  return null;
+}
 
 /** Site-wide Lenis smooth scroll, driven by GSAP's ticker so scroll and animations share one frame loop. */
 export default function SmoothScroll({ children }) {
@@ -17,6 +26,7 @@ export default function SmoothScroll({ children }) {
 
   return (
     <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.1, wheelMultiplier: 0.9 }}>
+      <ScrollTriggerSync />
       {children}
     </ReactLenis>
   );

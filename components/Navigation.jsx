@@ -5,6 +5,7 @@ import { PrismicNextLink, cacheTagPrismicPages } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import NosterLogo from "./NosterLogo";
 import MobileCta from "./MobileCta";
+import NavBar from "./NavBar";
 
 async function getNavigation() {
 	"use cache";
@@ -28,7 +29,7 @@ export default async function Navigation() {
 
 	return (
 		<>
-			<nav className="fixed top-0 left-0 z-50 flex w-full items-center justify-between px-[1.9vw] py-[6.4vw] text-[1.6vw] text-white mix-blend-difference md:py-[1.95vw] lg:text-[1vw]">
+			<NavBar className="fixed top-0 left-0 z-50 flex w-full items-center justify-between px-[1.9vw] py-[6.4vw] text-[1.6vw] text-white md:py-[1.95vw] lg:text-[1vw]">
 				<div className="w-1/3">
 					<Link href="/" aria-label="Noster home" className="inline-block">
 						<NosterLogo className="h-[25px] w-[150px]" />
@@ -58,7 +59,7 @@ export default async function Navigation() {
 						</PrismicNextLink>
 					)}
 				</div>
-			</nav>
+			</NavBar>
 
 			{isFilled.link(cta_link) && mobile_cta_label && (
 				<MobileCta>
