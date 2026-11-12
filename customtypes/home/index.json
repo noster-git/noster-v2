@@ -14,6 +14,9 @@
             },
             "collaborators": {
               "type": "SharedSlice"
+            },
+            "featured_works": {
+              "type": "SharedSlice"
             }
           }
         },

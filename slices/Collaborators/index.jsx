@@ -17,11 +17,11 @@ const Collaborators = ({ slice }) => {
 	const track = (hidden) => (
 		<div
 			aria-hidden={hidden || undefined}
-			className="inline-flex animate-marquee items-center justify-between motion-reduce:[animation-play-state:paused]"
+			className="inline-flex animate-[marquee_30s_linear_infinite] items-center justify-between motion-reduce:[animation-play-state:paused]"
 		>
 			{logos.map((item, i) => (
 				<div key={i} className={`mx-[4em] ${item.large ? "h-[4.6em]" : "h-[3.4em]"}`}>
-					<PrismicNextImage field={item.logo} fallbackAlt="" className="h-full w-auto" />
+					<PrismicNextImage field={item.logo} fallbackAlt="" className="h-full w-auto max-w-none" />
 				</div>
 			))}
 		</div>

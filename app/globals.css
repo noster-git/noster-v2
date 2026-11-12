@@ -10,12 +10,6 @@
   --color-lime: #d3fd5e;
 
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
-
-  --animate-marquee: marquee 30s linear infinite;
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-100%); }
-  }
 }
 
 /* Like the live site: Inter is the default; Haffer is opted into per section with `font-haffer`.
@@ -29,4 +23,10 @@ body {
   @apply bg-white font-sans text-black antialiased;
   /* Live site never set a line-height, so text uses the browser default ("normal"), not Tailwind's 1.5. */
   line-height: normal;
+}
+
+/* Collaborators logo strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
 }

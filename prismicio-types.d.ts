@@ -46,7 +46,7 @@ type ContentRelationshipFieldWithData<
 		>
 }[Exclude<TCustomType[number], string>["id"]];
 
-type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice
+type HomeDocumentDataSlicesSlice = HeroSlice | OurApproachSlice | CollaboratorsSlice | FeaturedWorksSlice
 
 /**
  * Content for Home documents
@@ -268,6 +268,109 @@ type CollaboratorsSliceVariation = CollaboratorsSliceDefault
 export type CollaboratorsSlice = prismic.SharedSlice<"collaborators", CollaboratorsSliceVariation>;
 
 /**
+ * Item in *Featured Works → Default → Primary → Projects*
+ */
+export interface FeaturedWorksSliceDefaultPrimaryProjectsItem {
+	/**
+	 * Name field in *Featured Works → Default → Primary → Projects*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: featured_works.default.primary.projects[].name
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	name: prismic.KeyTextField;
+	
+	/**
+	 * Description field in *Featured Works → Default → Primary → Projects*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: featured_works.default.primary.projects[].description
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	description: prismic.KeyTextField;
+	
+	/**
+	 * Image field in *Featured Works → Default → Primary → Projects*
+	 *
+	 * - **Field Type**: Image
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: featured_works.default.primary.projects[].image
+	 * - **Documentation**: https://prismic.io/docs/fields/image
+	 */
+	image: prismic.ImageField<never>;
+	
+	/**
+	 * Project link field in *Featured Works → Default → Primary → Projects*
+	 *
+	 * - **Field Type**: Content Relationship
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: featured_works.default.primary.projects[].link
+	 * - **Documentation**: https://prismic.io/docs/fields/content-relationship
+	 */
+	link: prismic.ContentRelationshipField;
+}
+
+/**
+ * Primary content in *Featured Works → Default → Primary*
+ */
+export interface FeaturedWorksSliceDefaultPrimary {
+	/**
+	 * Title field in *Featured Works → Default → Primary*
+	 *
+	 * - **Field Type**: Rich Text
+	 * - **Placeholder**: Featured Works
+	 * - **API ID Path**: featured_works.default.primary.title
+	 * - **Documentation**: https://prismic.io/docs/fields/rich-text
+	 */
+	title: prismic.RichTextField;
+	
+	/**
+	 * Button text field in *Featured Works → Default → Primary*
+	 *
+	 * - **Field Type**: Text
+	 * - **Placeholder**: View all projects
+	 * - **API ID Path**: featured_works.default.primary.button_text
+	 * - **Documentation**: https://prismic.io/docs/fields/text
+	 */
+	button_text: prismic.KeyTextField;
+	
+	/**
+	 * Projects field in *Featured Works → Default → Primary*
+	 *
+	 * - **Field Type**: Group
+	 * - **Placeholder**: *None*
+	 * - **API ID Path**: featured_works.default.primary.projects[]
+	 * - **Documentation**: https://prismic.io/docs/fields/repeatable-group
+	 */
+	projects: prismic.GroupField<Simplify<FeaturedWorksSliceDefaultPrimaryProjectsItem>>;
+}
+
+/**
+ * Default variation for Featured Works Slice
+ *
+ * - **API ID**: `default`
+ * - **Description**: Default
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type FeaturedWorksSliceDefault = prismic.SharedSliceVariation<"default", Simplify<FeaturedWorksSliceDefaultPrimary>, never>;
+
+/**
+ * Slice variation for *Featured Works*
+ */
+type FeaturedWorksSliceVariation = FeaturedWorksSliceDefault
+
+/**
+ * Featured Works Shared Slice
+ *
+ * - **API ID**: `featured_works`
+ * - **Description**: *None*
+ * - **Documentation**: https://prismic.io/docs/slices
+ */
+export type FeaturedWorksSlice = prismic.SharedSlice<"featured_works", FeaturedWorksSliceVariation>;
+
+/**
  * Primary content in *Hero → Default → Primary*
  */
 export interface HeroSliceDefaultPrimary {
@@ -411,6 +514,11 @@ declare module "@prismicio/client" {
 			CollaboratorsSliceDefaultPrimary,
 			CollaboratorsSliceVariation,
 			CollaboratorsSliceDefault,
+			FeaturedWorksSlice,
+			FeaturedWorksSliceDefaultPrimaryProjectsItem,
+			FeaturedWorksSliceDefaultPrimary,
+			FeaturedWorksSliceVariation,
+			FeaturedWorksSliceDefault,
 			HeroSlice,
 			HeroSliceDefaultPrimary,
 			HeroSliceVariation,

@@ -1,0 +1,65 @@
+{
+  "id": "featured_works",
+  "name": "Featured Works",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "title": {
+          "config": {
+            "label": "Title",
+            "placeholder": "Featured Works",
+            "single": "heading2"
+          },
+          "type": "StructuredText"
+        },
+        "button_text": {
+          "config": {
+            "label": "Button text",
+            "placeholder": "View all projects"
+          },
+          "type": "Text"
+        },
+        "projects": {
+          "config": {
+            "fields": {
+              "name": {
+                "config": {
+                  "label": "Name"
+                },
+                "type": "Text"
+              },
+              "description": {
+                "config": {
+                  "label": "Description"
+                },
+                "type": "Text"
+              },
+              "image": {
+                "config": {
+                  "label": "Image"
+                },
+                "type": "Image"
+              },
+              "link": {
+                "config": {
+                  "label": "Project link",
+                  "select": "document"
+                },
+                "type": "Link"
+              }
+            },
+            "label": "Projects"
+          },
+          "type": "Group"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

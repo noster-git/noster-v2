@@ -7,13 +7,13 @@ import { createClient } from "@/prismicio";
 import { components } from "@/slices";
 
 export default async function Page() {
-	const page = await getPage(await getPreviewRef());
+	const page = await getPage(await getPreviewRef()).catch(() => notFound());
 
 	return <SliceZone slices={page.data.slices} components={components} />;
 }
 
 export async function generateMetadata() {
-	const page = await getPage(await getPreviewRef());
+	const page = await getPage(await getPreviewRef()).catch(() => notFound());
 	const { meta_title, meta_description, meta_image } = page.data;
 
 	return {
@@ -32,7 +32,7 @@ async function getPage(ref) {
 	"use cache";
 	cacheLife("max");
 	const client = createClient();
-	const page = await client.getSingle("home", { ref }).catch(() => notFound());
+	const page = await client.getSingle("home", { ref });
 	cacheTagPrismicPages([page]);
 	return page;
 }
