@@ -4,7 +4,7 @@
 /* ── Design system ──────────────────────────────────────────────────────────────────────────
    Documented at /style-guide. Two layouts:
    - compact (base): phones, and tablets held upright (≤900px, or ≤1100px in portrait)
-   - desk (`desk:`): ≥901px landscape, or ≥1101px; `wide:` adds ≥1800px
+   - desk (`desk:`): ≥901px landscape, or ≥1101px; type steps up again at ≥1800px
    Grid: 5 columns compact / 10 desk (`grid-site`), 6px gaps and page margins (`g`).
    Spacing: one unit = one line of body text (`p-1` = 12px compact, 15px desk, 16px wide), so
    vertical rhythm follows the text. Type sizes are fixed px except the display tiers. */
@@ -17,17 +17,6 @@
 /* desk with a mouse. Don't stack desk: with another media variant: Tailwind nests the comma list into invalid CSS. */
 @custom-variant desk-mouse {
   @media (min-width: 901px) and (orientation: landscape) and (hover: hover), (min-width: 1101px) and (hover: hover) {
-    @slot;
-  }
-}
-/* desk without a mouse: landscape tablets. */
-@custom-variant desk-touch {
-  @media (min-width: 901px) and (orientation: landscape) and (hover: none), (min-width: 1101px) and (hover: none) {
-    @slot;
-  }
-}
-@custom-variant wide {
-  @media (min-width: 1800px) {
     @slot;
   }
 }

@@ -36,7 +36,7 @@ const SECTIONS = [
 const LAYOUTS = [
 	{ name: "Compact", when: "≤ 900px, or ≤ 1100px upright", prefix: "(base)", cols: "5", body: "11 / 12px", line: "12px" },
 	{ name: "Desk", when: "≥ 901px landscape, or ≥ 1101px", prefix: "desk:", cols: "10", body: "12 / 15px", line: "15px" },
-	{ name: "Wide", when: "≥ 1800px", prefix: "wide:", cols: "10", body: "13 / 16px", line: "16px" },
+	{ name: "Wide", when: "≥ 1800px", prefix: "(automatic)", cols: "10", body: "13 / 16px", line: "16px" },
 ];
 
 // Specimens use the real classes. Sizes: compact → desk (→ wide where it changes).
