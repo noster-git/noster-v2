@@ -18,7 +18,14 @@ const ProjectHero = ({ slice }) => (
 	>
 		<div className="absolute inset-0 -z-10">
 			<Parallax className="relative h-[110%] w-full after:absolute after:inset-0 after:bg-black/25">
-				<PrismicNextImage field={slice.primary.image} alt="" fill priority sizes="100vw" className="object-cover" />
+				{/* Prismic alt text if set, otherwise the project name. */}
+				<PrismicNextImage
+					field={{ ...slice.primary.image, alt: slice.primary.image.alt || `${slice.primary.title?.replace(/\s+/g, " ")} office interior` }}
+					fill
+					priority
+					sizes="100vw"
+					className="object-cover"
+				/>
 			</Parallax>
 		</div>
 		<h1 className="w-[82%] text-center whitespace-pre-line text-[3em] font-normal md:text-[5em]">{slice.primary.title}</h1>

@@ -5,11 +5,21 @@ import { SliceZone } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import { components } from "@/slices";
+import { getFooter } from "@/components/Footer";
+import JsonLd from "@/components/JsonLd";
+import { organization } from "@/lib/schema";
 
 export default async function Page() {
-	const page = await getPage(await getPreviewRef()).catch(() => notFound());
+	const [page, footer] = await Promise.all([getPage(await getPreviewRef()).catch(() => notFound()), getFooter()]);
+	const contact = page.data.slices.find((s) => s.slice_type === "contact");
+	const email = contact?.primary.contacts?.map((c) => c.value).find((v) => v?.includes("@"));
 
-	return <SliceZone slices={page.data.slices} components={components} />;
+	return (
+		<>
+			<JsonLd data={organization(footer, { description: page.data.meta_description, email })} />
+			<SliceZone slices={page.data.slices} components={components} />
+		</>
+	);
 }
 
 export async function generateMetadata() {
@@ -19,7 +29,11 @@ export async function generateMetadata() {
 	return {
 		title: meta_title || undefined,
 		description: meta_description || undefined,
+		alternates: { canonical: "/" },
 		openGraph: {
+			url: "/",
+			title: meta_title || undefined,
+			description: meta_description || undefined,
 			images: [{ url: asImageSrc(meta_image) ?? "/noster-meta.png" }],
 		},
 	};

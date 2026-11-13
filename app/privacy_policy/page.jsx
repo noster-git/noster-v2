@@ -58,8 +58,10 @@ export async function generateMetadata() {
 
 	return {
 		title: meta_title || "Privacy Policy | Noster",
-		description: meta_description || undefined,
+		description: meta_description || "How Noster Associates collects, uses and protects personal data on noster.in.",
+		alternates: { canonical: "/privacy_policy" },
 		openGraph: {
+			url: "/privacy_policy",
 			images: [{ url: asImageSrc(meta_image) ?? "/noster-meta.png" }],
 		},
 	};

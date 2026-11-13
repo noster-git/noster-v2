@@ -8,7 +8,7 @@ import { PrismicNextImage } from "@prismicio/next";
  * @typedef {import("@prismicio/react").SliceComponentProps<ProjectImagesSlice>} ProjectImagesProps
  * @type {import("react").FC<ProjectImagesProps>}
  */
-const ProjectImages = ({ slice }) => (
+const ProjectImages = ({ slice, context }) => (
 	<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation} className="project-images">
 		{slice.primary.photos
 			.filter((p) => isFilled.image(p.image))
@@ -20,7 +20,11 @@ const ProjectImages = ({ slice }) => (
 				>
 					{/* 98% like live: landscapes keep a thin gap under the photo */}
 					<div className="project-image-photo h-[98%] w-full overflow-hidden">
-						<PrismicNextImage field={image} alt="" sizes="(max-width: 680px) 100vw, 80vw" className="size-full object-cover" />
+						<PrismicNextImage
+							field={{ ...image, alt: image.alt || `${context?.projectName ?? "Project"} office interior, photo ${i + 1}` }}
+							sizes="(max-width: 680px) 100vw, 80vw"
+							className="size-full object-cover"
+						/>
 					</div>
 				</div>
 			))}

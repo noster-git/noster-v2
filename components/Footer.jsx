@@ -4,7 +4,7 @@ import { isFilled } from "@prismicio/client";
 import { PrismicNextLink, cacheTagPrismicPages } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 
-async function getFooter() {
+export async function getFooter() {
 	"use cache";
 	cacheLife("max");
 	const footer = await createClient()

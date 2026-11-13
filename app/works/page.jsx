@@ -5,6 +5,9 @@ import { createClient } from "@/prismicio";
 import { toWorks } from "@/slices/FeaturedWorks";
 import WorksGrid from "@/components/WorksGrid";
 import Reveal from "@/components/Reveal";
+import JsonLd from "@/components/JsonLd";
+import { worksList } from "@/lib/schema";
+import { DEFAULT_DESCRIPTION } from "@/lib/site";
 
 /**
  * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15).
@@ -15,6 +18,7 @@ export default async function Page() {
 
 	return (
 		<>
+			<JsonLd data={worksList(works)} />
 			<Reveal as="div" className="relative px-[2vw] pt-[12vw] text-[3vw] md:top-[4vw] md:text-[1vw]">
 				<h1 data-reveal className="flex items-center text-[3em] leading-[normal] font-normal tracking-[-0.08vw] md:text-[5em]">
 					:{title}
@@ -28,10 +32,17 @@ export default async function Page() {
 export async function generateMetadata() {
 	const { page } = await getData(await getPreviewRef());
 
+	const title = page?.data.meta_title || "Works | Noster";
+	const description = page?.data.meta_description || DEFAULT_DESCRIPTION;
+
 	return {
-		title: page?.data.meta_title || "Works | Noster",
-		description: page?.data.meta_description || undefined,
+		title,
+		description,
+		alternates: { canonical: "/works" },
 		openGraph: {
+			url: "/works",
+			title,
+			description,
 			images: [{ url: asImageSrc(page?.data.meta_image) ?? "/noster-meta.png" }],
 		},
 	};

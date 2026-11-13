@@ -9,7 +9,7 @@ import Canvas from "./Canvas";
  * @typedef {import("@prismicio/react").SliceComponentProps<BehindTheScenesSlice>} BehindTheScenesProps
  * @type {import("react").FC<BehindTheScenesProps>}
  */
-const BehindTheScenes = ({ slice }) => {
+const BehindTheScenes = ({ slice, context }) => {
 	const photos = slice.primary.photos.filter((p) => isFilled.image(p.image));
 
 	return (
@@ -33,7 +33,12 @@ const BehindTheScenes = ({ slice }) => {
 					</h2>
 					{photos.map((p, i) => (
 						<figure key={i} data-photo className="invisible absolute scale-0 overflow-hidden">
-							<PrismicNextImage field={p.image} alt="" sizes="40vw" className="size-full object-cover" draggable={false} />
+							<PrismicNextImage
+								field={{ ...p.image, alt: p.image.alt || `${context?.projectName ?? "Project"} behind the scenes, photo ${i + 1}` }}
+								sizes="40vw"
+								className="size-full object-cover"
+								draggable={false}
+							/>
 						</figure>
 					))}
 				</Canvas>
