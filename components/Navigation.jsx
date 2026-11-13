@@ -32,9 +32,10 @@ export default async function Navigation() {
 
 	return (
 		<>
-			<nav className="grid-site fixed inset-x-0 top-0 z-50 items-center px-g pt-[12px] pb-g text-white mix-blend-difference">
+			<nav className="grid-site fixed inset-x-0 top-0 z-50 items-center px-m pt-[12px] pb-g text-white mix-blend-difference">
 				<div className="col-span-2">
-					<Link href="/" aria-label="Noster home" data-intro className="flex">
+					{/* Focus rings white: the nav is mix-blend-difference, where a black ring vanishes. */}
+					<Link href="/" aria-label="Noster home" data-intro className="hit flex focus-visible:outline-white">
 						<NosterLogo className="h-[13px] w-auto desk:h-[15px]" />
 					</Link>
 				</div>
@@ -43,7 +44,7 @@ export default async function Navigation() {
 					{links.map((item, i) =>
 						isFilled.link(item.link) ? (
 							<li key={i} data-intro>
-								<PrismicNextLink field={item.link} className="motion-host flex">
+								<PrismicNextLink field={item.link} className="motion-host hit flex focus-visible:outline-white">
 									<RollText>{item.label}</RollText>
 								</PrismicNextLink>
 							</li>
@@ -59,7 +60,7 @@ export default async function Navigation() {
 					<PrismicNextLink
 						field={cta_link}
 						data-intro
-						className="motion-host flex items-center gap-[6px] rounded-ui bg-black px-[8.5px] py-[4px] leading-none text-white transition-colors duration-200 group-data-[on-hero]:bg-white group-data-[on-hero]:text-black"
+						className="motion-host hit flex items-center gap-g rounded-ui bg-black px-[8.5px] py-[4px] leading-none text-white transition-colors duration-200 group-data-[on-hero]:bg-white group-data-[on-hero]:text-black"
 					>
 						<RollText>{cta_label}</RollText>
 						<Arrow />
@@ -69,7 +70,7 @@ export default async function Navigation() {
 
 			{isFilled.link(cta_link) && mobile_cta_label && (
 				<MobileCta>
-					<PrismicNextLink field={cta_link} data-intro className="motion-host flex items-center gap-[8px] rounded-ui bg-black px-[20px] py-[12px] text-[13px] leading-[16px] whitespace-nowrap text-white">
+					<PrismicNextLink field={cta_link} data-intro className="motion-host flex items-center gap-[8px] rounded-ui bg-black px-[20px] py-[14px] text-[13px] leading-[16px] whitespace-nowrap text-white transition-[scale] duration-150 ease-out active:scale-[0.97]">
 						<RollText>{mobile_cta_label}</RollText>
 						<Arrow />
 					</PrismicNextLink>

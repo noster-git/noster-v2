@@ -4,10 +4,11 @@ import { asImageSrc } from "@prismicio/client";
 import { PrismicRichText } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
+import Reveal from "@/components/Reveal";
 
 // Type and spacing come from the design system in app/globals.css (spacing unit = one body line).
-// Long-form reading: a step up from the 11–12px interface text, with more generous lines.
-const BODY = "text-[13px] leading-[19px] desk:text-[14px] desk:leading-[21px]";
+// Long-form reading: the text-long tier (14px, generous lines).
+const BODY = "text-long";
 
 /** @type {import("@prismicio/react").JSXMapSerializer} */
 const components = {
@@ -34,13 +35,16 @@ export default async function Page() {
 	const heading = `:${page.data.title || "Privacy Policy"}`;
 
 	return (
-		<div className="grid-site items-start px-g pt-[84px] pb-8 text-black desk:pt-[120px]">
+		// Reveal: the heading rises line by line, then the text fades up.
+		<Reveal as="div" className="grid-site items-start px-m pt-[84px] pb-8 desk:pt-[120px]">
 			{/* Desk: the heading stays in columns 1–3 as the text scrolls past it. */}
-			<h1 className="col-span-5 mb-4 text-title desk:sticky desk:top-[84px] desk:col-span-3 desk:mb-0">{heading}</h1>
-			<div className="col-span-5 max-w-[46em] desk:col-span-6 desk:col-start-5">
+			<h1 data-reveal="lines" className="col-span-5 mb-4 text-title desk:sticky desk:top-[84px] desk:col-span-3 desk:mb-0">
+				{heading}
+			</h1>
+			<div data-reveal className="col-span-5 max-w-[46em] desk:col-span-6 desk:col-start-5">
 				<PrismicRichText field={page.data.content} components={components} />
 			</div>
-		</div>
+		</Reveal>
 	);
 }
 

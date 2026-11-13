@@ -8,16 +8,19 @@ import { components } from "@/slices";
 import { getFooter } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { organization } from "@/lib/schema";
+import { getProjectMedia } from "@/lib/projects";
 
 export default async function Page() {
-	const [page, footer] = await Promise.all([getPage(await getPreviewRef()).catch(() => notFound()), getFooter()]);
+	const ref = await getPreviewRef();
+	const [page, footer, media] = await Promise.all([getPage(ref).catch(() => notFound()), getFooter(), getProjectMedia(ref)]);
 	const contact = page.data.slices.find((s) => s.slice_type === "contact");
 	const email = contact?.primary.contacts?.map((c) => c.value).find((v) => v?.includes("@"));
 
 	return (
 		<>
 			<JsonLd data={organization(footer, { description: page.data.meta_description, email })} />
-			<SliceZone slices={page.data.slices} components={components} />
+			{/* The Contact slice ("Let's Build Together") is shown in the site footer instead (components/Footer.jsx) */}
+			<SliceZone slices={page.data.slices.filter((s) => s.slice_type !== "contact")} components={components} context={{ media }} />
 		</>
 	);
 }

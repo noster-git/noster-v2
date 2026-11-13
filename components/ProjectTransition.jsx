@@ -3,36 +3,51 @@
 import { createContext, useCallback, useContext, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useLenis } from "lenis/react";
+import { CSS_EXPO_OUT } from "@/lib/motion";
+import { shown, transitioning } from "@/lib/intro";
 
 /**
- * Project open transition: the card photo you click grows — from the very next frame — out of its
- * place into the project page's full-screen hero, keeping its rounded corners until it reaches the
- * screen edges. Only then does the page change underneath; the photo hands over to the hero in a
- * single frame and the title rises in.
+ * Project open transition: the card photo you click grows out of its place into the project page's
+ * hero. (Every other link uses the site's sweep: SiteSweep. Card links carry
+ * data-glimm-skip so only this runs for them.)
+ *
+ *   press   the card gives a little (0.98, WorksGrid)
+ *   0ms     the photo starts growing from exactly where the card is — fast at first, gliding in to
+ *           land (750ms, strong ease-out). No zoom: the picture keeps its framing as it grows.
+ *           Corners stay rounded until near the edges; the hero's 25% shade fades in.
+ *           The rest of the page fades out so the photo has the stage.
+ *   ~60%    the page is gone, so the project page loads underneath already
+ *   landed  the photo hands over to the hero in one frame (same image, same place, same shade) and
+ *           the title rises straight in.
  *
  * How: a layer on top of the page (fixed, under the nav) holds the whole photo laid out exactly as
- * the hero lays it out (full width, 110% of the screen tall, centred — ProjectHero at scroll 0).
- * At the click it is scaled and moved so the photo sits exactly on the card's photo, and masked
- * (clip-path, rounded like the card) to the card's box: nothing changes on screen. Then the mask
- * opens in a straight line to the full screen while the photo settles to full size, and its 25%
- * shade fades in. The grid underneath stays exactly as it was the whole time.
+ * the hero lays it out (full width, 110% of the hero tall, centred — ProjectHero at scroll 0). The layer is
+ * the hero's own box (--hero-h: full screen on desk, half the screen on phones).
+ * The window (clip-path) moves in a straight line from the card's box to the hero's box, so it only
+ * ever grows outward; the photo's scale and position follow the same progress, so it starts exactly
+ * on the card's photo and ends exactly as the hero. Everything is transform, opacity and clip-path.
  *
- * Reduced motion, modified clicks (new tab etc.) and non-project links navigate normally.
+ * The photo is the hero's own image when the card has preloaded it (WorksGrid, on hover): the exact
+ * file the hero shows, so the hand-over is identical. Reduced motion, no JS, modified clicks (new tab
+ * etc.) and non-project links navigate normally.
  */
 
 const Ctx = createContext({ open: () => {}, warm: () => {} });
 export const useProjectTransition = () => useContext(Ctx);
 
-const GROW_MS = 900; // travels up to a full screen: longer than UI motion
-const EASE = "cubic-bezier(0.76, 0, 0.24, 1)"; // --ease-quart: on-screen movement, ease-in-out
-const SQUARE_FROM = 0.7; // corners stay rounded until the last 30% of the grow
+const GROW_MS = 750;
+const EASE = CSS_EXPO_OUT; // strong ease-out: moves the instant it's clicked, glides in
+const STEPS = 24; // keyframes for the grow (evenly spaced in progress; the whole run is eased)
+const SQUARE_FROM = 0.75; // corners stay rounded until the last quarter of the grow
 const SHADE = 0.25; // the hero's black shade
+const FADE = { duration: 350, easing: "cubic-bezier(0.33, 1, 0.68, 1)" }; // the page fades out behind the photo
+const SWAP_AT = 0.6; // change page underneath at this share of the grow (the page has gone by then)
 const WAIT_MS = 3000; // longest the grown photo waits for the project page before handing over
-const IMG_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2048, 3840]; // next/image sizes
 
 const isProject = (href) => /^\/works\/[^/?#]+/.test(href || "");
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const frame = () => new Promise((done) => requestAnimationFrame(done));
+const lerp = (a, b, p) => a + (b - a) * p;
 
 /** Size of an image of this aspect ratio covering a box (object-fit: cover). */
 function cover(w, h, aspect) {
@@ -57,42 +72,18 @@ function ready(img, ms) {
 	return Promise.race([loaded.then(() => img.decode().catch(() => {})), sleep(ms)]);
 }
 
-/** The card image's full-width version: the largest srcset candidate the screen needs. */
-function fullWidthSrc(img) {
-	const candidates = (img.srcset || "")
-		.split(/,\s+/)
-		.map((s) => s.trim().split(/\s+/))
-		.filter(([url, w]) => url && w)
-		.map(([url, w]) => ({ url, w: parseInt(w, 10) }));
-	if (!candidates.length) return img.currentSrc || img.src;
-	const need = document.documentElement.clientWidth * (window.devicePixelRatio || 1);
-	return (candidates.find((c) => c.w >= need) ?? candidates.at(-1)).url;
-}
-
 export default function ProjectTransition({ children }) {
 	const router = useRouter();
 	const lenis = useLenis();
-	const busy = useRef(false);
 	const layer = useRef(null); // the window (clip-path)
 	const photo = useRef(null); // the whole photo
 	const shade = useRef(null);
-	const preloaded = useRef(new WeakMap()); // card <img> → decoded full-width Image
 
-	/** On hover/press: fetch the project page, and load + decode the card photo at full width. */
+	/** On hover/press: fetch the project page (WorksGrid also preloads its hero photo). */
 	const warm = useCallback(
 		(link) => {
 			const href = link?.getAttribute("href");
-			if (!isProject(href)) return;
-			router.prefetch(href);
-			const card = link.querySelector("img");
-			if (!card || preloaded.current.has(card)) return;
-			const img = new Image();
-			img.src = fullWidthSrc(card);
-			preloaded.current.set(card, img);
-			img.decode().then(
-				() => (img.dataset.ready = "1"),
-				() => {},
-			);
+			if (isProject(href)) router.prefetch(href);
 		},
 		[router],
 	);
@@ -100,48 +91,65 @@ export default function ProjectTransition({ children }) {
 	const open = useCallback(
 		(e, href) => {
 			if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-			if (busy.current) return e.preventDefault(); // one at a time
+			if (transitioning()) return e.preventDefault(); // one page change or project open at a time
 			const card = e.currentTarget.querySelector("img");
-			if (!isProject(href) || !card?.naturalWidth || !layer.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+			const root = document.documentElement;
+			const page = document.querySelector("[data-page]");
+			if (!isProject(href) || !card?.naturalWidth || !layer.current || !page || !root.classList.contains("js-anim")) return;
 			e.preventDefault();
-			busy.current = true;
+			root.dataset.transition = "";
 			router.prefetch(href);
 
 			// Stop a smooth-scroll glide where it is, so the card doesn't move under the photo.
 			lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
-			const root = document.documentElement;
 			root.dataset.projectOpening = ""; // "View" tag goes; the project title will wait (globals.css)
 
 			// The card as it is on screen now: its visible box (rounded), and its image's own box.
 			const box = e.currentTarget.getBoundingClientRect();
 			const imgBox = card.getBoundingClientRect();
 			const radius = parseFloat(getComputedStyle(e.currentTarget).borderTopLeftRadius) || 0;
-			const aspect = card.naturalWidth / card.naturalHeight;
+			const cardAspect = card.naturalWidth / card.naturalHeight;
 
-			// The hero's photo box: full width, 110% of the screen tall, from the top (ProjectHero, Parallax).
+			// The photo that grows: the project hero's own image if the card has preloaded it, else the card's
+			// own image (already on screen).
+			const heroPre = e.currentTarget.parentElement?.querySelector("[data-hero-preload] img");
+			const heroReady = heroPre?.complete && heroPre.naturalWidth > 0;
+			const aspect = heroReady ? heroPre.naturalWidth / heroPre.naturalHeight : cardAspect;
+			const src = heroReady ? heroPre.currentSrc : card.currentSrc || card.src;
+
+			// The hero's photo box: full width, 110% of the hero tall, from the top (ProjectHero, Parallax).
 			const W = layer.current.offsetWidth;
 			const H = layer.current.offsetHeight;
 			const P = cover(W, H * 1.1, aspect);
 			const px = W / 2 - P.w / 2;
 			const py = H * 0.55 - P.h / 2;
 
-			// Start: the photo the size it is on the card, its centre on the card image's centre.
-			const s0 = cover(imgBox.width, imgBox.height, aspect).w / P.w;
+			// Start: the photo the size it is on the card, its centre on the card image's centre. (The card
+			// image may be a different crop of the same photo: match the whole photo's width.)
+			const onCard = cover(imgBox.width, imgBox.height, cardAspect);
+			const photoW = cardAspect >= aspect ? onCard.w : onCard.h * aspect;
+			const s0 = photoW / P.w;
 			const tx0 = imgBox.left + imgBox.width / 2 - s0 * (W / 2);
 			const ty0 = imgBox.top + imgBox.height / 2 - s0 * (H * 0.55);
 
-			// The photo: full width if it's ready (hovered first), else the card's own image (already loaded).
-			const full = preloaded.current.get(card);
-			const src = full?.dataset.ready ? full.src : card.currentSrc || card.src;
+			// Keyframes along the grow (progress p, 0 → 1): the window, and the photo inside it.
+			const windowFrames = [];
+			const photoFrames = [];
+			for (let k = 0; k <= STEPS; k++) {
+				const p = k / STEPS;
+				const win = { top: lerp(box.top, 0, p), right: lerp(box.right, W, p), bottom: lerp(box.bottom, H, p), left: lerp(box.left, 0, p) };
+				const r = p <= SQUARE_FROM ? radius : radius * (1 - (p - SQUARE_FROM) / (1 - SQUARE_FROM));
+				windowFrames.push({ clipPath: `inset(${win.top}px ${W - win.right}px ${H - win.bottom}px ${win.left}px round ${r}px)` });
+
+				// The photo follows the same progress: card → hero.
+				const s = lerp(s0, 1, p);
+				photoFrames.push({ transform: `translate(${s * px + lerp(tx0, 0, p)}px, ${s * py + lerp(ty0, 0, p)}px) scale(${s})` });
+			}
+
 			const img = photo.current;
 			Object.assign(img.style, { left: "0px", top: "0px", width: `${P.w}px`, height: `${P.h}px` });
 			img.src = src;
-
-			const place = (s, tx, ty) => `translate(${s * px + tx}px, ${s * py + ty}px) scale(${s})`;
-			const window_ = (p, r) => {
-				const lerp = (a, b) => a + (b - a) * p;
-				return `inset(${lerp(box.top, 0)}px ${lerp(W - box.right, 0)}px ${lerp(H - box.bottom, 0)}px ${lerp(box.left, 0)}px round ${r}px)`;
-			};
+			let recede = null;
 
 			img.decode()
 				.catch(() => {})
@@ -149,36 +157,38 @@ export default function ProjectTransition({ children }) {
 					const timing = { duration: GROW_MS, easing: EASE, fill: "forwards" };
 					// Shown exactly over the card first (same frame as the animation's start: no jump).
 					layer.current.style.visibility = "visible";
-					layer.current.animate(
-						[
-							{ clipPath: window_(0, radius) },
-							{ clipPath: window_(SQUARE_FROM, radius), offset: SQUARE_FROM },
-							{ clipPath: window_(1, 0) },
-						],
-						timing,
-					);
-					img.animate([{ transform: place(s0, tx0, ty0) }, { transform: place(1, 0, 0) }], timing); // origin: top-left
-					return shade.current.animate([{ opacity: 0 }, { opacity: SHADE }], timing).finished;
+					layer.current.animate(windowFrames, timing);
+					img.animate(photoFrames, timing); // origin: top-left
+					shade.current.animate([{ opacity: 0 }, { opacity: SHADE }], timing);
+					recede = page.animate([{ opacity: 1 }, { opacity: 0 }], { ...FADE, fill: "forwards" });
+
+					// The page has gone by now: load the project page underneath while the photo lands.
+					const path = href.split(/[?#]/)[0];
+					const arrived = sleep(GROW_MS * SWAP_AT).then(async () => {
+						router.push(href, { scroll: true });
+						await until(() => location.pathname === path && shown("[data-project-hero] img"), WAIT_MS);
+						lenis?.scrollTo(0, { immediate: true, force: true });
+						window.scrollTo(0, 0);
+						const heroImg = shown("[data-project-hero] img");
+						if (heroImg) await ready(heroImg, WAIT_MS); // instant when the card preloaded it
+					});
+					return Promise.all([sleep(GROW_MS), arrived]);
 				})
 				.then(async () => {
-					// The photo now fills the screen exactly as the hero: change page underneath it.
-					router.push(href, { scroll: true });
-					const path = href.split(/[?#]/)[0];
-					await until(() => location.pathname === path && document.querySelector("[data-project-hero] img"), WAIT_MS);
-					lenis?.scrollTo(0, { immediate: true, force: true });
-					window.scrollTo(0, 0);
-					const heroImg = document.querySelector("[data-project-hero] img");
-					if (heroImg) await ready(heroImg, WAIT_MS);
+					// Landed, and the hero is ready under it: bring the page back (it is the hero now), let it
+					// paint once, then hand over in one frame. The title rises straight in.
+					recede?.cancel();
 					await frame();
-					await frame();
-					// Hand over in one frame (same photo, same place, same shade); the title rises in.
 					delete root.dataset.projectOpening;
 					layer.current.style.visibility = "hidden";
 					[layer.current, img, shade.current].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
 					img.removeAttribute("src");
+					// The card that was clicked is now hidden with the old page: start keyboard focus at the content.
+					if (!document.activeElement?.checkVisibility()) document.getElementById("main")?.focus({ preventScroll: true });
 				})
 				.finally(() => {
-					busy.current = false;
+					recede?.cancel(); // never leave the page hidden
+					delete root.dataset.transition;
 				});
 		},
 		[router, lenis],
@@ -188,7 +198,7 @@ export default function ProjectTransition({ children }) {
 		<Ctx.Provider value={{ open, warm }}>
 			{children}
 			{/* The growing photo: over the page, under the nav (z-50) and the top CTA. */}
-			<div ref={layer} aria-hidden="true" className="pointer-events-none invisible fixed inset-x-0 top-0 z-40 h-svh overflow-hidden">
+			<div ref={layer} aria-hidden="true" className="pointer-events-none invisible fixed inset-x-0 top-0 z-40 h-(--hero-h) overflow-hidden">
 				{/* eslint-disable-next-line @next/next/no-img-element -- a copy of an image already loaded on the page */}
 				<img ref={photo} alt="" className="absolute max-w-none origin-top-left object-cover" />
 				<div ref={shade} className="absolute inset-0 bg-black opacity-0" />

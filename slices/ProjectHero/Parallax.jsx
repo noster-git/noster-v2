@@ -8,7 +8,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 // The hero sits at the very top, so the photo starts in place (no gap above it) and sinks up to
-// 300px while the hero scrolls away — about the same speed as live (~0.25px per px scrolled).
+// 300px while the hero scrolls away (~0.25px per px scrolled).
 const DRIFT = 300;
 
 export default function Parallax({ children, className }) {

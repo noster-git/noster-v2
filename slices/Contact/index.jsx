@@ -3,7 +3,8 @@ import ContactClient from "./ContactClient";
 
 /**
  * "Let's Build Together": huge title (×3 on desktop), intro text left, email/phone links right.
- * Scroll behaviour (page turns dark, title copies slide in, lines draw) lives in ContactClient.
+ * Used by the footer on every page (Footer.jsx reads this slice from the home page) and when an editor
+ * adds it to a project page. Scroll behaviour (rules draw, title lines rise, links fade up): ContactClient.
  *
  * @typedef {import("@prismicio/client").Content.ContactSlice} ContactSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<ContactSlice>} ContactProps

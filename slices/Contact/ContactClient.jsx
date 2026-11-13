@@ -32,10 +32,13 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 
 			if (!document.documentElement.classList.contains("js-anim")) return;
 			const el = scope.current;
+			// Split as soon as the fonts are in (not in the frame the curtain lifts); plays once in view and
+			// the entrances are released.
 			let split;
 			let trigger;
-			Promise.all([ready(), document.fonts.ready]).then(() => {
-				if (!el.isConnected) return;
+			let live = true;
+			document.fonts.ready.then(() => {
+				if (!live || !el.isConnected) return;
 				const heading = el.querySelector("[data-split]");
 				split = SplitText.create(heading, { type: "lines", mask: "lines" });
 				gsap.set(heading, { autoAlpha: 1 });
@@ -46,13 +49,18 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 					start: "top 75%",
 					once: true,
 					onEnter: () =>
-						gsap
-							.timeline()
-							.to(split.lines, lineRise.to)
-							.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8"),
+						ready().then(
+							() =>
+								live &&
+								gsap
+									.timeline()
+									.to(split.lines, lineRise.to)
+									.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8"),
+						),
 				});
 			});
 			return () => {
+				live = false;
 				trigger?.kill();
 				split?.revert();
 			};
@@ -60,14 +68,14 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 		{ scope },
 	);
 
-	const line = `absolute left-0 h-[2px] bg-(--ink) transition-all duration-800 ease-[cubic-bezier(0.83,0,0.17,1)] ${lines ? "w-full" : "w-0"}`;
+	const line = `absolute inset-x-0 h-[2px] origin-left bg-(--ink) transition-transform duration-800 ease-quart ${lines ? "scale-x-100" : "scale-x-0"}`;
 
 	return (
 		<section
 			ref={scope}
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
-			className="relative w-full overflow-hidden px-g pt-8 pb-8"
+			className="relative w-full overflow-hidden px-m pt-6 pb-6"
 		>
 			<div className="relative">
 				<div className={`top-0 ${line}`} />

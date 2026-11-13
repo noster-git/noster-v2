@@ -11,8 +11,8 @@ import Reveal from "@/components/Reveal";
  */
 const OurApproach = ({ slice }) => {
 	return (
-		<Reveal data-slice-type={slice.slice_type} data-slice-variation={slice.variation} className="grid-site px-g pt-8 pb-8">
-			<div data-reveal className="col-span-5 mb-2 desk:col-span-3 desk:mb-0">
+		<Reveal data-slice-type={slice.slice_type} data-slice-variation={slice.variation} className="grid-site px-m pt-6 pb-6">
+			<div data-reveal="lines" className="col-span-5 mb-2 desk:col-span-3 desk:mb-0">
 				<PrismicRichText
 					field={slice.primary.title}
 					components={{
@@ -20,8 +20,9 @@ const OurApproach = ({ slice }) => {
 					}}
 				/>
 			</div>
-			<div data-reveal className="col-span-5 desk:col-span-7">
-				<div className="text-lead text-pretty [&>p+p]:mt-[1em]">
+			<div className="col-span-5 desk:col-span-7">
+				{/* The statement rises line by line after the title (Reveal). */}
+				<div data-reveal="lines" className="text-lead text-pretty [&>p+p]:mt-[1em]">
 					<PrismicRichText field={slice.primary.description} />
 				</div>
 			</div>

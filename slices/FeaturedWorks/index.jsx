@@ -6,12 +6,19 @@ import Reveal from "@/components/Reveal";
 // How many of the newest projects Home shows; /works shows them all.
 const HOME_LIMIT = 15;
 
-/** Projects newest-first: editors add at the bottom, so the list is reversed. Items without an image are skipped; no project link yet → /works. */
-export function toWorks(projects) {
+/**
+ * Projects newest-first: editors add at the bottom, so the list is reversed. Items without an image or a
+ * project page are skipped.
+ * media (lib/projects.js): each project's hero photo, which its card preloads on hover.
+ */
+export function toWorks(projects, media = {}) {
 	return projects
-		.filter((p) => isFilled.image(p.image))
+		.filter((p) => isFilled.image(p.image) && asLink(p.link))
 		.reverse()
-		.map((p) => ({ href: asLink(p.link) ?? "/works", name: p.name ?? "", description: p.description ?? "", image: p.image }));
+		.map((p) => {
+			const href = asLink(p.link);
+			return { href, name: p.name ?? "", image: p.image, hero: media[href]?.hero ?? null };
+		});
 }
 
 /**
@@ -21,13 +28,13 @@ export function toWorks(projects) {
  * @typedef {import("@prismicio/react").SliceComponentProps<FeaturedWorksSlice>} FeaturedWorksProps
  * @type {import("react").FC<FeaturedWorksProps>}
  */
-const FeaturedWorks = ({ slice }) => {
-	const works = toWorks(slice.primary.projects).slice(0, HOME_LIMIT);
+const FeaturedWorks = ({ slice, context }) => {
+	const works = toWorks(slice.primary.projects, context?.media).slice(0, HOME_LIMIT);
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
-			<Reveal as="div" className="grid-site px-g pt-8 pb-4">
-				<h2 data-reveal className="col-span-5 text-title desk:col-span-7">
+			<Reveal as="div" className="grid-site px-m pt-6 pb-3">
+				<h2 data-reveal="lines" className="col-span-5 text-title desk:col-span-7">
 					:{asText(slice.primary.title)}
 				</h2>
 			</Reveal>

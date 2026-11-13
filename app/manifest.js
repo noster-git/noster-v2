@@ -1,6 +1,6 @@
 import { SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/site";
 
-// "browser" display: the old manifest's "standalone" made Chrome offer to install the site as an app.
+// "browser" display: the site opens as a normal website and is not offered for install as an app.
 export default function manifest() {
 	return {
 		name: SITE_NAME,

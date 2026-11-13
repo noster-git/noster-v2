@@ -1,14 +1,20 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { EASE, lineRise } from "@/lib/motion";
+import { CSS_EXPO_OUT, EASE, lineRise } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 import { useGSAP } from "@gsap/react";
 import { useLenis } from "lenis/react";
 
 gsap.registerPlugin(useGSAP, SplitText);
+
+const REDUCED_MOTION = typeof window === "undefined" ? null : matchMedia("(prefers-reduced-motion: reduce)");
+const subscribeReducedMotion = (onChange) => {
+	REDUCED_MOTION.addEventListener("change", onChange);
+	return () => REDUCED_MOTION.removeEventListener("change", onChange);
+};
 
 /**
  * Interactive part of the Hero: entrance animation, poster → video fade-in, and the showreel dialog.
@@ -20,11 +26,27 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 	const dialogRef = useRef(null);
 	const showreelRef = useRef(null);
 	const lenis = useLenis();
+	// The background video starts from here, not the autoplay attribute, so a reduced-motion preference
+	// keeps it on its first frame.
+	const reducedMotion = useSyncExternalStore(subscribeReducedMotion, () => REDUCED_MOTION.matches, () => false);
+	const playing = !reducedMotion;
+
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video) return;
+		if (playing) video.play().catch(() => {});
+		else video.pause();
+		// Home stays in the DOM, hidden, after leaving it (cacheComponents): stop decoding while it is away.
+		return () => video.pause();
+	}, [playing]);
 
 	// Entrance, after the page-load intro (components/Intro.jsx). The start states are already held by CSS
 	// from the first frame (.js-anim, globals.css), so nothing flashes:
 	//   the photo settles from 1.12× (first visit, as the curtain lifts), the title rises line by line out of
 	//   its own masks, then "Play showreel" rises in.
+	// The title is split and the timeline built as soon as the fonts are in (under the curtain); the gate
+	// (ready) only presses play, so the frame the curtain starts lifting has no layout work in it. The
+	// photo's settle runs on the compositor (WAAPI): it is full-screen and plays while the page is busiest.
 	useGSAP(
 		() => {
 			// The video may already be playable by the time this runs.
@@ -36,10 +58,11 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			const el = scope.current;
 			let tl;
 			let split;
-			Promise.all([ready(), document.fonts.ready]).then(() => {
-				if (!el.isConnected) return;
-				tl = gsap.timeline();
-				if (firstVisit) tl.to(el.querySelector("[data-hero-media]"), { scale: 1, duration: 2.4, ease: EASE }, 0);
+			let settle;
+			let live = true;
+			document.fonts.ready.then(() => {
+				if (!live || !el.isConnected) return;
+				tl = gsap.timeline({ paused: true });
 				const title = el.querySelector("[data-hero-title]");
 				const heading = title?.querySelector("h1");
 				if (heading) {
@@ -49,9 +72,27 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 				} else if (title) tl.fromTo(title, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1.1, ease: EASE }, 0.3);
 				const cta = el.querySelector("[data-hero-cta]");
 				if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE }, "-=0.85");
+				tl.progress(0).pause(); // render the start states now, under the curtain
+				return ready();
+			}).then(() => {
+				if (!live || !tl) return;
+				requestAnimationFrame(() => {
+					if (!live) return;
+					const media = el.querySelector("[data-hero-media]");
+					if (firstVisit && media) {
+						settle = media.animate([{ transform: "scale(1.12)" }, { transform: "scale(1)" }], { duration: 2400, easing: CSS_EXPO_OUT, fill: "forwards" });
+						settle.finished.then(() => {
+							settle.commitStyles(); // stays at 1× once the CSS start state is gone (intro-skip)
+							settle.cancel();
+						}, () => {});
+					}
+					tl.play();
+				});
 			});
 			return () => {
+				live = false;
 				tl?.kill();
+				settle?.cancel();
 				split?.revert();
 			};
 		},
@@ -72,9 +113,14 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 
 	function handleClose() {
 		showreelRef.current.pause();
-		videoRef.current?.play();
+		if (playing) videoRef.current?.play().catch(() => {});
 		lenis?.start();
 	}
+
+	// "Play showreel" sits on a dark photo: keyboard focus thickens the underline instead of drawing a
+	// box, and hit areas reach 44px on touch.
+	const control =
+		"hit cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50 focus-visible:outline-none focus-visible:decoration-2";
 
 	return (
 		<section
@@ -82,7 +128,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
 			data-nav-hero // the top CTA is white over this (NavCta)
-			className="relative flex h-svh min-h-[480px] items-end overflow-hidden bg-black px-g pb-8 desk:pb-2"
+			className="relative flex h-(--hero-h) min-h-[320px] items-end overflow-hidden bg-black px-m pb-m"
 		>
 			<div data-hero-media className="absolute inset-0">
 				{backdrop}
@@ -90,8 +136,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 					<video
 						ref={videoRef}
 						src={videoSrc}
-						autoPlay
-						muted
+												muted
 						loop
 						playsInline
 						preload="auto"
@@ -110,12 +155,8 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 				</div>
 				{videoSrc && (
 					// The wrapper takes the entrance animation; the button keeps its own CSS hover transition.
-					<div data-hero-line data-hero-cta className="mt-1">
-						<button
-							type="button"
-							onClick={openShowreel}
-							className="cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50"
-						>
+					<div data-hero-line data-hero-cta className="mt-1 flex">
+						<button type="button" onClick={openShowreel} className={control}>
 							Play showreel
 						</button>
 					</div>
@@ -129,7 +170,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 					aria-label="Showreel"
 					onClose={handleClose}
 					onClick={(e) => e.target === e.currentTarget && dialogRef.current.close()}
-					className="m-0 size-full max-h-none max-w-none bg-black/80 p-0 backdrop-blur-[8px] backdrop:bg-transparent"
+					className="m-0 size-full max-h-none max-w-none overscroll-contain bg-black/80 p-0 backdrop-blur-[8px] backdrop:bg-transparent"
 				>
 					<div className="pointer-events-none flex size-full items-center justify-center">
 						<video
@@ -145,11 +186,10 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 						type="button"
 						aria-label="Close showreel"
 						onClick={() => dialogRef.current.close()}
-						className="absolute top-g right-g size-[32px] cursor-pointer transition-[scale,opacity] duration-500 ease-quart hover:scale-95 hover:opacity-90 desk:size-[40px]"
+						className="hit absolute! top-m right-m size-[32px] cursor-pointer rounded-ui bg-white text-black focus-visible:outline-white transition-[scale,opacity] duration-500 ease-quart hover:scale-95 hover:opacity-90 desk:size-[40px]"
 					>
 						<svg viewBox="0 0 55 55" fill="none" className="size-full" aria-hidden="true">
-							<rect width="55" height="55" rx="8" fill="#F5F5F5" />
-							<path d="M37 17L17.6897 37M36.3103 37L17 17" stroke="#14120E" strokeWidth="2" />
+							<path d="M37 17L17.6897 37M36.3103 37L17 17" stroke="currentColor" strokeWidth="2" />
 						</svg>
 					</button>
 				</dialog>

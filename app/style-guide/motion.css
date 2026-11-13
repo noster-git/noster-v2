@@ -3,7 +3,7 @@
 
 /* Entrance: rise 36px and fade in, 0.9s ease-out-quint. */
 .sg-enter {
-  animation: sg-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: sg-enter 0.9s var(--ease-out-quint) both;
 }
 @keyframes sg-enter {
   from { opacity: 0; transform: translateY(36px); }
@@ -17,7 +17,7 @@
   transform: translateY(28px);
   transition:
     opacity 0.8s ease var(--d, 0s),
-    transform 1s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s);
+    transform 1s var(--ease-out-quint) var(--d, 0s);
 }
 .sg-ready.sg-in [data-rise] {
   opacity: 1;

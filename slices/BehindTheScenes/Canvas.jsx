@@ -8,7 +8,7 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP, Draggable, ScrollTrigger);
 
-// Board size and photo sizes in em, from the live site's 12 hand-placed slots.
+// Board size and photo sizes in em: 12 hand-placed slots.
 const BOARD = { w: 320, h: 200 };
 const SIZES = [
 	[20, 25], [20, 30], [30, 30], [25, 30], [20, 30], [25, 20],
@@ -41,12 +41,27 @@ function layout(count, reserved) {
 }
 
 /**
- * The draggable board. Live feel: the CSS transform transition (1.2s overshoot) makes the board
- * trail the pointer with a spring. Photos grow to 1.1 the moment the board is pressed — the live
- * site only did this once the pointer moved — and settle back on release.
+ * The draggable board. The CSS transform transition (1.2s overshoot) makes the board trail the
+ * pointer with a spring. Photos grow to 1.1 the moment the board is pressed and settle back on release.
  */
+// Arrow keys move the board this far (em), the keyboard alternative to dragging.
+const KEY_STEP = 24;
+const KEYS = { ArrowLeft: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+
 export default function Canvas({ children }) {
 	const board = useRef(null);
+	const drag = useRef(null);
+
+	// Arrows look around the board (the board moves the opposite way), held inside the same bounds as a drag.
+	const onKeyDown = (e) => {
+		const dir = KEYS[e.key];
+		const d = drag.current;
+		if (!dir || !d) return;
+		e.preventDefault();
+		const step = KEY_STEP * parseFloat(getComputedStyle(board.current).fontSize);
+		gsap.set(board.current, { x: d.x + dir[0] * step, y: d.y + dir[1] * step });
+		d.update(true);
+	};
 
 	useGSAP(
 		() => {
@@ -74,7 +89,7 @@ export default function Canvas({ children }) {
 			mm.add("(prefers-reduced-motion: reduce)", () => gsap.set(photos, { scale: 1 }));
 
 			const grow = (scale) => gsap.to(photos, { scale, duration: 0.2, ease: "power1.out", overwrite: "auto" });
-			Draggable.create(board.current, {
+			[drag.current] = Draggable.create(board.current, {
 				type: "x,y",
 				bounds: board.current.parentElement,
 				onPress: () => grow(1.1),
@@ -87,7 +102,12 @@ export default function Canvas({ children }) {
 	return (
 		<div
 			ref={board}
-			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-pointer touch-none transition-transform duration-[1.2s] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+			tabIndex={0}
+			role="group"
+			aria-label="Behind the scenes photos. Drag, or use the arrow keys, to look around."
+			onKeyDown={onKeyDown}
+			// Focus shows on the framed box around the board (index.jsx); the board itself is mostly off-screen.
+			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-grab touch-none transition-transform duration-[1.2s] ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none outline-none active:cursor-grabbing motion-reduce:transition-none"
 		>
 			{children}
 		</div>

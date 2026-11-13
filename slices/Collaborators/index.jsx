@@ -4,8 +4,8 @@ import Reveal from "@/components/Reveal";
 import LogoShuffle from "./LogoShuffle";
 
 /**
- * "Our Collaborators": title + a fixed row of logo slots that swap in place with a blur (LogoShuffle).
- * 3 slots compact, 6 desk; logos 22px tall compact, 30px desk (30 / 40px when Large), colour on hover.
+ * "Our Collaborators": title + a row of logo slots that swap in place with a blur (LogoShuffle).
+ * 1 slot phone, 2 tablet, 4 desktop; logos 22px tall compact, 30px desk (30 / 40px when Large), colour on hover.
  *
  * @typedef {import("@prismicio/client").Content.CollaboratorsSlice} CollaboratorsSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<CollaboratorsSlice>} CollaboratorsProps
@@ -18,9 +18,9 @@ const Collaborators = ({ slice }) => {
 		<Reveal
 			data-slice-type={slice.slice_type}
 			data-slice-variation={slice.variation}
-			className="pt-8 pb-12"
+			className="pt-6 pb-8"
 		>
-			<div data-reveal className="mb-6 px-g text-center desk:mb-8">
+			<div data-reveal="lines" className="mb-4 px-m text-center desk:mb-6">
 				<div>
 					<PrismicRichText
 						field={slice.primary.title}
