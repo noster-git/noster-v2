@@ -1,0 +1,53 @@
+{
+  "format": "page",
+  "id": "privacy_policy",
+  "json": {
+    "Main": {
+      "title": {
+        "config": {
+          "label": "Title",
+          "placeholder": "Privacy Policy"
+        },
+        "type": "Text"
+      },
+      "content": {
+        "config": {
+          "label": "Content",
+          "placeholder": "Heading 2 = section title, Heading 3 = subtitle, Heading 4 = topic, Heading 5 = lead line, bullets for lists",
+          "multi": "paragraph,heading2,heading3,heading4,heading5,strong,em,hyperlink,list-item,o-list-item"
+        },
+        "type": "StructuredText"
+      }
+    },
+    "SEO & Metadata": {
+      "meta_title": {
+        "config": {
+          "label": "Meta Title",
+          "placeholder": "A title of the page used for social media and search engines"
+        },
+        "type": "Text"
+      },
+      "meta_description": {
+        "config": {
+          "label": "Meta Description",
+          "placeholder": "A brief summary of the page"
+        },
+        "type": "Text"
+      },
+      "meta_image": {
+        "config": {
+          "constraint": {
+            "height": 1260,
+            "width": 2400
+          },
+          "label": "Meta Image",
+          "thumbnails": []
+        },
+        "type": "Image"
+      }
+    }
+  },
+  "label": "Privacy Policy",
+  "repeatable": false,
+  "status": true
+}

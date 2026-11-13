@@ -12,6 +12,10 @@
     {
       "type": "project",
       "path": "/works/:uid"
+    },
+    {
+      "type": "privacy_policy",
+      "path": "/privacy_policy"
     }
   ]
 }
