@@ -19,10 +19,11 @@ const TRIES = 200;
 
 /**
  * Random, non-overlapping spots. Each coordinate is the mean of two random numbers, so photos
- * cluster toward the middle of the board — the part visible before anyone drags.
+ * cluster toward the middle of the board — the part visible before anyone drags. `reserved` is
+ * the title's box, which photos keep clear of.
  */
-function layout(count) {
-	const placed = [];
+function layout(count, reserved) {
+	const placed = [reserved];
 	const pick = (span) => ((Math.random() + Math.random()) / 2) * span;
 	for (let i = 0; i < count; i++) {
 		const [w, h] = SIZES[i % SIZES.length];
@@ -36,7 +37,7 @@ function layout(count) {
 		}
 		placed.push(spot);
 	}
-	return placed;
+	return placed.slice(1);
 }
 
 /**
@@ -50,7 +51,13 @@ export default function Canvas({ children }) {
 	useGSAP(
 		() => {
 			const photos = gsap.utils.toArray("[data-photo]", board.current);
-			layout(photos.length).forEach((s, i) => {
+			// Title box in board ems (the title is centred on the board).
+			const em = parseFloat(getComputedStyle(board.current).fontSize);
+			const title = board.current.querySelector("[data-title]");
+			const tw = title.offsetWidth / em;
+			const th = title.offsetHeight / em;
+			const reserved = { x: (BOARD.w - tw) / 2, y: (BOARD.h - th) / 2, w: tw, h: th };
+			layout(photos.length, reserved).forEach((s, i) => {
 				gsap.set(photos[i], { left: `${s.x}em`, top: `${s.y}em`, width: `${s.w}em`, height: `${s.h}em`, autoAlpha: 1 });
 			});
 

@@ -18,15 +18,19 @@ const BehindTheScenes = ({ slice }) => {
 			data-slice-variation={slice.variation}
 			className="relative mt-[2em] flex h-[60em] w-full items-center justify-center text-[1vw] max-[1180px]:hidden"
 		>
-			<h2 className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-1/2 text-center text-[6.25em] font-normal text-white mix-blend-color-burn select-none">
-				<span className="bg-black px-[8px]">Behind</span>
-				<br />
-				<span className="bg-black px-[8px]">
-					<span className="font-haffer italic">the </span>Scenes
-				</span>
-			</h2>
 			<div className="relative h-full w-[96%] overflow-hidden border-y border-black">
 				<Canvas>
+					{/* Sits at the board's centre, so it starts mid-frame and moves with the board when dragged. */}
+					<h2
+						data-title
+						className="absolute top-1/2 left-1/2 z-10 -translate-1/2 text-center text-[6.25em] whitespace-nowrap font-normal text-white select-none"
+					>
+						<span className="bg-black px-[8px]">Behind</span>
+						<br />
+						<span className="bg-black px-[8px]">
+							<span className="font-haffer italic">the </span>Scenes
+						</span>
+					</h2>
 					{photos.map((p, i) => (
 						<figure key={i} data-photo className="invisible absolute scale-0 overflow-hidden">
 							<PrismicNextImage field={p.image} alt="" sizes="40vw" className="size-full object-cover" draggable={false} />

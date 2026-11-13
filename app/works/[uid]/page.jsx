@@ -6,6 +6,9 @@ import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import { components } from "@/slices";
 
+// All projects are prerendered (generateStaticParams), so the page may block on params.
+export const instant = false;
+
 export default async function Page({ params }) {
 	const { uid } = await params;
 	const page = (await getPage(uid, await getPreviewRef())) ?? notFound();

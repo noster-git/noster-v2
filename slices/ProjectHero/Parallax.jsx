@@ -7,7 +7,8 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-// Live site moves the photo a fixed -300px → 300px while it crosses the viewport.
+// The hero sits at the very top, so the photo starts in place (no gap above it) and sinks up to
+// 300px while the hero scrolls away — about the same speed as live (~0.25px per px scrolled).
 const DRIFT = 300;
 
 export default function Parallax({ children, className }) {
@@ -17,8 +18,8 @@ export default function Parallax({ children, className }) {
 		gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
 			gsap.fromTo(
 				ref.current,
-				{ y: -DRIFT },
-				{ y: DRIFT, ease: "none", scrollTrigger: { trigger: ref.current, start: "top bottom", end: "bottom top", scrub: true } },
+				{ y: 0 },
+				{ y: DRIFT, ease: "none", scrollTrigger: { trigger: ref.current.parentElement, start: "top top", end: "bottom top", scrub: true } },
 			);
 		});
 	});
