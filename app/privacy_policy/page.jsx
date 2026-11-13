@@ -69,10 +69,8 @@ export async function generateMetadata() {
 async function getPage(ref) {
 	"use cache";
 	cacheLife("max");
-	// Errors thrown inside "use cache" abort prerendering, so a missing page comes back as null → 404.
-	const page = await createClient()
-		.getSingle("privacy_policy", { ref })
-		.catch(() => null);
+	// Not created yet → null → 404 (see queryOrNull for stale preview refs and real errors).
+	const page = await queryOrNull((r) => createClient().getSingle("privacy_policy", { ref: r }), ref);
 	if (page) cacheTagPrismicPages([page]);
 	return page;
 }

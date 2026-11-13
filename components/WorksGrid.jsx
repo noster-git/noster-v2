@@ -43,7 +43,8 @@ const useIsClient = () => useSyncExternalStore(noop, () => true, () => false);
  *
  * @param {{ works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
  */
-export default function WorksGrid({ works }) {
+export default function WorksGrid({ works, headingLevel = 3 }) {
+	const Name = `h${headingLevel}`;
 	const [cursorOn, setCursorOn] = useState(false);
 	const { open, warm } = useProjectTransition();
 	// Cards hovered/pressed so far: each preloads its project's hero photo (below), so the photo that

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { asImageSrc } from "@prismicio/client";
 import { SliceZone } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { createClient, queryOrNull } from "@/prismicio";
 import { components } from "@/slices";
 import { getFooter } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
@@ -26,7 +26,7 @@ export default async function Page() {
 }
 
 export async function generateMetadata() {
-	const page = await getPage(await getPreviewRef()).catch(() => notFound());
+	const page = (await getPage(await getPreviewRef())) ?? notFound();
 	const { meta_title, meta_description, meta_image } = page.data;
 
 	return {
@@ -48,8 +48,7 @@ export async function generateMetadata() {
 async function getPage(ref) {
 	"use cache";
 	cacheLife("max");
-	const client = createClient();
-	const page = await client.getSingle("home", { ref });
-	cacheTagPrismicPages([page]);
+	const page = await queryOrNull((r) => createClient().getSingle("home", { ref: r }), ref);
+	if (page) cacheTagPrismicPages([page]);
 	return page;
 }

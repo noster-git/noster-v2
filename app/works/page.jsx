@@ -1,7 +1,7 @@
 import { cacheLife } from "next/cache";
 import { asImageSrc } from "@prismicio/client";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { createClient, queryOrNull } from "@/prismicio";
 import { toWorks } from "@/slices/FeaturedWorks";
 import WorksGrid from "@/components/WorksGrid";
 import Reveal from "@/components/Reveal";
@@ -25,7 +25,7 @@ export default async function Page() {
 					:{title}
 				</h1>
 			</Reveal>
-			<WorksGrid works={works} />
+			<WorksGrid works={works} headingLevel={2} />
 		</>
 	);
 }
@@ -64,7 +64,7 @@ async function getData(ref) {
 	]);
 	cacheTagPrismicPages(page ? [home, page] : [home]);
 
-	const featured = home.data.slices.find((s) => s.slice_type === "featured_works");
+	const featured = home?.data.slices.find((s) => s.slice_type === "featured_works");
 	return {
 		page,
 		title: page?.data.title || "Our Works",
