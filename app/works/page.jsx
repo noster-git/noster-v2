@@ -1,7 +1,7 @@
 import { cacheLife } from "next/cache";
 import { asImageSrc } from "@prismicio/client";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { createClient, queryOrNull } from "@/prismicio";
 import { toWorks } from "@/slices/FeaturedWorks";
 import WorksGrid from "@/components/WorksGrid";
 import Reveal from "@/components/Reveal";
@@ -56,10 +56,13 @@ async function getData(ref) {
 	cacheLife("max");
 	const client = createClient();
 	// A missing Works page only means the default heading and SEO.
-	const [home, page] = await Promise.all([client.getSingle("home", { ref }), client.getSingle("works", { ref }).catch(() => null)]);
-	cacheTagPrismicPages(page ? [home, page] : [home]);
+	const [home, page] = await Promise.all([
+		queryOrNull((r) => client.getSingle("home", { ref: r }), ref),
+		queryOrNull((r) => client.getSingle("works", { ref: r }), ref),
+	]);
+	cacheTagPrismicPages([home, page].filter(Boolean));
 
-	const featured = home.data.slices.find((s) => s.slice_type === "featured_works");
+	const featured = home?.data.slices.find((s) => s.slice_type === "featured_works");
 	return {
 		page,
 		title: page?.data.title || "Our Works",

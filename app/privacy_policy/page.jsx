@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { asImageSrc } from "@prismicio/client";
 import { PrismicRichText } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { createClient, queryOrNull } from "@/prismicio";
 
 // Live values (1vw font, 3vw on phones ≤580px). Body text is Haffer Regular, subtitles Inter.
 // Block paddings reproduce the live slices' spacing (1em = 1vw above and below each old slice),
@@ -73,10 +73,8 @@ export async function generateMetadata() {
 async function getPage(ref) {
 	"use cache";
 	cacheLife("max");
-	// Errors thrown inside "use cache" abort prerendering, so a missing page comes back as null → 404.
-	const page = await createClient()
-		.getSingle("privacy_policy", { ref })
-		.catch(() => null);
+	// Not created yet → null → 404 (see queryOrNull for stale preview refs and real errors).
+	const page = await queryOrNull((r) => createClient().getSingle("privacy_policy", { ref: r }), ref);
 	if (page) cacheTagPrismicPages([page]);
 	return page;
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { asImageSrc, asText, isFilled } from "@prismicio/client";
 import { SliceZone } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { createClient, queryOrNull } from "@/prismicio";
 import { components } from "@/slices";
 import JsonLd from "@/components/JsonLd";
 import { project } from "@/lib/schema";
@@ -71,10 +71,8 @@ export async function generateStaticParams() {
 async function getPage(uid, ref) {
 	"use cache";
 	cacheLife("max");
-	// Errors thrown inside "use cache" abort prerendering, so a missing page comes back as null → 404.
-	const page = await createClient()
-		.getByUID("project", uid, { ref })
-		.catch(() => null);
+	// A missing project comes back as null → 404 (see queryOrNull for stale preview refs and real errors).
+	const page = await queryOrNull((r) => createClient().getByUID("project", uid, { ref: r }), ref);
 	if (page) cacheTagPrismicPages([page]);
 	return page;
 }
