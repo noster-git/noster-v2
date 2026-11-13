@@ -69,8 +69,8 @@ const FILES = [
 	["components/LineCta.jsx", "Full-width ruled link"],
 	["components/Navigation.jsx", "Header, CTA tag, compact CTA button"],
 	["components/WorksGrid.jsx", "Project grid (Home, /works), card reveals, View pill"],
-	["components/Intro.jsx", "Page-load curtain, its sweep reveal and the header entrance"],
-	["components/SiteSweep.jsx", "Glimm sweep between pages (lib/sweep.js: the shared look)"],
+	["components/Intro.jsx", "Page-load curtain and the header entrance"],
+	["components/PageTransition.jsx", "The curtain between pages (lib/curtain.js: timing shared with the intro)"],
 	["lib/intro.js", "No-flash script and the entrance gate"],
 	["lib/projects.js", "Each project's hero photo, which its card preloads for the open transition"],
 	["components/Footer.jsx", "Footer blocks"],
@@ -463,8 +463,7 @@ export default function Page() {
 						["Card hover", "the View project pill follows the pointer over the photo; no zoom", "Project cards."],
 						["View pill", "scale 0 → 1 · 0.28s · cubic-bezier(0.2, 0.8, 0.2, 1)", "Follows the pointer over project photos."],
 						["Line CTA fill", "0.6s · ease-quart, cubic-bezier(0.76, 0, 0.24, 1)", "Ink fills from the top."],
-						["Curtain", "lime, covers the first paint; wordmark in from a 12px blur · 0.9s · cubic-bezier(0.22, 1, 0.36, 1); covers the page at once on a page change; holds 0.2s once the page is ready; revealed by the page sweep", "Page loads and page changes (Intro, SiteSweep)."],
-						["Page sweep", "glimm band rises up the screen · 0.8s · easeInOutQuint, new page behind it", "Reveals the page from the curtain (lib/sweep.js → PAGE_SWEEP)."],
+						["Curtain", "lime; wordmark in from a 12px blur · 0.9s · cubic-bezier(0.22, 1, 0.36, 1); wipes up over the page and off it · 0.7s · cubic-bezier(0.58, 0.08, 0.13, 1); holds 0.3s once the page is ready", "Page loads and page changes (Intro, PageTransition, lib/curtain.js)."],
 						["Hero entrance", "photo 1.12× → 1 · 2.4s; title lines rise from masks 1.2s · 0.09s apart", "SplitText lines (lib/motion.js → lineRise)."],
 						["Scroll reveal", "fade and rise 32px · 1.1s · expo.out · 0.08s stagger", "<Reveal> with data-reveal children (lib/motion.js)."],
 						["Project cards", "rise 40px, photo unmasks from the bottom (1.3s) and settles from 1.15×", "ScrollTrigger.batch, 90ms apart (360ms at most)."],
@@ -486,12 +485,12 @@ export default function Page() {
 			<Section id="transitions" index={8} title="Transitions" intro="How pages arrive. Nothing is ever shown and then hidden: start states are held by CSS from the first frame.">
 				<Rows
 					items={[
-						["Intro", "every page load: the lime curtain covers the page, its wordmark comes in from a blur; once fonts and the hero are ready it holds 0.2s and the site's glimm sweep rises over it, revealing the page as the hero and header take over", "components/Intro.jsx"],
-						["Page to page", "exactly as a page load: the lime curtain covers the page at once and the new page loads behind it; once its hero photo is ready the curtain holds 0.2s and the glimm sweep reveals the page; its entrances play as it is revealed", "components/SiteSweep.jsx"],
+						["Intro", "every page load: the lime curtain covers the page, its wordmark comes in from a blur; once fonts and the hero are ready it holds 0.3s and wipes up off the page (0.7s) as the hero and header take over", "components/Intro.jsx"],
+						["Page to page", "the lime curtain wipes up over the page (0.7s) and the new page loads behind it; once its hero photo is ready it holds 0.3s and wipes on up off it (0.7s); the new page's entrances play as it is uncovered", "components/PageTransition.jsx"],
 						["Project open", "the card gives on press, then its photo grows out of its place into the project hero (no zoom, rounded corners until the edges, shade fading in) while the page fades out; the project page loads underneath mid-grow, the photo hands over in one frame and the title rises in", "components/ProjectTransition.jsx"],
 						["Entrances", "hero and big titles rise line by line from masks; sections fade and rise; project cards unmask from the bottom", "lib/motion.js, components/Reveal.jsx"],
 						["No flash", "an inline script marks <html> js-anim before the first paint; CSS holds start states only then", "lib/intro.js (INTRO_SCRIPT), globals.css"],
-						["Reduced motion", "no curtain, no sweeps, nothing hidden: pages simply appear", ""],
+						["Reduced motion", "no curtain, nothing hidden: pages simply appear", ""],
 					]}
 					render={([name, what, where]) => (
 						<div className="grid grid-cols-1 gap-x-g desk:grid-cols-10">

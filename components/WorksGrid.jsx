@@ -38,8 +38,8 @@ const useIsClient = () => useSyncExternalStore(noop, () => true, () => false);
  * Project cards on the page grid: the name (Lucide corner-down-right in front, 14 / 16px) above the photo
  * (4:3; on desk shaped per column span so each row is one even height, ≈ 0.29 × the page width),
  * 6px column gaps, 6 lines between rows. With a mouse a "View project" pill follows the pointer over the
- * photos. Clicking a photo grows it into the project hero (components/ProjectTransition.jsx). Card links
- * carry data-glimm-skip: the page sweep (SiteSweep) leaves them to that.
+ * photos. Clicking a photo grows it into the project hero (components/ProjectTransition.jsx); the page
+ * curtain (PageTransition) leaves card links (data-card-media) to that.
  *
  * @param {{ works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
  */
@@ -109,7 +109,6 @@ export default function WorksGrid({ works }) {
 									open(e, work.href);
 								}}
 								data-card-media
-								data-glimm-skip
 								// Press feedback: the card gives a little (0.98) the moment it's pressed, before the photo grows.
 								className={`relative block aspect-[4/3] overflow-hidden rounded-media transition-[scale] duration-100 ease-out active:scale-[0.98] desk-mouse:cursor-none ${shape}`}
 							>

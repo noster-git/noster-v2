@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ProjectTransition from "@/components/ProjectTransition";
 import Intro from "@/components/Intro";
-import SiteSweep from "@/components/SiteSweep";
+import PageTransition from "@/components/PageTransition";
 import NosterLogo from "@/components/NosterLogo";
 import { INTRO_SCRIPT } from "@/lib/intro";
 import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/site";
@@ -55,8 +55,8 @@ export default function RootLayout({ children }) {
           Skip to content
         </a>
         {/* The curtain: a lime panel with the wordmark across its foot. It covers every page load from the
-            first frame (shown when INTRO_SCRIPT has marked the page js-anim, globals.css) until the site's
-            sweep reveals the page behind it (Intro, SiteSweep). */}
+            first frame (shown when INTRO_SCRIPT has marked the page js-anim, globals.css) until it wipes up off
+            the page (Intro), and comes back for page changes (PageTransition). */}
         <div data-curtain aria-hidden="true" className="curtain fixed inset-0 z-[1000] bg-lime text-black">
           <div className="absolute inset-x-0 bottom-0 px-m pb-m">
             <div data-curtain-logo>
@@ -65,22 +65,21 @@ export default function RootLayout({ children }) {
           </div>
         </div>
         <SmoothScroll>
-          {/* Page changes and the load reveal: the site's glimm sweep (every internal link but project cards). */}
-          <SiteSweep>
-            <Intro />
-            {/* In the layout so it survives the route change: a project card's photo grows into the next page's hero. */}
-            <ProjectTransition>
-              <Navigation />
-              {/* data-page: the page content that falls back while a project photo grows (the nav stays put). */}
-              <div data-page>
-                {/* tabIndex -1: the skip link moves focus here, not just the scroll position. */}
-                <main id="main" tabIndex={-1} className="outline-none">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </ProjectTransition>
-          </SiteSweep>
+          {/* The curtain on page load and on every internal link but project cards. */}
+          <Intro />
+          <PageTransition />
+          {/* In the layout so it survives the route change: a project card's photo grows into the next page's hero. */}
+          <ProjectTransition>
+            <Navigation />
+            {/* data-page: the page content that fades while a project photo grows (the nav stays put). */}
+            <div data-page>
+              {/* tabIndex -1: the skip link moves focus here, not just the scroll position. */}
+              <main id="main" tabIndex={-1} className="outline-none">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </ProjectTransition>
         </SmoothScroll>
       </body>
     </html>

@@ -3,28 +3,26 @@
 import { useEffect } from "react";
 import gsap from "gsap";
 import { useLenis } from "lenis/react";
-import { useGlimm } from "glimm/next";
 import { finishIntro } from "@/lib/intro";
 import { EASE } from "@/lib/motion";
-import { CURTAIN_HOLD_MS } from "@/lib/sweep";
+import { CURTAIN_HOLD_MS, CURTAIN_MS, REVEAL_AT, lift } from "@/lib/curtain";
 
 const READY_CAP_MS = 2500; // longest it waits for fonts and the hero media
 
 /**
  * Page-load intro, on every full page load (mounted in the layout, so client-side navigations don't
- * replay it; they run the same curtain and sweep through SiteSweep).
+ * replay it; they run the same curtain through PageTransition).
  *
  *   0.0s   the lime curtain already covers the page (from the first frame, globals.css); the wordmark
  *          across its foot comes in from a blur
  *   ready  fonts and the hero's media (photo or poster, and the video's first frame) have loaded and
- *          decoded (at most 2.5s), then the curtain holds briefly (CURTAIN_HOLD_MS, lib/sweep.js)
- *   reveal the site's glimm sweep (lib/sweep.js) rises over it and reveals the page behind the band;
- *          the page's entrances play as it passes (finishIntro), and the header items drop in
+ *          decoded (at most 2.5s), then the curtain holds briefly (CURTAIN_HOLD_MS, lib/curtain.js)
+ *   lift   it wipes up off the page (0.7s); the page's entrances play as it goes (finishIntro), and the
+ *          header items drop in
  * Reduced motion or no JS: there is no curtain (see INTRO_SCRIPT, lib/intro.js) and this does nothing.
  */
 export default function Intro() {
 	const lenis = useLenis();
-	const { sweep } = useGlimm();
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -54,17 +52,17 @@ export default function Intro() {
 
 		readyNow.then(() =>
 			later(() => {
-				// The page-change sweep (SiteSweep): the band rises over the curtain and the page is revealed
-				// behind it; the curtain goes in the same step as the "navigation".
-				const handle = sweep(() => {
-					curtain.style.display = "none";
-					root.classList.add("intro-skip");
-				});
-				handle.midpoint.then(() => {
-					if (cancelled) return;
-					finishIntro(); // entrances play as the page is revealed
+				const up = lift(curtain);
+				later(() => {
+					finishIntro(); // entrances play as the page is uncovered
 					showNav();
 					lenis?.start();
+				}, CURTAIN_MS * REVEAL_AT);
+				up.finished.then(() => {
+					if (cancelled) return;
+					up.cancel();
+					curtain.style.display = "none"; // PageTransition shows it again for page changes
+					root.classList.add("intro-skip");
 				});
 			}, CURTAIN_HOLD_MS),
 		);

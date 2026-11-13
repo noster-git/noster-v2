@@ -344,8 +344,8 @@ html[data-project-opening] [data-project-title] {
    motion is allowed. Only then are animated elements held in their start state, so they never show,
    vanish and fade back in; GSAP only ever animates them in. Without JS or with reduced motion
    everything is simply visible. */
-/* The curtain (app/layout.js): covers the page from the first frame of a load until Intro's sweep
-   reveals the page. */
+/* The curtain (app/layout.js, lib/curtain.js): covers the page from the first frame of a load until
+   Intro wipes it off; PageTransition brings it back for page changes. */
 .curtain {
   display: none;
 }

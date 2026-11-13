@@ -8,8 +8,8 @@ import { shown, transitioning } from "@/lib/intro";
 
 /**
  * Project open transition: the card photo you click grows out of its place into the project page's
- * hero. (Every other link uses the site's sweep: SiteSweep. Card links carry
- * data-glimm-skip so only this runs for them.)
+ * hero. (Every other link uses the page curtain: PageTransition, which leaves card links,
+ * data-card-media, to this.)
  *
  *   press   the card gives a little (0.98, WorksGrid)
  *   0ms     the photo starts growing from exactly where the card is — fast at first, gliding in to
