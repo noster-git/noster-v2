@@ -1,0 +1,32 @@
+{
+  "id": "project_hero",
+  "name": "Project Hero",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "title": {
+          "config": {
+            "label": "Title",
+            "placeholder": "Project name, location"
+          },
+          "type": "Text"
+        },
+        "image": {
+          "config": {
+            "label": "Image",
+            "constraint": {},
+            "thumbnails": []
+          },
+          "type": "Image"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

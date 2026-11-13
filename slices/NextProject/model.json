@@ -1,0 +1,27 @@
+{
+  "id": "next_project",
+  "name": "Next Project",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "project": {
+          "config": {
+            "label": "Project",
+            "select": "document",
+            "customtypes": [
+              "project"
+            ]
+          },
+          "type": "Link"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

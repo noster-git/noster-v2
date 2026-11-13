@@ -43,3 +43,78 @@ body {
   from { transform: translateX(0); }
   to { transform: translateX(-100%); }
 }
+
+/* Project page photos (slices/ProjectImage). Consecutive photos sit two per row, alternating
+   60/40 then 40/60; every row has the same fixed height from the grid's width (cqw), and photos
+   cover their box so a hover never resizes a row from inside. Phones stack them. */
+.project-images {
+  display: flex;
+  flex-direction: column;
+  gap: 1vw;
+  padding: 0 1.7vw;
+  container-type: inline-size;
+  --img-hover-ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --img-hover-duration: 0.75s;
+}
+.project-images > .project-image:not([data-portrait]) {
+  aspect-ratio: 3 / 2;
+}
+@media (min-width: 681px) {
+  .project-images {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center; /* a portrait's row grows on hover; its partner stays centred */
+    gap: 2vw;
+    padding: 0 2vw;
+  }
+  .project-images > .project-image {
+    flex: 1 1 calc(40% - 1vw);
+    aspect-ratio: auto;
+    height: calc((60cqw - 1vw) * 2 / 3);
+    position: relative;
+  }
+  .project-images > .project-image > .project-image-photo {
+    position: absolute;
+    inset: 0;
+  }
+  .project-images > :nth-child(4n + 1),
+  .project-images > :nth-child(4n) {
+    flex-basis: calc(60% - 1vw);
+  }
+  /* portraits take the narrow slot, their landscape partner the wide one */
+  .project-images > .project-image[data-portrait]:nth-child(n) {
+    flex-basis: calc(40% - 1vw);
+  }
+  .project-images > [data-portrait]:nth-child(odd) + :not([data-portrait]),
+  .project-images > :not([data-portrait]):nth-child(odd):has(+ [data-portrait]) {
+    flex-basis: calc(60% - 1vw);
+  }
+  /* a lone landscape fills one screen; an odd last landscape spans the row, capped at the screen */
+  .project-images > .project-image:not([data-portrait]):only-child {
+    height: 100vh;
+  }
+  .project-images > .project-image:not([data-portrait]):last-child:nth-child(odd):not(:only-child) {
+    height: min(calc(100cqw * 2 / 3), 100vh);
+  }
+  .project-images > [data-portrait]:last-child:nth-child(odd) {
+    flex-grow: 0;
+  }
+}
+/* With a mouse: a landscape widens to 80% (partner 20%); a portrait's row grows to its 2:3 height, max 90vh */
+@media (min-width: 681px) and (hover: hover) {
+  .project-images > .project-image {
+    transition-property: flex-basis, height;
+    transition-duration: var(--img-hover-duration);
+    transition-timing-function: var(--img-hover-ease);
+  }
+  .project-images > .project-image:not([data-portrait]):nth-child(n):hover {
+    flex-basis: calc(80% - 1vw);
+  }
+  .project-images > :not([data-portrait]):nth-child(odd):hover + *,
+  .project-images > :nth-child(odd):has(+ :not([data-portrait]):hover) {
+    flex-basis: calc(20% - 1vw);
+  }
+  .project-images > [data-portrait]:hover {
+    height: min(calc((40cqw - 1vw) * 3 / 2), 90vh);
+  }
+}

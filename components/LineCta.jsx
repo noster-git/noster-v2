@@ -4,9 +4,9 @@ import Link from "next/link";
  * Full-width outlined link (top/bottom rule) that fills black from the top on hover, text turning white.
  * Live site: "View all projects" on Home and /works, "View Next Project" on project pages.
  */
-export default function LineCta({ href, children }) {
+export default function LineCta({ href, children, spacing = "pt-[2em] pb-[8em]" }) {
 	return (
-		<div className="mt-[1em] flex justify-center pt-[2em] pb-[8em] text-[3vw] md:mt-0 md:text-[1vw]">
+		<div className={`mt-[1em] flex justify-center text-[3vw] md:mt-0 md:text-[1vw] ${spacing}`}>
 			<Link href={href} className="group relative z-10 flex w-[96%] border-y border-(--ink)">
 				<span
 					aria-hidden="true"

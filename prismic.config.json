@@ -4,6 +4,10 @@
     {
       "type": "home",
       "path": "/"
+    },
+    {
+      "type": "project",
+      "path": "/works/:uid"
     }
   ]
 }

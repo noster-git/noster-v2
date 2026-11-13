@@ -1,0 +1,47 @@
+{
+  "id": "project_brief",
+  "name": "Project Brief",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "description": {
+          "config": {
+            "label": "Description",
+            "placeholder": "About the project",
+            "multi": "paragraph,strong,em,hyperlink"
+          },
+          "type": "StructuredText"
+        },
+        "details": {
+          "config": {
+            "label": "Details",
+            "fields": {
+              "label": {
+                "config": {
+                  "label": "Label",
+                  "placeholder": "Client"
+                },
+                "type": "Text"
+              },
+              "value": {
+                "config": {
+                  "label": "Value",
+                  "placeholder": "Tryzens"
+                },
+                "type": "Text"
+              }
+            }
+          },
+          "type": "Group"
+        }
+      },
+      "version": ""
+    }
+  ]
+}

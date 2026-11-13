@@ -1,0 +1,33 @@
+{
+  "id": "behind_the_scenes",
+  "name": "Behind the Scenes",
+  "type": "SharedSlice",
+  "variations": [
+    {
+      "description": "Default",
+      "docURL": "",
+      "id": "default",
+      "imageUrl": "",
+      "name": "Default",
+      "primary": {
+        "photos": {
+          "config": {
+            "label": "Photos",
+            "fields": {
+              "image": {
+                "config": {
+                  "label": "Image",
+                  "constraint": {},
+                  "thumbnails": []
+                },
+                "type": "Image"
+              }
+            }
+          },
+          "type": "Group"
+        }
+      },
+      "version": ""
+    }
+  ]
+}
