@@ -6,6 +6,10 @@
       "path": "/"
     },
     {
+      "type": "works",
+      "path": "/works"
+    },
+    {
       "type": "project",
       "path": "/works/:uid"
     }
