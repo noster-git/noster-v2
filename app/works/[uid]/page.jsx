@@ -8,34 +8,14 @@ import { components } from "@/slices";
 
 export default async function Page({ params }) {
 	const { uid } = await params;
-	const page = await getPage(uid, await getPreviewRef()).catch(() => notFound());
+	const page = (await getPage(uid, await getPreviewRef())) ?? notFound();
 
-	return groupImages(page.data.slices).map((group, i) =>
-		group.images ? (
-			<div key={i} className="project-images">
-				<SliceZone slices={group.slices} components={components} />
-			</div>
-		) : (
-			<SliceZone key={i} slices={group.slices} components={components} />
-		),
-	);
-}
-
-/** Runs of consecutive Project Image slices go into one `.project-images` grid so they can pair up. */
-function groupImages(slices) {
-	const groups = [];
-	for (const slice of slices) {
-		const images = slice.slice_type === "project_image";
-		const last = groups.at(-1);
-		if (last && last.images === images) last.slices.push(slice);
-		else groups.push({ images, slices: [slice] });
-	}
-	return groups;
+	return <SliceZone slices={page.data.slices} components={components} />;
 }
 
 export async function generateMetadata({ params }) {
 	const { uid } = await params;
-	const page = await getPage(uid, await getPreviewRef()).catch(() => notFound());
+	const page = (await getPage(uid, await getPreviewRef())) ?? notFound();
 	const { meta_title, meta_description, meta_image } = page.data;
 
 	return {
@@ -60,7 +40,10 @@ export async function generateStaticParams() {
 async function getPage(uid, ref) {
 	"use cache";
 	cacheLife("max");
-	const page = await createClient().getByUID("project", uid, { ref });
-	cacheTagPrismicPages([page]);
+	// Errors thrown inside "use cache" abort prerendering, so a missing page comes back as null → 404.
+	const page = await createClient()
+		.getByUID("project", uid, { ref })
+		.catch(() => null);
+	if (page) cacheTagPrismicPages([page]);
 	return page;
 }

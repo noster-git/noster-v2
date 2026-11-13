@@ -18,7 +18,7 @@
             "project_brief": {
               "type": "SharedSlice"
             },
-            "project_image": {
+            "project_images": {
               "type": "SharedSlice"
             },
             "behind_the_scenes": {

@@ -26,7 +26,7 @@ const ProjectBrief = ({ slice }) => (
 			{slice.primary.details.map((item, i) => (
 				<div key={i} className="mt-[2.5em] w-[45%] md:w-[42%]">
 					<dt className="text-[0.8em] text-[#31331B]">{item.label}</dt>
-					<dd className="w-[90%] pt-[0.5em]">{item.value}</dd>
+					<dd className="w-[90%] pt-[0.5em] whitespace-pre-line">{item.value}</dd>
 				</div>
 			))}
 		</dl>

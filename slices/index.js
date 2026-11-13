@@ -9,7 +9,7 @@ import NextProject from "./NextProject";
 import OurApproach from "./OurApproach";
 import ProjectBrief from "./ProjectBrief";
 import ProjectHero from "./ProjectHero";
-import ProjectImage from "./ProjectImage";
+import ProjectImages from "./ProjectImages";
 
 export const components = {
 	behind_the_scenes: BehindTheScenes,
@@ -21,5 +21,5 @@ export const components = {
 	our_approach: OurApproach,
 	project_brief: ProjectBrief,
 	project_hero: ProjectHero,
-	project_image: ProjectImage
+	project_images: ProjectImages
 };

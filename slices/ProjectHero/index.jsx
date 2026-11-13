@@ -21,7 +21,7 @@ const ProjectHero = ({ slice }) => (
 			</Parallax>
 		</div>
 		<div className="flex items-center justify-center">
-			<h1 className="w-[82%] text-center text-[3em] font-normal md:text-[5em]">{slice.primary.title}</h1>
+			<h1 className="w-[82%] text-center whitespace-pre-line text-[3em] font-normal md:text-[5em]">{slice.primary.title}</h1>
 		</div>
 	</section>
 );
