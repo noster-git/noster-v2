@@ -15,7 +15,7 @@ const ProjectBrief = ({ slice }) => (
 		className="flex flex-col px-[2vw] pt-[5vw] pb-[6vw] text-[3vw] md:flex-row md:items-start md:justify-between md:pt-[2vw] md:pb-[4vw] md:text-[1.4vw] lg:text-[1vw]"
 	>
 		<div className="md:w-[54%]">
-			<p className="text-[1.1em]">The Project</p>
+			<h2 className="text-[2em] font-medium">The Project</h2>
 			<div className="pt-[1em] pb-[2em] md:pb-0">
 				<div className="w-[85%] text-[1.1em] leading-[144%] tracking-[-0.352px]">
 					<PrismicRichText field={slice.primary.description} />

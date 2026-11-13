@@ -24,7 +24,7 @@ export default async function Page() {
 					:{title}
 				</h1>
 			</Reveal>
-			<WorksGrid works={works} />
+			<WorksGrid works={works} headingLevel={2} />
 		</>
 	);
 }

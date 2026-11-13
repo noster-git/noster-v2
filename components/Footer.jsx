@@ -16,6 +16,9 @@ export async function getFooter() {
 
 // Old .footer-texts: 0.86em of the footer size (1.4em on phones), Haffer.
 const TXT = "text-[0.86em] max-[680px]:text-[1.4em]";
+// Footer headings (city names, socials title): a step above the address text, in medium-weight
+// Haffer (the footer body uses a Regular-only Haffer face that has no medium).
+const HEAD = "font-haffer text-[1.15em] font-medium max-[680px]:text-[1.87em]";
 
 // The desktop copy has the 0.8em gap and 1.2em line-height; the phone copy (under the socials) has neither, like live.
 function Rights({ rights, copyright, className, spaced }) {
@@ -52,7 +55,7 @@ export default async function Footer() {
 				<div className="flex w-[55%] gap-[4em] max-[1500px]:w-[66%] max-[1200px]:w-[90%] max-[1200px]:gap-[2em] max-[680px]:flex-wrap">
 					{offices.map((office, i) => (
 						<div key={i} className="flex flex-col">
-							<p className={`${TXT} mb-[0.8em] font-bold`}>{office.city}</p>
+							<h2 className={`${HEAD} mb-[0.8em]`}>{office.city}</h2>
 							<p className={`${TXT} mb-[0.8em] grow leading-[1.4em] text-[grey] max-[1500px]:w-[90%]`}>{office.address}</p>
 							{isFilled.link(office.directions_link) && (
 								<PrismicNextLink field={office.directions_link} className={`${TXT} mb-[0.6em] flex items-center gap-[0.26em] font-bold underline`}>
@@ -72,7 +75,7 @@ export default async function Footer() {
 
 			<div className="flex w-[20%] items-start justify-end gap-[3em] max-[680px]:w-full max-[680px]:flex-col max-[680px]:gap-[2em]">
 				<div>
-					<p className={`${TXT} mb-[0.8em]`}>{socials_title}</p>
+					<h2 className={`${HEAD} mb-[0.8em]`}>{socials_title}</h2>
 					<ul className="flex flex-col gap-[0.3em]">
 						{socials.map((s, i) =>
 							isFilled.link(s.link) ? (

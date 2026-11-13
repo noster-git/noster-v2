@@ -21,7 +21,7 @@ const OurApproach = ({ slice }) => {
 					<PrismicRichText
 						field={slice.primary.title}
 						components={{
-							heading2: ({ children }) => <h2 className="text-[1.1em] leading-[normal] font-normal">{children}</h2>,
+							heading2: ({ children }) => <h2 className="text-[2em] leading-[normal] font-medium">{children}</h2>,
 						}}
 					/>
 				</div>

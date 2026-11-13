@@ -37,7 +37,7 @@ const Collaborators = ({ slice }) => {
 				<PrismicRichText
 					field={slice.primary.title}
 					components={{
-						heading2: ({ children }) => <h2 className="text-[1.1em] font-normal">{children}</h2>,
+						heading2: ({ children }) => <h2 className="text-[2em] font-medium">{children}</h2>,
 					}}
 				/>
 			</div>
