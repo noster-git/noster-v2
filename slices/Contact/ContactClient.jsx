@@ -58,7 +58,7 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 	const quint = "duration-600 ease-[cubic-bezier(0.85,0,0.15,1)]";
 	const line = `absolute left-0 h-[2px] bg-(--ink) transition-all duration-800 ease-[cubic-bezier(0.83,0,0.17,1)] ${lines ? "w-full" : "w-0"}`;
 	// Lime once the page is dark, like live.
-	const heading = "text-[5.5em] leading-[normal] font-normal tracking-[-0.55vw] my-[0.25em] md:my-0 md:text-[86px] md:tracking-[-0.16669vw] lg:text-[10.375em] [[data-theme=dark]_&]:text-lime transition-colors duration-300 ease-quart";
+	const heading = "text-[86px] leading-[normal] font-normal tracking-[-0.55vw] my-[0.25em] md:my-0 md:tracking-[-0.16669vw] lg:text-[10.375em] [[data-theme=dark]_&]:text-lime transition-colors duration-300 ease-quart";
 
 	return (
 		<section

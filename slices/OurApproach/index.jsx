@@ -25,7 +25,8 @@ const OurApproach = ({ slice }) => {
 						}}
 					/>
 				</div>
-				<div data-reveal className="w-[90%] md:w-[45%]">
+				{/* pb-[1em]: live has an empty CTA box (margin-top 1em) under the text */}
+				<div data-reveal className="w-[90%] pb-[1em] md:w-[45%]">
 					<div className="w-[85%] text-[1.1em] leading-[1.44] tracking-[-0.022vw] [&>p+p]:mt-[1.44em]">
 						<PrismicRichText field={slice.primary.description} />
 					</div>
