@@ -14,3 +14,14 @@ export const haffer = localFont({
   variable: "--font-haffer-face",
   display: "swap",
 });
+
+// Regular-only Haffer, like the live site's "haffer-R" family: bold text in it is synthesized
+// from Regular (not the real Bold cut), which is how the live footer looks.
+export const hafferRegular = localFont({
+  src: [
+    { path: "./Haffer-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./Haffer-RegularItalic.woff2", weight: "400", style: "italic" },
+  ],
+  variable: "--font-haffer-r-face",
+  display: "swap",
+});

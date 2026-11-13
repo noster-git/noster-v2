@@ -17,11 +17,12 @@ async function getFooter() {
 // Old .footer-texts: 0.86em of the footer size (1.4em on phones), Haffer.
 const TXT = "text-[0.86em] max-[680px]:text-[1.4em]";
 
-function Rights({ rights, copyright, className }) {
+// The desktop copy has the 0.8em gap and 1.2em line-height; the phone copy (under the socials) has neither, like live.
+function Rights({ rights, copyright, className, spaced }) {
 	return (
 		<div className={`flex-col ${className}`}>
-			<p className={`${TXT} mb-[0.8em]`}>{rights}</p>
-			<p className={`${TXT} leading-[1.2em]`}>{copyright}</p>
+			<p className={`${TXT} ${spaced ? "mb-[0.8em]" : ""}`}>{rights}</p>
+			<p className={`${TXT} ${spaced ? "leading-[1.2em]" : ""}`}>{copyright}</p>
 		</div>
 	);
 }
@@ -44,9 +45,9 @@ export default async function Footer() {
 	const { rights_text, copyright_text, offices, socials_title, socials } = footer.data;
 
 	return (
-		<footer className="relative flex justify-between bg-white px-[2vw] pt-[7vw] pb-[6vw] font-haffer text-[1vw] text-[rgb(20,18,14)] max-[1500px]:text-[1.2vw] max-[1200px]:text-[1.4vw] max-[680px]:flex-col max-[680px]:pt-[4vw] max-[680px]:pb-[8vw] max-[680px]:text-[3vw]">
+		<footer className="relative flex justify-between bg-white px-[2vw] pt-[7vw] pb-[6vw] font-(family-name:--font-haffer-r-face) text-[1vw] text-[rgb(20,18,14)] max-[1500px]:text-[1.2vw] max-[1200px]:text-[1.4vw] max-[680px]:flex-col max-[680px]:pt-[4vw] max-[680px]:pb-[8vw] max-[680px]:text-[3vw]">
 			<div className="flex gap-[8em] max-[1200px]:gap-[2em] max-[680px]:mb-[2em] max-[680px]:flex-col">
-				<Rights rights={rights_text} copyright={copyright_text} className="flex w-[10%] max-[680px]:hidden" />
+				<Rights rights={rights_text} copyright={copyright_text} className="flex w-[10%] max-[680px]:hidden" spaced />
 
 				<div className="flex w-[55%] gap-[4em] max-[1500px]:w-[66%] max-[1200px]:w-[90%] max-[1200px]:gap-[2em] max-[680px]:flex-wrap">
 					{offices.map((office, i) => (
@@ -61,7 +62,7 @@ export default async function Footer() {
 							)}
 							{office.phone && (
 								<a href={`tel:${office.phone.replace(/\s+/g, "")}`} className={`${TXT} mt-[0.1em] flex w-full items-center gap-[0.26em]`}>
-									<b className="underline">{office.phone}</b> (Sales)
+									<b className="shrink-0 underline">{office.phone}</b> (Sales)
 								</a>
 							)}
 						</div>
