@@ -1,0 +1,30 @@
+/* Motion for the style guide page's own chrome (not the site's motion, which the page documents). */
+/* Plain CSS, not a CSS module: next.config.mjs routes every *.css through the Tailwind loader as global CSS. Classes are sg- prefixed; names live in motion.js. Letter roll and arrow swap are site-wide, in app/globals.css. */
+
+/* Entrance: rise 36px and fade in, 0.9s ease-out-quint. */
+.sg-enter {
+  animation: sg-enter 0.9s var(--ease-out-quint) both;
+}
+@keyframes sg-enter {
+  from { opacity: 0; transform: translateY(36px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll reveal (Rise.jsx): opacity 0.8s, rise 28px over 1s, staggered 0.11s in groups of three.
+   Only hides content once JS has marked the wrapper ready, so nothing stays hidden without JS. */
+.sg-ready [data-rise] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s ease var(--d, 0s),
+    transform 1s var(--ease-out-quint) var(--d, 0s);
+}
+.sg-ready.sg-in [data-rise] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-enter { animation: none; }
+  .sg-ready [data-rise] { opacity: 1; transform: none; transition: none; }
+}

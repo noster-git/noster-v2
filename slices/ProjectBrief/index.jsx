@@ -1,36 +1,35 @@
 import { PrismicRichText } from "@prismicio/react";
+import Reveal from "@/components/Reveal";
 
 /**
- * "The Project" description on the left, label/value details (Client, Sector, …) in two columns on the right.
- * Live values: 1vw font (1.4vw tablet, 3vw phone); description 1.1em, 144% line height, -0.352px tracking.
+ * "The Project": a label in columns 1–3, the description as a lead statement across columns 4–10,
+ * then the label/value details (Client, Sector, …) three to a row underneath (two on compact layouts).
+ * As the section scrolls in (Reveal): the label fades up, the statement rises line by line, then the
+ * details fade up one after another.
  *
  * @typedef {import("@prismicio/client").Content.ProjectBriefSlice} ProjectBriefSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<ProjectBriefSlice>} ProjectBriefProps
  * @type {import("react").FC<ProjectBriefProps>}
  */
 const ProjectBrief = ({ slice }) => (
-	<section
-		data-slice-type={slice.slice_type}
-		data-slice-variation={slice.variation}
-		className="flex flex-col px-[2vw] pt-[5vw] pb-[6vw] text-[3vw] md:flex-row md:items-start md:justify-between md:pt-[2vw] md:pb-[4vw] md:text-[1.4vw] lg:text-[1vw]"
-	>
-		<div className="md:w-[54%]">
-			<h2 className="text-[2em] font-medium">The Project</h2>
-			<div className="pt-[1em] pb-[2em] md:pb-0">
-				<div className="w-[85%] text-[1.1em] leading-[144%] tracking-[-0.352px]">
-					<PrismicRichText field={slice.primary.description} />
-				</div>
+	<Reveal data-slice-type={slice.slice_type} data-slice-variation={slice.variation} className="grid-site px-m pt-6 pb-6">
+		<p data-reveal className="col-span-5 mb-2 desk:col-span-3 desk:mb-0">
+			The project
+		</p>
+		<div className="col-span-5 desk:col-span-7">
+			<div data-reveal="lines" className="text-brief text-pretty [&>p+p]:mt-[1em]">
+				<PrismicRichText field={slice.primary.description} />
 			</div>
+			<dl className="mt-4 grid grid-cols-2 gap-x-g gap-y-2 desk:grid-cols-3">
+				{slice.primary.details.map((item, i) => (
+					<div key={i} data-reveal>
+						<dt className="text-muted">{item.label}</dt>
+						<dd className="whitespace-pre-line">{item.value}</dd>
+					</div>
+				))}
+			</dl>
 		</div>
-		<dl className="mt-[1em] flex flex-wrap items-start justify-between md:mt-0 md:w-[45.75%]">
-			{slice.primary.details.map((item, i) => (
-				<div key={i} className="mt-[2.5em] w-[45%] md:w-[42%]">
-					<dt className="text-[0.8em] text-[#31331B]">{item.label}</dt>
-					<dd className="w-[90%] pt-[0.5em] whitespace-pre-line">{item.value}</dd>
-				</div>
-			))}
-		</dl>
-	</section>
+	</Reveal>
 );
 
 export default ProjectBrief;

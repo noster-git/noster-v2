@@ -4,7 +4,7 @@ export default function JsonLd({ data }) {
 		<script
 			type="application/ld+json"
 			// "<" escaped so content can't close the script tag.
-			dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\u003c") }}
+			dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
 		/>
 	);
 }

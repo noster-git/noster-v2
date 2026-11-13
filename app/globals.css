@@ -1,120 +1,426 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
+/* ── Design system ──────────────────────────────────────────────────────────────────────────
+   Documented at /style-guide. Two layouts:
+   - compact (base): phones (<768px)
+   - desk (`desk:`): ≥768px — tablets, small laptops and desktops share one layout; type steps up again at ≥1800px
+   Grid: 5 columns compact / 10 desk (`grid-site`), 6px column gaps (`g`); page margins (`m`) 12px compact, 24px desk.
+   Spacing: one unit (`p-1`) = 10.5px at 1440 (scaling with the page below it), 11.2px wide; compact is
+   30% tighter (7.35px). Heroes: full screen on desk, half the screen on phones (--hero-h). Type sizes are fixed px except the display tiers. */
+
+@custom-variant desk {
+  @media (min-width: 768px) {
+    @slot;
+  }
+}
+/* desk with a mouse. Don't stack desk: with another media variant: Tailwind nests the comma list into invalid CSS. */
+@custom-variant desk-mouse {
+  @media (min-width: 768px) and (hover: hover) {
+    @slot;
+  }
+}
+
+:root {
+  /* compact. Type steps 12 → 14 → 17 → 19 → 26px (about 1.2× each), lines loosening as sizes shrink. */
+  --fs: 12px; /* body size */
+  --bl: 16px; /* body line */
+  --su: 7.35px; /* spacing unit: 30% tighter than desk */
+  --hero-h: 50svh; /* home and project heroes */
+  --t-name: 14px;
+  --t-long: 14px;
+  --t-long-lh: 21px;
+  --t-heading: 19px;
+  --t-lead: 19px;
+  --t-brief: 17px;
+  --t-brief-lh: 1.35;
+  --t-lead-lh: 1.25;
+  --t-title: 26px;
+  --t-title-lh: 1.1;
+  --t-display: 12vw;
+  --r-media: 3px;
+  --pm: 12px; /* page margin */
+  /* 1/90 of the page width, held between 768 and 1500px: scales the desk tiers, spacing and margins */
+  --hf: calc(clamp(768px, 100vw, 1500px) / 90);
+}
+@media (min-width: 768px) {
+  :root {
+    --fs: 12px;
+    --bl: 15px;
+    /* Below 1440 the layout scales down with the page (--hf is 16px at 1440), so a small laptop looks
+       like 1440. Floors keep everything legible; body (12px) and long-form text don't shrink. */
+    --su: max(7.35px, var(--hf) * 0.65625); /* 10.5px at 1440 */
+    --hero-h: 100svh;
+    --t-name: max(14px, var(--hf)); /* 16px at 1440 */
+    --t-long: 14px;
+    --t-long-lh: 21px;
+    --t-heading: max(20px, var(--hf) * 2); /* 32px at 1440 */
+    --t-lead: max(20px, var(--hf) * 2, 2.1vw); /* 32px at 1440, grows with the page above 1520 */
+    --t-brief: max(17px, var(--hf) * 1.5); /* 24px at 1440 */
+    --t-brief-lh: 1.3;
+    --t-lead-lh: 1.1;
+    --t-title: max(28px, var(--hf) * 2.88); /* 46px at 1440 */
+    --t-title-lh: 1.02;
+    --t-display: calc(var(--hf) * 7.2); /* 115px at 1440 */
+    --r-media: 6px;
+    --pm: max(16px, var(--hf) * 1.5); /* 24px at 1440 */
+  }
+}
+@media (min-width: 1800px) {
+  :root {
+    --fs: 13px;
+    --bl: 16px;
+    --su: 11.2px;
+    --t-lead-lh: 1.05;
+  }
+}
+
 @theme {
-  /* Breakpoints match the live site: phone ≤680, tablet 681–1200, laptop/desktop ≥1201 */
-  --breakpoint-md: 681px;
-  --breakpoint-lg: 1201px;
-
-
   --color-lime: #d3fd5e;
+  --color-muted: #666; /* 5.7:1 on white: passes WCAG AA for small text */
 
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --radius-ui: 6px;
 }
 
-/* Like the live site: Inter is the default; Haffer is opted into per section with `font-haffer`.
-   `inline` because these point at the next/font variables set on <html>. */
+/* `inline`: these resolve the responsive variables above at the point of use. */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-haffer: var(--font-haffer-face), ui-sans-serif, system-ui, sans-serif;
+  /* Geist is the site font, loaded with next/font in app/layout.js. */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+
+  --spacing: var(--su); /* p-1 = one unit, p-8 = eight */
+  --spacing-g: 6px; /* gutter: grid and column gaps */
+  --spacing-m: var(--pm); /* page margin: 12px compact, 24px desk */
+
+  --radius-media: var(--r-media); /* 3px compact, 6px desk: photos and video */
+
+  /* Type scale. Each `text-<name>` sets size, line height, tracking and weight. */
+  --text-body: var(--fs); /* 12 / 12 / 13px — everything that is read */
+  --text-body--line-height: var(--bl);
+  --text-body--letter-spacing: -0.025em;
+
+  --text-name: var(--t-name); /* 14 / 16px — project card names */
+  --text-name--line-height: 1.2;
+  --text-name--letter-spacing: -0.02em;
+
+  --text-long: var(--t-long); /* 14px — long-form reading (privacy policy) */
+  --text-long--line-height: var(--t-long-lh);
+
+  --text-heading: var(--t-heading); /* 19 / 32px — card and block headings */
+  --text-heading--line-height: 1;
+  --text-heading--letter-spacing: -0.025em;
+
+  --text-lead: var(--t-lead); /* 19 / 32px+ — intros and statements, light */
+  --text-lead--line-height: var(--t-lead-lh);
+  --text-lead--letter-spacing: -0.015em;
+  --text-lead--font-weight: 300;
+
+  --text-brief: var(--t-brief); /* 17 / 24px — project descriptions, light */
+  --text-brief--line-height: var(--t-brief-lh);
+  --text-brief--letter-spacing: -0.015em;
+  --text-brief--font-weight: 300;
+
+  --text-title: var(--t-title); /* 26 / 46px — page and section titles, light */
+  --text-title--line-height: var(--t-title-lh);
+  --text-title--letter-spacing: -0.025em;
+  --text-title--font-weight: 300;
+
+  --text-display: var(--t-display); /* 12vw / 115px — one big word or line */
+  --text-display--line-height: 0.8;
+  --text-display--letter-spacing: -0.055em;
 }
 
-/* Page colours. The Contact slice flips the whole page to dark (black ground, white text) as it scrolls in, like live. */
+/* The page grid: 5 columns compact, 10 desk, 6px gaps. Children place themselves with col-span-*. */
+@utility grid-site {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 6px;
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+/* No visible scrollbar (Lenis drives the scrolling). Scrolling is paused (lenis.stop) under the
+   curtain and while a project opens; with a scrollbar, that would drop it and make the whole page
+   reflow sideways (17px on Windows) mid-transition, and leave a strip beside the curtain. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Page colours. */
 html {
   --paper: #fff;
   --ink: #000;
+  color-scheme: light;
+  /* Keyboard focus and anchor jumps stop clear of the fixed nav (top) and the phone CTA (bottom). */
+  scroll-padding-top: 48px;
+  scroll-padding-bottom: 80px;
+  /* Taps: no double-tap zoom delay on controls, and no grey flash (every control has its own hover/press state). */
+  -webkit-tap-highlight-color: transparent;
+  /* Text rendering for the whole document (body and anything portalled outside it): greyscale
+     antialiasing (macOS and iOS; Windows always uses ClearType, which pages can't change), proper
+     kerning and ligatures, and no text size boosting on rotated phones. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
-html[data-theme="dark"] {
-  --paper: #000;
-  --ink: #fff;
+
+/* No rubber-band bounce with a mouse or trackpad; touch keeps it (and pull-to-refresh). */
+@media (pointer: fine) {
+  html {
+    overscroll-behavior: none;
+  }
+}
+
+@layer base {
+  a,
+  button,
+  input,
+  label,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  /* Headings break into even lines; paragraphs avoid a single word on the last line. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p,
+  li {
+    text-wrap: pretty;
+  }
+  /* Touch screens: fields at 16px or more, or iOS Safari zooms the page in when one is focused. */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
 }
 
 body {
-  @apply font-sans antialiased;
+  @apply font-sans text-body antialiased;
   background-color: var(--paper);
   color: var(--ink);
   transition: background-color 0.3s var(--ease-quart), color 0.3s var(--ease-quart);
-  /* Live site never set a line-height, so text uses the browser default ("normal"), not Tailwind's 1.5. */
-  line-height: normal;
 }
 
-/* Collaborators logo strip */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
+/* ── Hover motion (components/RollText.jsx, components/Arrow.jsx) ───────────────────────────
+   Put `motion-host` on the link or button; its RollText and Arrow children play on hover/focus. */
+
+/* Letter roll: each letter slides up to an identical copy, 0.55s quart, 16ms apart. */
+.roll {
+  display: inline-flex;
+  white-space: pre;
+}
+.roll-letter {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+  line-height: 1.2em;
+  vertical-align: top;
+}
+.roll-letter > span {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+  transition: transform 0.55s var(--ease-quart) calc(var(--i) * 16ms);
+}
+.motion-host:hover .roll-letter > span,
+.motion-host:focus-visible .roll-letter > span {
+  transform: translateY(-100%);
 }
 
-/* Project page photos (slices/ProjectImage). Consecutive photos sit two per row, alternating
-   60/40 then 40/60; every row has the same fixed height from the grid's width (cqw), and photos
-   cover their box so a hover never resizes a row from inside. Phones stack them. */
-.project-images {
+/* Arrow swap: the arrow leaves right and a copy enters from the left 80ms later, 0.5s quart. */
+.arrow {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 0.9em;
+  height: 0.9em;
+  flex: 0 0 0.9em;
+  vertical-align: -0.05em;
+}
+.arrow > span {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
-  gap: 1vw;
-  padding: 0 1.7vw;
-  container-type: inline-size;
-  --img-hover-ease: cubic-bezier(0.33, 1, 0.68, 1);
-  --img-hover-duration: 0.75s;
+  transition: transform 0.5s var(--ease-quart);
 }
-.project-images > .project-image:not([data-portrait]) {
-  aspect-ratio: 3 / 2;
+.arrow > span:last-child {
+  transform: translateX(-140%);
 }
-@media (min-width: 681px) {
+.motion-host:hover .arrow > span:first-child,
+.motion-host:focus-visible .arrow > span:first-child {
+  transform: translateX(140%);
+}
+.motion-host:hover .arrow > span:last-child,
+.motion-host:focus-visible .arrow > span:last-child {
+  transform: none;
+  transition-delay: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll-letter > span,
+  .arrow > span {
+    transition: none !important;
+  }
+}
+
+/* Collaborators logos (slices/Collaborators/LogoShuffle). Greyscale at 80% until hovered, then full colour.
+   Swaps blur the old logo out and the new one in on the same spot. Blur and opacity sit on the img
+   itself, not a wrapper, so mix-blend-multiply still reaches the page behind. */
+.logo-slot { --gray: 1; --fade: 0.8; }
+@media (hover: hover) {
+  .logo-slot:hover { --gray: 0; --fade: 1; }
+}
+.logo-slot .logo {
+  filter: grayscale(var(--gray)) blur(0);
+  opacity: var(--fade);
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+/* Wave: each slot waits its --delay (stagger), then the old logo
+   lifts 20px and blurs out while the new one rises 20px and sharpens, both at once, 0.5s ease-in-out. */
+.logo-slot .logo-out { animation: logo-out 0.5s ease-in-out var(--delay, 0s) both; }
+.logo-slot .logo-in { animation: logo-in 0.5s ease-in-out var(--delay, 0s) backwards; }
+@keyframes logo-out {
+  to { opacity: 0; filter: grayscale(var(--gray)) blur(8px); transform: translateY(-20px); }
+}
+@keyframes logo-in {
+  from { opacity: 0; filter: grayscale(var(--gray)) blur(8px); transform: translateY(20px); }
+}
+
+/* Project page photos (slices/ProjectImages): a masonry, two columns on desk, one on compact.
+   Each photo keeps its own shape, so nothing is cropped and no row leaves a gap. 6px gaps,
+   page-margin sides; every photo has the media radius. */
+.project-images {
+  padding: 0 var(--pm);
+  column-gap: 6px;
+}
+.project-images > .project-image {
+  break-inside: avoid;
+  margin-bottom: 6px;
+}
+@media (min-width: 768px) {
   .project-images {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center; /* a portrait's row grows on hover; its partner stays centred */
-    gap: 2vw;
-    padding: 0 2vw;
-  }
-  .project-images > .project-image {
-    flex: 1 1 calc(40% - 1vw);
-    aspect-ratio: auto;
-    height: calc((60cqw - 1vw) * 2 / 3);
-    position: relative;
-  }
-  .project-images > .project-image > .project-image-photo {
-    position: absolute;
-    inset: 0;
-  }
-  .project-images > :nth-child(4n + 1),
-  .project-images > :nth-child(4n) {
-    flex-basis: calc(60% - 1vw);
-  }
-  /* portraits take the narrow slot, their landscape partner the wide one */
-  .project-images > .project-image[data-portrait]:nth-child(n) {
-    flex-basis: calc(40% - 1vw);
-  }
-  .project-images > [data-portrait]:nth-child(odd) + :not([data-portrait]),
-  .project-images > :not([data-portrait]):nth-child(odd):has(+ [data-portrait]) {
-    flex-basis: calc(60% - 1vw);
-  }
-  /* a lone landscape fills one screen; an odd last landscape spans the row, capped at the screen */
-  .project-images > .project-image:not([data-portrait]):only-child {
-    height: 100vh;
-  }
-  .project-images > .project-image:not([data-portrait]):last-child:nth-child(odd):not(:only-child) {
-    height: min(calc(100cqw * 2 / 3), 100vh);
-  }
-  .project-images > [data-portrait]:last-child:nth-child(odd) {
-    flex-grow: 0;
+    columns: 2;
   }
 }
-/* With a mouse: a landscape widens to 80% (partner 20%); a portrait's row grows to its 2:3 height, max 90vh */
-@media (min-width: 681px) and (hover: hover) {
-  .project-images > .project-image {
-    transition-property: flex-basis, height;
-    transition-duration: var(--img-hover-duration);
-    transition-timing-function: var(--img-hover-ease);
+
+/* ── Project open transition (components/ProjectTransition.jsx) ──────────────────────────────
+   The clicked card's photo grows (from the click's next frame) until it fills the screen exactly as
+   the project hero; then the page changes under it and it hands over in one frame.
+   data-project-opening is set from the click until that hand-over, never on a normal page load:
+   the "View" tag leaves at once; the project title waits, then rises in. The transition is only for that
+   hand-over (TitleRise drops data-split then); on a normal load the lines rise and nothing fades. */
+html[data-project-opening] [data-view-cursor] {
+  visibility: hidden;
+}
+[data-project-title]:not([data-split]) {
+  transition:
+    opacity 500ms var(--ease-out-quint),
+    translate 500ms var(--ease-out-quint);
+}
+html[data-project-opening] [data-project-title] {
+  opacity: 0;
+  translate: 0 16px;
+  transition: none;
+}
+
+/* ── Page-load intro and reveals (components/Intro.jsx, components/Reveal.jsx, slices/Hero) ──────
+   INTRO_SCRIPT (lib/intro.js) adds .js-anim to <html> before the first paint when JavaScript runs and
+   motion is allowed. Only then are animated elements held in their start state, so they never show,
+   vanish and fade back in; GSAP only ever animates them in. Without JS or with reduced motion
+   everything is simply visible. */
+/* The curtain (app/layout.js, lib/curtain.js): covers the page from the first frame of a load until
+   Intro wipes it off; PageTransition brings it back for page changes. */
+.curtain {
+  display: none;
+}
+.js-anim:not(.intro-skip) .curtain {
+  display: block;
+}
+/* Its wordmark comes in from a blur each time the curtain is shown. */
+.curtain [data-curtain-logo] {
+  animation: curtain-wordmark 0.9s var(--ease-out-quint) 0.1s both;
+}
+@keyframes curtain-wordmark {
+  from {
+    opacity: 0;
+    filter: blur(12px);
   }
-  .project-images > .project-image:not([data-portrait]):nth-child(n):hover {
-    flex-basis: calc(80% - 1vw);
+}
+.js-anim [data-intro],
+.js-anim [data-reveal],
+.js-anim [data-hero-line],
+.js-anim [data-card],
+.js-anim [data-split],
+.js-anim [data-fade] {
+  opacity: 0;
+}
+/* Footer entrance (components/FooterMotion.jsx): the wordmark waits below its mask, the rules undrawn. */
+.js-anim [data-footer-mark] {
+  transform: translateY(100%);
+}
+[data-rule] {
+  transform-origin: left;
+}
+.js-anim [data-rule] {
+  transform: scaleX(0);
+}
+
+/* Keyboard focus: a clear ring on every link, button and field, only for keyboard users. The ring
+   follows each element's own corners (no border-radius here: it would square off rounded cards).
+   Over photos or the blended nav, elements switch it to white (focus-visible:outline-white). */
+@layer base {
+  /* In the base layer so focus-visible:outline-* utilities can override it. */
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
   }
-  .project-images > :not([data-portrait]):nth-child(odd):hover + *,
-  .project-images > :nth-child(odd):has(+ :not([data-portrait]):hover) {
-    flex-basis: calc(20% - 1vw);
+}
+
+/* Hit area: at least 24px with a mouse, 44px on touch, centred on the element, without changing its
+   layout. Only for controls with nothing interactive close by (overlapping areas steal each other's taps). */
+@utility hit {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    translate: -50% -50%;
   }
-  .project-images > [data-portrait]:hover {
-    height: min(calc((40cqw - 1vw) * 3 / 2), 90vh);
+  @media (pointer: coarse) {
+    &::after {
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+    }
   }
+}
+/* The hero photo starts slightly zoomed and settles as the curtain lifts (first visit only). */
+.js-anim:not(.intro-skip) [data-hero-media] {
+  transform: scale(1.12);
+}
+/* SplitText line masks (hero, Contact, project titles): room below each line inside its clip, so
+   descenders (g, y, p) are not cut on tight line heights; the negative margin keeps the line spacing unchanged. */
+[data-split] > div,
+[data-hero-title] h1 > div,
+.reveal-line-mask {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
 }

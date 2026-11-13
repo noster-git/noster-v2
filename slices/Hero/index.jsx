@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { isFilled } from "@prismicio/client";
 import { PrismicRichText } from "@prismicio/react";
-import { PrismicNextImage } from "@prismicio/next";
+import Img from "@/components/Img";
 import HeroClient from "./HeroClient";
 
 // Used when the slice is set to Video but no video is picked from the media library.
@@ -20,10 +20,10 @@ const Hero = ({ slice }) => {
 	let backdrop = null;
 	if (isFilled.image(image)) {
 		backdrop = (
-			<PrismicNextImage field={image} fill priority sizes="100vw" fallbackAlt="" className="object-cover" />
+			<Img field={image} fill preload sizes="100vw" fallbackAlt="" className="object-cover" />
 		);
 	} else if (is_video) {
-		backdrop = <Image src={FALLBACK_POSTER} alt="" fill priority sizes="100vw" className="object-cover" />;
+		backdrop = <Image src={FALLBACK_POSTER} alt="" fill preload sizes="100vw" className="object-cover" />;
 	}
 
 	const videoSrc = is_video ? (isFilled.linkToMedia(video) ? video.url : FALLBACK_VIDEO) : null;
@@ -39,7 +39,7 @@ const Hero = ({ slice }) => {
 					field={title}
 					components={{
 						heading1: ({ children }) => (
-							<h1 className="text-[3em] leading-none font-normal tracking-[-0.08vw] text-lime">{children}</h1>
+							<h1 className="text-title text-balance text-lime">{children}</h1>
 						),
 					}}
 				/>

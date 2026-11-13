@@ -1,8 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cacheLife } from "next/cache";
-import { isFilled } from "@prismicio/client";
+import { asText, isFilled } from "@prismicio/client";
 import { PrismicNextLink, cacheTagPrismicPages } from "@prismicio/next";
 import { createClient } from "@/prismicio";
+import RollText from "./RollText";
+import Arrow from "./Arrow";
+import FooterSubscribe from "./FooterSubscribe";
+import FooterMotion from "./FooterMotion";
 
 export async function getFooter() {
 	"use cache";
@@ -14,85 +19,161 @@ export async function getFooter() {
 	return footer;
 }
 
-// Old .footer-texts: 0.86em of the footer size (1.4em on phones), Haffer.
-const TXT = "text-[0.86em] max-[680px]:text-[1.4em]";
-// Footer headings (city names, socials title): a step above the address text, in medium-weight
-// Haffer (the footer body uses a Regular-only Haffer face that has no medium).
-const HEAD = "font-haffer text-[1.15em] font-medium max-[680px]:text-[1.87em]";
-
-// The desktop copy has the 0.8em gap and 1.2em line-height; the phone copy (under the socials) has neither, like live.
-function Rights({ rights, copyright, className, spaced }) {
-	return (
-		<div className={`flex-col ${className}`}>
-			<p className={`${TXT} ${spaced ? "mb-[0.8em]" : ""}`}>{rights}</p>
-			<p className={`${TXT} ${spaced ? "leading-[1.2em]" : ""}`}>{copyright}</p>
-		</div>
-	);
+/**
+ * "Let's Build Together" content, still edited in the Contact slice on the home page in Prismic.
+ * The home page skips that slice (app/page.jsx): it is rendered here, on every page.
+ */
+async function getContact() {
+	"use cache";
+	cacheLife("max");
+	const home = await createClient()
+		.getSingle("home")
+		.catch(() => null);
+	if (!home) return null;
+	cacheTagPrismicPages([home]);
+	const slice = home.data.slices.find((s) => s.slice_type === "contact");
+	if (!slice) return null;
+	return {
+		title: asText(slice.primary.title),
+		intro: slice.primary.intro,
+		contacts: (slice.primary.contacts ?? [])
+			.map((c) => c.value?.trim())
+			.filter(Boolean)
+			.map((value) => ({ value, href: value.includes("@") ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}` })),
+	};
 }
 
-function ArrowIcon() {
-	return (
-		<svg viewBox="0 0 10 9" fill="currentColor" aria-hidden="true" className="size-[0.6em]">
-			<path d="M5.12 7.984L8.416 4.72H0V3.856H8.416L5.104 0.576L5.712 0L10 4.288L5.712 8.576L5.12 7.984Z" />
-		</svg>
-	);
+/** A 1px rule that draws in left → right with the footer's entrance (FooterMotion). */
+function Rule() {
+	return <div data-rule aria-hidden="true" className="h-px bg-current" />;
 }
+
+// A footer link: underline-free, rolls on hover, "↳" in front like every link list on the site.
+// At least 24px tall with a mouse and 44px on touch, so the stacked links stay easy to hit without overlapping.
+const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] items-center gap-[0.3em] before:content-['↳'] transition-opacity duration-200 hover:opacity-60";
 
 /**
- * Site footer, content from the Prismic "footer" single type. Sizes and breakpoints copied from the old
- * .footer CSS (desktop-first: 1vw, ≤1500 1.2vw, ≤1200 1.4vw, ≤680 3vw). Always white with dark text, like live.
+ * Site footer. Lime with black type: the NOSTER wordmark across the full width, then two sides under a rule:
+ * - left (cols 1–6): "Let's Build Together", with the business-inquiries line and email / phones at its foot;
+ * - right (cols 8–10): socials, newsletter sign-up, offices, then rights and copyright.
+ * Both sides stretch to the same height, so the left's contacts line up with the credits.
+ * Fixed, compact gaps: the footer is as tall as its content, which fits one screen on desk; nothing
+ * stretches to fill the window, so tall windows get no gaps. Compact layouts stack the two sides.
+ * Entrance animation: components/FooterMotion.jsx.
  */
+// The newsletter form shows once a provider is connected in lib/subscribe.js (addSubscriber).
+const SUBSCRIBE = false;
+
 export default async function Footer() {
-	const footer = await getFooter();
+	const [footer, contact] = await Promise.all([getFooter(), getContact()]);
 	if (!footer) return null;
 	const { rights_text, copyright_text, offices, socials_title, socials } = footer.data;
 
 	return (
-		<footer className="relative flex justify-between bg-white px-[2vw] pt-[7vw] pb-[6vw] font-(family-name:--font-haffer-r-face) text-[1vw] text-[rgb(20,18,14)] max-[1500px]:text-[1.2vw] max-[1200px]:text-[1.4vw] max-[680px]:flex-col max-[680px]:pt-[4vw] max-[680px]:pb-[8vw] max-[680px]:text-[3vw]">
-			<div className="flex gap-[8em] max-[1200px]:gap-[2em] max-[680px]:mb-[2em] max-[680px]:flex-col">
-				<Rights rights={rights_text} copyright={copyright_text} className="flex w-[10%] max-[680px]:hidden" spaced />
+		<FooterMotion className="relative flex flex-col bg-lime p-m text-black">
+			{/* Wordmark in its own mask so it can rise into place */}
+			<div className="overflow-hidden">
+				<Image data-footer-mark src="/noster-logo.svg" alt="Noster Associates" width={3252} height={574} unoptimized className="h-auto w-full" />
+			</div>
 
-				<div className="flex w-[55%] gap-[4em] max-[1500px]:w-[66%] max-[1200px]:w-[90%] max-[1200px]:gap-[2em] max-[680px]:flex-wrap">
-					{offices.map((office, i) => (
-						<div key={i} className="flex flex-col">
-							<h2 className={`${HEAD} mb-[0.8em]`}>{office.city}</h2>
-							<p className={`${TXT} mb-[0.8em] grow leading-[1.4em] text-[grey] max-[1500px]:w-[90%]`}>{office.address}</p>
-							{isFilled.link(office.directions_link) && (
-								<PrismicNextLink field={office.directions_link} className={`${TXT} mb-[0.6em] flex items-center gap-[0.26em] font-bold underline`}>
-									View directions
-									<ArrowIcon />
-								</PrismicNextLink>
+			<div className="mt-6 flex flex-col gap-6 desk:mt-3 desk:grid-site desk:gap-y-0">
+				{/* Let's Build Together */}
+				{contact && (
+					<div className="flex flex-col justify-between gap-4 desk:col-span-6">
+						{/* Top: the rule, the intro as a small eyebrow, then the title */}
+						<div>
+							<Rule />
+							{contact.intro && (
+								<p data-fade className="pt-[0.5em]">
+									{contact.intro}
+								</p>
 							)}
-							{office.phone && (
-								<a href={`tel:${office.phone.replace(/\s+/g, "")}`} className={`${TXT} mt-[0.1em] flex w-full items-center gap-[0.26em]`}>
-									<b className="shrink-0 underline">{office.phone}</b> (Sales)
-								</a>
-							)}
+							{/* Display size, shrinking with the window on desk so it stays on one line across the 6 columns */}
+							<h2 data-split className="mt-1 text-display py-[0.08em] desk:text-[min(var(--t-display),7.2vw)] desk:whitespace-nowrap">
+								{contact.title}
+							</h2>
 						</div>
-					))}
-				</div>
-			</div>
-
-			<div className="flex w-[20%] items-start justify-end gap-[3em] max-[680px]:w-full max-[680px]:flex-col max-[680px]:gap-[2em]">
-				<div>
-					<h2 className={`${HEAD} mb-[0.8em]`}>{socials_title}</h2>
-					<ul className="flex flex-col gap-[0.3em]">
-						{socials.map((s, i) =>
-							isFilled.link(s.link) ? (
-								<li key={i} className="flex">
-									<PrismicNextLink field={s.link} className={`${TXT} underline`}>
-										{s.label}
-									</PrismicNextLink>
+						{/* Foot: one ruled row per contact across the full width; labels in the first two of six
+						    columns, values left-aligned from the third, so both sit on the grid */}
+						<ul data-fade className="border-b border-current">
+							{contact.contacts.map((c) => (
+								<li key={c.value} className="border-t border-current">
+									<a href={c.href} className="grid grid-cols-6 items-baseline gap-x-g py-[0.35em] pointer-coarse:min-h-[44px] pointer-coarse:content-center transition-opacity duration-200 hover:opacity-60">
+										<span className="col-span-2">{c.href.startsWith("mailto:") ? "Email" : "Phone"}</span>
+										<span className="col-span-4 text-lead">{c.value}</span>
+									</a>
 								</li>
-							) : null,
-						)}
-					</ul>
-					<Rights rights={rights_text} copyright={copyright_text} className="mt-[1.8em] hidden max-[680px]:flex" />
+							))}
+						</ul>
+					</div>
+				)}
+
+				{/* Right column: fixed gaps; the credits sit at its foot, level with the last contact row */}
+				<div className="flex flex-col gap-3 desk:col-span-3 desk:col-start-8">
+					{/* Socials */}
+					<div>
+						<Rule />
+						<div data-fade className="pt-[0.5em]">
+							{socials_title && <p>{socials_title}</p>}
+							<ul>
+								{socials.map((s, i) =>
+									isFilled.link(s.link) ? (
+										<li key={i}>
+											<PrismicNextLink field={s.link} className={LINK}>
+												<RollText>{s.label}</RollText>
+											</PrismicNextLink>
+										</li>
+									) : null,
+								)}
+							</ul>
+						</div>
+					</div>
+
+					{SUBSCRIBE && (
+						<div data-fade>
+							<FooterSubscribe />
+						</div>
+					)}
+
+					{/* Offices */}
+					<div>
+						<Rule />
+						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-[0.5em]">
+							{offices.map((office, i) => (
+								<div key={i}>
+									<p>{office.city}</p>
+									<p className="whitespace-pre-line">{office.address}</p>
+									{isFilled.link(office.directions_link) && (
+										<PrismicNextLink field={office.directions_link} className={LINK}>
+											<RollText>View directions</RollText>
+											<Arrow />
+										</PrismicNextLink>
+									)}
+									{office.phone && (
+										<p>
+											<a href={`tel:${office.phone.replace(/\s+/g, "")}`} className={LINK}>
+												<RollText>{office.phone}</RollText>
+											</a>{" "}
+											(Sales)
+										</p>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
+
+					{/* Credits, at the foot of the column */}
+					<div data-fade className="flex items-end justify-between gap-g desk:mt-auto desk:pt-2">
+						<div>
+							<p>{rights_text}</p>
+							<Link href="/privacy_policy" className={LINK}>
+								<RollText>Privacy Policy</RollText>
+							</Link>
+						</div>
+						<p className="text-right">{copyright_text}</p>
+					</div>
 				</div>
-				<Link href="/privacy_policy" className={`${TXT} underline`}>
-					Privacy Policy
-				</Link>
 			</div>
-		</footer>
+		</FooterMotion>
 	);
 }

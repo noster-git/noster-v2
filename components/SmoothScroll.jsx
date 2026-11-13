@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ReactLenis, useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -13,9 +13,17 @@ function ScrollTriggerSync() {
   return null;
 }
 
-/** Site-wide Lenis smooth scroll, driven by GSAP's ticker so scroll and animations share one frame loop. */
+/**
+ * Site-wide Lenis smooth scroll, driven by GSAP's ticker so scroll and animations share one frame loop.
+ * lerp 0.075: each frame covers 7.5% of the remaining distance, a soft glide that settles in about a second.
+ * Touch keeps the native scroll (Lenis default), so phones feel normal.
+ */
 export default function SmoothScroll({ children }) {
   const lenisRef = useRef(null);
+  // Reduced motion: the wheel scrolls natively (no glide). Read once; Lenis only starts in the browser.
+  const [smoothWheel] = useState(
+    () => typeof window === "undefined" || !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   useEffect(() => {
     const update = (time) => lenisRef.current?.lenis?.raf(time * 1000);
@@ -25,7 +33,7 @@ export default function SmoothScroll({ children }) {
   }, []);
 
   return (
-    <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.1, wheelMultiplier: 0.9 }}>
+    <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.075, wheelMultiplier: 1, smoothWheel }}>
       <ScrollTriggerSync />
       {children}
     </ReactLenis>

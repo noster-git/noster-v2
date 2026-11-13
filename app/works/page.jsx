@@ -8,6 +8,7 @@ import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
 import { DEFAULT_DESCRIPTION } from "@/lib/site";
+import { getProjectMedia } from "@/lib/projects";
 
 /**
  * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15).
@@ -19,8 +20,8 @@ export default async function Page() {
 	return (
 		<>
 			<JsonLd data={worksList(works)} />
-			<Reveal as="div" className="relative px-[2vw] pt-[12vw] text-[3vw] md:top-[4vw] md:text-[1vw]">
-				<h1 data-reveal className="flex items-center text-[3em] leading-[normal] font-normal tracking-[-0.08vw] md:text-[5em]">
+			<Reveal as="div" className="px-m pt-[84px] pb-4 desk:pt-[120px]">
+				<h1 data-reveal="lines" className="text-display">
 					:{title}
 				</h1>
 			</Reveal>
@@ -56,16 +57,17 @@ async function getData(ref) {
 	cacheLife("max");
 	const client = createClient();
 	// A missing Works page only means the default heading and SEO.
-	const [home, page] = await Promise.all([
-		queryOrNull((r) => client.getSingle("home", { ref: r }), ref),
-		queryOrNull((r) => client.getSingle("works", { ref: r }), ref),
+	const [home, page, media] = await Promise.all([
+		client.getSingle("home", { ref }),
+		client.getSingle("works", { ref }).catch(() => null),
+		getProjectMedia(ref), // each project's hero photo, for its card
 	]);
-	cacheTagPrismicPages([home, page].filter(Boolean));
+	cacheTagPrismicPages(page ? [home, page] : [home]);
 
 	const featured = home?.data.slices.find((s) => s.slice_type === "featured_works");
 	return {
 		page,
 		title: page?.data.title || "Our Works",
-		works: featured ? toWorks(featured.primary.projects) : [],
+		works: featured ? toWorks(featured.primary.projects, media) : [],
 	};
 }

@@ -5,7 +5,9 @@ import { PrismicNextLink, cacheTagPrismicPages } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import NosterLogo from "./NosterLogo";
 import MobileCta from "./MobileCta";
-import NavBar from "./NavBar";
+import RollText from "./RollText";
+import Arrow from "./Arrow";
+import NavCta from "./NavCta";
 
 async function getNavigation() {
 	"use cache";
@@ -18,9 +20,10 @@ async function getNavigation() {
 }
 
 /**
- * Fixed top bar. mix-blend-difference makes the white logo and text invert over light sections,
- * so it reads on both the dark hero and white pages without scroll listeners.
- * Phone: only the logo up top; the CTA moves to a floating pill at the bottom (MobileCta).
+ * Fixed top bar on the page grid: logo (columns 1–2), links (from column 3), CTA tag (right).
+ * Logo and links: white with mix-blend-difference, so they invert over whatever is under them.
+ * The CTA is its own element without blending (NavCta): white on a hero, black off it.
+ * Compact: logo only; the CTA moves to a button at the bottom of the screen (MobileCta).
  */
 export default async function Navigation() {
 	const nav = await getNavigation();
@@ -29,48 +32,47 @@ export default async function Navigation() {
 
 	return (
 		<>
-			<NavBar className="fixed top-0 left-0 z-50 flex w-full items-center justify-between px-[1.9vw] py-[6.4vw] text-[1.6vw] text-white md:py-[1.95vw] lg:text-[1vw]">
-				<div className="w-1/3">
-					<Link href="/" aria-label="Noster home" className="inline-block">
-						<NosterLogo className="h-[25px] w-[150px]" />
+			<nav className="grid-site fixed inset-x-0 top-0 z-50 items-center px-m pt-[12px] pb-g text-white mix-blend-difference">
+				<div className="col-span-2">
+					{/* Focus rings white: the nav is mix-blend-difference, where a black ring vanishes. */}
+					<Link href="/" aria-label="Noster home" data-intro className="hit flex focus-visible:outline-white">
+						<NosterLogo className="h-[13px] w-auto desk:h-[15px]" />
 					</Link>
 				</div>
 
-				<ul className="hidden w-1/3 items-center justify-evenly md:flex">
+				<ul className="hidden gap-[14px] desk:col-span-5 desk:flex">
 					{links.map((item, i) =>
 						isFilled.link(item.link) ? (
-							<li key={i} className="flex w-1/4 justify-center">
-								<PrismicNextLink field={item.link}>{item.label}</PrismicNextLink>
+							<li key={i} data-intro>
+								<PrismicNextLink field={item.link} className="motion-host hit flex focus-visible:outline-white">
+									<RollText>{item.label}</RollText>
+								</PrismicNextLink>
 							</li>
 						) : null,
 					)}
 				</ul>
 
-				<div className="hidden w-1/3 justify-end md:flex">
-					{hasCta && (
-						<PrismicNextLink field={cta_link} className="flex items-center">
-							<span>{cta_label}</span>
-							<span
-								aria-hidden="true"
-								className="ml-[0.6em] flex size-[1.13em] items-center justify-center rounded-[0.13em] bg-white text-black"
-							>
-								-&gt;
-							</span>
-						</PrismicNextLink>
-					)}
-				</div>
-			</NavBar>
+			</nav>
+
+			{/* The CTA sits outside the blended nav: white on a hero, black off it (NavCta). */}
+			{hasCta && (
+				<NavCta>
+					<PrismicNextLink
+						field={cta_link}
+						data-intro
+						className="motion-host hit flex items-center gap-g rounded-ui bg-black px-[8.5px] py-[4px] leading-none text-white transition-colors duration-200 group-data-[on-hero]:bg-white group-data-[on-hero]:text-black"
+					>
+						<RollText>{cta_label}</RollText>
+						<Arrow />
+					</PrismicNextLink>
+				</NavCta>
+			)}
 
 			{isFilled.link(cta_link) && mobile_cta_label && (
 				<MobileCta>
-					<PrismicNextLink field={cta_link} className="flex items-center rounded-full bg-[#1e1e1e] p-[14px] text-[16px] text-white">
-						{mobile_cta_label}
-						<span
-							aria-hidden="true"
-							className="ml-[10px] flex size-[18px] items-center justify-center rounded-[2px] bg-white text-black"
-						>
-							-&gt;
-						</span>
+					<PrismicNextLink field={cta_link} data-intro className="motion-host flex items-center gap-[8px] rounded-ui bg-black px-[20px] py-[14px] text-[13px] leading-[16px] whitespace-nowrap text-white transition-[scale] duration-150 ease-out active:scale-[0.97]">
+						<RollText>{mobile_cta_label}</RollText>
+						<Arrow />
 					</PrismicNextLink>
 				</MobileCta>
 			)}

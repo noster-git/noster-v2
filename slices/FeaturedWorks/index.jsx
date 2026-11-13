@@ -6,33 +6,40 @@ import Reveal from "@/components/Reveal";
 // How many of the newest projects Home shows; /works shows them all.
 const HOME_LIMIT = 15;
 
-/** Projects newest-first: editors add at the bottom, so the list is reversed. Items without an image are skipped; no project link yet → /works. */
-export function toWorks(projects) {
+/**
+ * Projects newest-first: editors add at the bottom, so the list is reversed. Items without an image or a
+ * project page are skipped.
+ * media (lib/projects.js): each project's hero photo, which its card preloads on hover.
+ */
+export function toWorks(projects, media = {}) {
 	return projects
-		.filter((p) => isFilled.image(p.image))
+		.filter((p) => isFilled.image(p.image) && asLink(p.link))
 		.reverse()
-		.map((p) => ({ href: asLink(p.link) ?? "/works", name: p.name ?? "", description: p.description ?? "", image: p.image }));
+		.map((p) => {
+			const href = asLink(p.link);
+			return { href, name: p.name ?? "", image: p.image, hero: media[href]?.hero ?? null };
+		});
 }
 
 /**
- * ":Featured Works" title, project grid and "View all projects" link.
+ * ":Featured Works" title, the project grid and "View all projects" link.
  *
  * @typedef {import("@prismicio/client").Content.FeaturedWorksSlice} FeaturedWorksSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<FeaturedWorksSlice>} FeaturedWorksProps
  * @type {import("react").FC<FeaturedWorksProps>}
  */
-const FeaturedWorks = ({ slice }) => {
-	const works = toWorks(slice.primary.projects).slice(0, HOME_LIMIT);
+const FeaturedWorks = ({ slice, context }) => {
+	const works = toWorks(slice.primary.projects, context?.media).slice(0, HOME_LIMIT);
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
-			<Reveal as="div" className="relative px-[2vw] text-[3vw] md:top-[4vw] md:text-[1vw]">
-				<h2 data-reveal className="flex items-center text-[3em] leading-[normal] font-normal tracking-[-0.08vw] md:text-[5em]">
+			<Reveal as="div" className="grid-site px-m pt-6 pb-3">
+				<h2 data-reveal="lines" className="col-span-5 text-title desk:col-span-7">
 					:{asText(slice.primary.title)}
 				</h2>
 			</Reveal>
 			<WorksGrid works={works} />
-			<LineCta href="/works">{(slice.primary.button_text || "View all projects") + " ->"}</LineCta>
+			<LineCta href="/works">{slice.primary.button_text || "View all projects"}</LineCta>
 		</div>
 	);
 };
