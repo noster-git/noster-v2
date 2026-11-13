@@ -16,23 +16,24 @@ const BehindTheScenes = ({ slice, context }) => {
 		<section
 			data-slice-type={slice.slice_type}
 			data-slice-variation={slice.variation}
-			className="relative mt-[2em] flex h-[60em] w-full items-center justify-center text-[1vw] max-[1180px]:hidden"
+			className="relative mt-2 h-[min(60vw,100svh)] w-full px-g text-[1vw] max-[1180px]:hidden"
 		>
-			<div className="relative h-full w-[96%] overflow-hidden border-y border-black">
+			{/* text-[1vw] above is the board's measuring unit (Canvas.jsx lays photos out in em), not a type size. */}
+			<div className="relative h-full overflow-hidden rounded-media bg-black/[0.04]">
 				<Canvas>
 					{/* Sits at the board's centre, so it starts mid-frame and moves with the board when dragged. */}
 					<h2
 						data-title
-						className="absolute top-1/2 left-1/2 z-10 -translate-1/2 text-center text-[6.25em] whitespace-nowrap font-normal text-white select-none"
+						className="absolute top-1/2 left-1/2 z-10 -translate-1/2 text-center text-display whitespace-nowrap text-white select-none"
 					>
-						<span className="bg-black px-[8px]">Behind</span>
+						<span className="bg-black px-g">Behind</span>
 						<br />
-						<span className="bg-black px-[8px]">
-							<span className="font-haffer italic">the </span>Scenes
+						<span className="bg-black px-g">
+							the Scenes
 						</span>
 					</h2>
 					{photos.map((p, i) => (
-						<figure key={i} data-photo className="invisible absolute scale-0 overflow-hidden">
+						<figure key={i} data-photo className="invisible absolute scale-0 overflow-hidden rounded-media">
 							<PrismicNextImage
 								field={{ ...p.image, alt: p.image.alt || `${context?.projectName ?? "Project"} behind the scenes, photo ${i + 1}` }}
 								sizes="40vw"

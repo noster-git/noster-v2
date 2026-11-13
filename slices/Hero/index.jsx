@@ -39,7 +39,7 @@ const Hero = ({ slice }) => {
 					field={title}
 					components={{
 						heading1: ({ children }) => (
-							<h1 className="text-[3em] leading-none font-normal tracking-[-0.08vw] text-lime">{children}</h1>
+							<h1 className="text-title text-balance text-lime">{children}</h1>
 						),
 					}}
 				/>

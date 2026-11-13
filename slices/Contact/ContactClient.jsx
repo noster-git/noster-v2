@@ -3,94 +3,89 @@
 import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
+import { EASE, lineRise } from "@/lib/motion";
+import { ready } from "@/lib/intro";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
-
-const setTheme = (dark) => {
-	if (dark) document.documentElement.dataset.theme = "dark";
-	else delete document.documentElement.dataset.theme;
-};
+gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
 
 /**
- * Same behaviour as the live site (old ContactShowcase):
+ * "Let's Build Together", on the white page:
  * - section top reaches 80% of the screen → the two rules draw in left→right (0.8s); back up → they retract;
- * - section top reaches 35% → page turns dark immediately, 400ms later the two extra title copies slide in
- *   (one up from behind, one down and fading in); back up → copies retract immediately, page turns light after 500ms.
+ * - section top reaches 75% → the big title rises line by line out of its own masks, then the intro and the
+ *   email / phone links rise in (once). Start states are held by CSS from the first frame (.js-anim
+ *   [data-split] / [data-fade], globals.css), so nothing flashes.
  */
 export default function ContactClient({ sliceType, variation, title, intro, contacts }) {
 	const scope = useRef(null);
 	const [lines, setLines] = useState(false);
-	const [copies, setCopies] = useState(false);
 
 	useGSAP(
 		() => {
-			const timers = [];
-			const later = (fn, ms) => timers.push(setTimeout(fn, ms));
-
 			ScrollTrigger.create({
 				trigger: scope.current,
 				start: "top 80%",
 				onEnter: () => setLines(true),
 				onLeaveBack: () => setLines(false),
 			});
-			ScrollTrigger.create({
-				trigger: scope.current,
-				start: "top 35%",
-				onEnter: () => {
-					setTheme(true);
-					later(() => setCopies(true), 400);
-				},
-				onLeaveBack: () => {
-					setCopies(false);
-					later(() => setTheme(false), 500);
-				},
-			});
 
+			if (!document.documentElement.classList.contains("js-anim")) return;
+			const el = scope.current;
+			let split;
+			let trigger;
+			Promise.all([ready(), document.fonts.ready]).then(() => {
+				if (!el.isConnected) return;
+				const heading = el.querySelector("[data-split]");
+				split = SplitText.create(heading, { type: "lines", mask: "lines" });
+				gsap.set(heading, { autoAlpha: 1 });
+				gsap.set(split.lines, lineRise.from);
+				const fades = gsap.utils.toArray("[data-fade]", el);
+				trigger = ScrollTrigger.create({
+					trigger: el,
+					start: "top 75%",
+					once: true,
+					onEnter: () =>
+						gsap
+							.timeline()
+							.to(split.lines, lineRise.to)
+							.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8"),
+				});
+			});
 			return () => {
-				timers.forEach(clearTimeout);
-				setTheme(false);
+				trigger?.kill();
+				split?.revert();
 			};
 		},
 		{ scope },
 	);
 
-	const quint = "duration-600 ease-[cubic-bezier(0.85,0,0.15,1)]";
 	const line = `absolute left-0 h-[2px] bg-(--ink) transition-all duration-800 ease-[cubic-bezier(0.83,0,0.17,1)] ${lines ? "w-full" : "w-0"}`;
-	// Lime once the page is dark, like live.
-	const heading = "text-[86px] leading-[normal] font-normal tracking-[-0.55vw] my-[0.25em] md:my-0 md:tracking-[-0.16669vw] lg:text-[10.375em] [[data-theme=dark]_&]:text-lime transition-colors duration-300 ease-quart";
 
 	return (
 		<section
 			ref={scope}
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
-			className="relative w-full overflow-hidden px-[1vw] pb-[5vw] text-[3vw] md:p-[2vw] md:text-[1.3vw] lg:text-[1vw]"
+			className="relative w-full overflow-hidden px-g pt-8 pb-8"
 		>
-			{/* transparent 1px border like live: keeps the inner 3em margins inside, so the lines sit clear of the text */}
-			<div className="relative border border-transparent">
+			<div className="relative">
 				<div className={`top-0 ${line}`} />
 				<div className={`bottom-0 ${line}`} />
 
-				<div className="mt-[3em] flex flex-col items-start px-[1vw] md:items-center md:px-0">
-					<div aria-hidden="true" className={`relative hidden transition-all md:block ${quint} ${copies ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}>
-						<p className={heading}>{title}</p>
-					</div>
-					<div className="relative">
-						<h2 className={heading}>{title}</h2>
-					</div>
-					<div aria-hidden="true" className={`relative hidden transition-all md:block ${quint} ${copies ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}>
-						<p className={heading}>{title}</p>
-					</div>
+				<div className="flex flex-col items-start pt-3 desk:items-center">
+					<h2 data-split className="text-display py-[0.08em] desk:text-center">
+						{title}
+					</h2>
 				</div>
 
-				<div className="mx-0 my-[3em] flex w-full flex-col items-start justify-between px-[1vw] md:flex-row md:px-0">
-					<div className="w-[70%] md:w-[30%]">
-						<p className="w-[16ch] text-[1.9em] leading-none tracking-[-0.01em] md:text-[2em]">{intro}</p>
-					</div>
-					<div className="flex w-[70%] flex-col items-start py-[1em] md:items-end md:py-0">
+				<div className="grid-site gap-y-2 pt-3 pb-3">
+					<p data-fade className="col-span-5 text-lead desk:col-span-4">
+						{intro}
+					</p>
+					<div className="col-span-5 flex flex-col items-start desk:col-span-4 desk:col-start-7 desk:items-end">
 						{contacts.map((c) => (
-							<a key={c.value} href={c.href} className="text-[1.9em] leading-[1.395] tracking-[-0.04vw] md:text-[2em]">
+							<a key={c.value} data-fade href={c.href} className="text-lead transition-colors duration-200 hover:text-muted">
 								{c.value}
 							</a>
 						))}

@@ -2,16 +2,17 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
-import { reveal } from "@/lib/motion";
+import { SplitText } from "gsap/SplitText";
+import { EASE, lineRise } from "@/lib/motion";
+import { ready } from "@/lib/intro";
 import { useGSAP } from "@gsap/react";
 import { useLenis } from "lenis/react";
 
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, SplitText);
 
 /**
  * Interactive part of the Hero: entrance animation, poster → video fade-in, and the showreel dialog.
- * Sizes are in vw so the hero scales with the viewport like the live site
- * (section font-size: 3vw phone, 1.6vw tablet, 1vw laptop/desktop; everything inside is in em).
+ * Fills the first screen; the title sits at the bottom on the page grid (6 of 10 columns on desk).
  */
 export default function HeroClient({ sliceType, variation, title, backdrop, videoSrc }) {
 	const scope = useRef(null);
@@ -20,17 +21,39 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 	const showreelRef = useRef(null);
 	const lenis = useLenis();
 
+	// Entrance, after the page-load intro (components/Intro.jsx). The start states are already held by CSS
+	// from the first frame (.js-anim, globals.css), so nothing flashes:
+	//   the photo settles from 1.12× (first visit, as the curtain lifts), the title rises line by line out of
+	//   its own masks, then "Play showreel" rises in.
 	useGSAP(
 		() => {
-			gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-				gsap.from("[data-hero-reveal]", {
-					...reveal,
-					delay: 0.2,
-				});
-			});
-
 			// The video may already be playable by the time this runs.
 			if (videoRef.current && videoRef.current.readyState >= 3) revealVideo();
+
+			const root = document.documentElement;
+			if (!root.classList.contains("js-anim")) return;
+			const firstVisit = !root.classList.contains("intro-skip");
+			const el = scope.current;
+			let tl;
+			let split;
+			Promise.all([ready(), document.fonts.ready]).then(() => {
+				if (!el.isConnected) return;
+				tl = gsap.timeline();
+				if (firstVisit) tl.to(el.querySelector("[data-hero-media]"), { scale: 1, duration: 2.4, ease: EASE }, 0);
+				const title = el.querySelector("[data-hero-title]");
+				const heading = title?.querySelector("h1");
+				if (heading) {
+					split = SplitText.create(heading, { type: "lines", mask: "lines" });
+					gsap.set(title, { autoAlpha: 1 });
+					tl.fromTo(split.lines, lineRise.from, lineRise.to, firstVisit ? 0.3 : 0.1);
+				} else if (title) tl.fromTo(title, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1.1, ease: EASE }, 0.3);
+				const cta = el.querySelector("[data-hero-cta]");
+				if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE }, "-=0.85");
+			});
+			return () => {
+				tl?.kill();
+				split?.revert();
+			};
 		},
 		{ scope },
 	);
@@ -58,9 +81,10 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			ref={scope}
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
-			className="relative flex h-[60em] font-haffer items-end overflow-hidden bg-black px-[3vw] pt-[38vw] pb-[12vw] text-[3vw] md:h-[50em] md:px-[2vw] md:pt-[14vw] md:pb-[4vw] md:text-[1.6vw] lg:py-[6vw] lg:text-[1vw]"
+			data-nav-hero // the top CTA is white over this (NavCta)
+			className="relative flex h-svh min-h-[480px] items-end overflow-hidden bg-black px-g pb-8 desk:pb-2"
 		>
-			<div className="absolute inset-0">
+			<div data-hero-media className="absolute inset-0">
 				{backdrop}
 				{videoSrc && (
 					<video
@@ -75,24 +99,28 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 						className="invisible absolute inset-0 size-full object-cover opacity-0"
 					/>
 				)}
-				<div className="absolute inset-0 bg-black/10" />
+				{/* Slight dark overlay on the video, same 25% shade as the project heroes. */}
+				<div className="absolute inset-0 bg-black/25" />
 			</div>
 
-			<div className="relative z-10 w-full text-[0.8em] md:w-[60%] lg:text-[1em]">
-				<div data-hero-reveal>{title}</div>
+			<div className="grid-site relative z-10 w-full">
+				<div className="col-span-5 desk:col-span-6">
+				<div data-hero-line data-hero-title>
+					{title}
+				</div>
 				{videoSrc && (
 					// The wrapper takes the entrance animation; the button keeps its own CSS hover transition.
-					// Fixed 13.33px size and an instant hover, exactly as on the live site (it doesn't scale with the viewport).
-					<div data-hero-reveal className="mt-[1em] text-[13.333px] leading-[normal]">
+					<div data-hero-line data-hero-cta className="mt-1">
 						<button
 							type="button"
 							onClick={openShowreel}
-							className="cursor-pointer bg-black p-[1em] text-white hover:scale-[0.96] hover:opacity-90"
+							className="cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50"
 						>
-							View Showreel
+							Play showreel
 						</button>
 					</div>
 				)}
+				</div>
 			</div>
 
 			{videoSrc && (
@@ -110,17 +138,17 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 							controls
 							playsInline
 							preload="none"
-							className="pointer-events-auto h-[80lvh] w-[80%] object-contain md:h-[90%] md:w-[90%]"
+							className="pointer-events-auto h-[80lvh] w-[80%] rounded-media object-contain desk:h-[90%] desk:w-[90%]"
 						/>
 					</div>
 					<button
 						type="button"
 						aria-label="Close showreel"
 						onClick={() => dialogRef.current.close()}
-						className="absolute top-[1em] right-[1em] size-[1.6em] cursor-pointer text-[1.4em] transition-[scale,opacity] duration-500 ease-quart hover:scale-95 hover:opacity-90 md:size-[2em]"
+						className="absolute top-g right-g size-[32px] cursor-pointer transition-[scale,opacity] duration-500 ease-quart hover:scale-95 hover:opacity-90 desk:size-[40px]"
 					>
 						<svg viewBox="0 0 55 55" fill="none" className="size-full" aria-hidden="true">
-							<rect width="55" height="55" fill="#F5F5F5" />
+							<rect width="55" height="55" rx="8" fill="#F5F5F5" />
 							<path d="M37 17L17.6897 37M36.3103 37L17 17" stroke="#14120E" strokeWidth="2" />
 						</svg>
 					</button>

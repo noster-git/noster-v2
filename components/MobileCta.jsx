@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-/** Phone-only floating CTA pill. Fades out while the footer is on screen so it never covers the contact details. */
+/**
+ * Compact-only CTA button, fixed 16px above the bottom of the screen (clear of the home indicator).
+ * Fades out while the footer is on screen so it never covers the contact details.
+ */
 export default function MobileCta({ children }) {
 	const [hidden, setHidden] = useState(false);
 
@@ -17,7 +20,7 @@ export default function MobileCta({ children }) {
 	return (
 		<div
 			inert={hidden}
-			className={`fixed bottom-[8%] left-1/2 z-40 -translate-x-1/2 rounded-full border border-black/17 bg-white p-[2vw] transition-opacity duration-500 ease-quart md:hidden ${hidden ? "opacity-0" : "opacity-100"}`}
+			className={`fixed bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2 transition-opacity duration-500 ease-quart desk:hidden ${hidden ? "opacity-0" : "opacity-100"}`}
 		>
 			{children}
 		</div>

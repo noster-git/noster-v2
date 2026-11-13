@@ -19,8 +19,8 @@ export default async function Page() {
 	return (
 		<>
 			<JsonLd data={worksList(works)} />
-			<Reveal as="div" className="relative px-[2vw] pt-[12vw] text-[3vw] md:top-[4vw] md:text-[1vw]">
-				<h1 data-reveal className="flex items-center text-[3em] leading-[normal] font-normal tracking-[-0.08vw] md:text-[5em]">
+			<Reveal as="div" className="px-g pt-[84px] pb-4 desk:pt-[120px]">
+				<h1 data-reveal className="text-display">
 					:{title}
 				</h1>
 			</Reveal>

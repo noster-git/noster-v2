@@ -1,127 +1,146 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { PrismicNextImage } from "@prismicio/next";
+import { useProjectTransition } from "@/components/ProjectTransition";
+import { ArrowIcon, CornerIcon } from "@/components/Arrow";
+import { EASE } from "@/lib/motion";
+import { ready } from "@/lib/intro";
 
-const PER_ROW = 3;
-// Variants: [@media(min-width:681px)_and_(hover:hover)] = mouse, tablet+; ..._(hover:none) = touch tablets. Written out in full so Tailwind can see them.
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+// Desk: where each card sits on the 10-column grid, repeating every five cards (a row of 3 + 4 + 3
+// columns, then a row of 5 + 5), and the photo's shape. Every row spans the full width, and the shapes
+// keep every row the same height: 3 columns square, 4 columns at 4:3 and 5 columns at 5:3 all come out
+// ≈ 0.29 × the page width tall. Written out so Tailwind sees them.
+const PLACES = [
+	["desk:col-span-3 desk:col-start-1", "desk:aspect-square"],
+	["desk:col-span-4 desk:col-start-4", "desk:aspect-[4/3]"],
+	["desk:col-span-3 desk:col-start-8", "desk:aspect-square"],
+	["desk:col-span-5 desk:col-start-1", "desk:aspect-[5/3]"],
+	["desk:col-span-5 desk:col-start-6", "desk:aspect-[5/3]"],
+];
+// Compact: two columns, every third card full width; upright tablets keep every card at one column.
+const COMPACT = (i) => (i % 3 === 0 ? "col-span-2 [@media(min-width:600px)_and_(max-width:1100px)_and_(orientation:portrait)]:col-span-1" : "");
+
+const noop = () => () => {};
+const useIsClient = () => useSyncExternalStore(noop, () => true, () => false);
 
 /**
- * Project cards, as on the live site:
- * - mouse, tablet+: rows of three alternating left/right; the hovered card widens (27% → 45%) and shows its text;
- *   a "View →" cursor follows the mouse over the photos;
- * - touch tablets: 3-column grid, all text visible;
- * - phones: stacked list.
+ * Project cards on the page grid: the name (Lucide corner-down-right in front, 14 / 16px) above the photo
+ * (4:3; on desk shaped per column span so each row is one even height, ≈ 0.29 × the page width),
+ * 6px column gaps, 6 lines between rows. With a mouse a
+ * "View project" pill follows the pointer over the photos. Clicking a photo opens it into the project
+ * hero (components/ProjectTransition.jsx).
  *
- * @param {{ works: { href: string, name: string, description: string, image: import("@prismicio/client").ImageField }[] }} props
+ * @param {{ works: { href: string, name: string, image: import("@prismicio/client").ImageField }[] }} props
  */
 export default function WorksGrid({ works }) {
 	const [cursorOn, setCursorOn] = useState(false);
-	const rows = [];
-	for (let i = 0; i < works.length; i += PER_ROW) rows.push(works.slice(i, i + PER_ROW));
+	const { open, warm } = useProjectTransition();
+	const scope = useRef(null);
+
+	// Cards reveal in batches as they scroll in (the start state is held by CSS from the first frame,
+	// .js-anim [data-card]): each rises 40px while its photo unmasks from the bottom and settles from 1.15×.
+	useGSAP(
+		() => {
+			if (!document.documentElement.classList.contains("js-anim")) return;
+			let triggers = [];
+			ready().then(() => {
+				if (!scope.current) return;
+				triggers = ScrollTrigger.batch(gsap.utils.toArray("[data-card]", scope.current), {
+					start: "top 90%",
+					once: true,
+					onEnter: (cards) => {
+						const media = cards.map((c) => c.querySelector("[data-card-media]"));
+						const imgs = cards.map((c) => c.querySelector("img")).filter(Boolean);
+						gsap.fromTo(cards, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 1.2, ease: EASE, stagger: 0.1 });
+						gsap.fromTo(media, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.3, ease: "expo.inOut", stagger: 0.1, clearProps: "clipPath" });
+						gsap.fromTo(imgs, { scale: 1.15 }, { scale: 1, duration: 1.8, ease: EASE, stagger: 0.1, clearProps: "transform" });
+					},
+				});
+			});
+			return () => triggers.forEach((t) => t.kill());
+		},
+		{ scope },
+	);
 
 	return (
-		<section>
+		<section ref={scope}>
 			<ViewCursor active={cursorOn} />
-			<div className={`hidden text-[1vw] [@media(min-width:681px)_and_(hover:hover)]:block`}>
-				{rows.map((row, i) => (
-					<Row key={row[0].href + i} works={row} reverse={i % 2 === 1} setCursorOn={setCursorOn} />
-				))}
-			</div>
-
-			<div
-				className={`flex flex-col items-center text-[3vw] [@media(min-width:681px)_and_(hover:hover)]:hidden [@media(min-width:681px)_and_(hover:none)]:grid [@media(min-width:681px)_and_(hover:none)]:grid-cols-3 [@media(min-width:681px)_and_(hover:none)]:items-start [@media(min-width:681px)_and_(hover:none)]:gap-x-[1vw] [@media(min-width:681px)_and_(hover:none)]:gap-y-[3em] [@media(min-width:681px)_and_(hover:none)]:px-[2vw] [@media(min-width:681px)_and_(hover:none)]:pt-[4em] [@media(min-width:681px)_and_(hover:none)]:pb-[6em] [@media(min-width:681px)_and_(hover:none)]:text-[1vw]`}
-			>
-				{works.map((work, i) => (
-					<div key={work.href + i} className={`my-[2em] w-[95%] [@media(min-width:681px)_and_(hover:none)]:m-0 [@media(min-width:681px)_and_(hover:none)]:w-auto`}>
-						<Link href={work.href} aria-label={work.name} className="relative block aspect-[3/2]">
-							<PrismicNextImage field={work.image} fill sizes="(min-width: 681px) 33vw, 95vw" imgixParams={{ ar: "3:2", fit: "crop" }} fallbackAlt="" className="object-cover" />
-						</Link>
-						<div className={`mt-[0.35em] flex items-start justify-between [@media(min-width:681px)_and_(hover:none)]:mt-[0.75em] [@media(min-width:681px)_and_(hover:none)]:flex-col [@media(min-width:681px)_and_(hover:none)]:gap-[0.4em]`}>
-							<p className={`w-1/4 [@media(min-width:681px)_and_(hover:none)]:w-full`}>{work.name}</p>
-							<p className={`w-3/4 pr-[1.25%] [@media(min-width:681px)_and_(hover:none)]:w-full [@media(min-width:681px)_and_(hover:none)]:pr-0`}>{work.description}</p>
+			<div className="grid grid-cols-2 items-start gap-x-g gap-y-6 px-g pt-2 pb-8 desk:grid-cols-10 desk:pb-5">
+				{works.map((work, i) => {
+					const [place, shape] = PLACES[i % PLACES.length];
+					return (
+						<div key={work.href + i} data-card className={`flex min-w-0 flex-col ${COMPACT(i)} ${place}`}>
+							<p className="mb-[6px] flex min-w-0 items-center gap-[0.3em] text-[14px] leading-[1.2] tracking-[-0.02em] desk:text-[16px]">
+								<CornerIcon className="size-[0.85em] shrink-0" />
+								<span className="truncate">{work.name}</span>
+							</p>
+							<Link
+								href={work.href}
+								aria-label={work.name}
+								onMouseEnter={(e) => {
+									setCursorOn(true);
+									warm(e.currentTarget);
+								}}
+								onMouseLeave={() => setCursorOn(false)}
+								onPointerDown={(e) => warm(e.currentTarget)}
+								onClick={(e) => {
+									setCursorOn(false); // the pill scales away as the photo opens
+									open(e, work.href);
+								}}
+								data-card-media
+								className={`relative block aspect-[4/3] overflow-hidden rounded-media desk-mouse:cursor-none ${shape}`}
+							>
+								<PrismicNextImage
+									field={work.image}
+									fill
+									sizes="(min-width: 901px) 40vw, (min-width: 600px) 50vw, 100vw"
+									fallbackAlt=""
+									className="object-cover transition-[opacity,scale] duration-[1.2s] ease-out-quint hover:scale-[1.04] hover:opacity-95"
+								/>
+							</Link>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</section>
 	);
 }
 
-function Row({ works, reverse, setCursorOn }) {
-	const [active, setActive] = useState(0);
-
-	return (
-		<div className={`mt-[8em] mb-[6em] flex h-[28em] items-start gap-[0.4em] px-[2vw] ${reverse ? "flex-row-reverse" : ""}`}>
-			{works.map((work, i) => {
-				const on = active === i;
-				return (
-					<div
-						key={work.href + i}
-						onMouseOver={() => setActive(i)}
-						className={`relative transition-all delay-50 duration-400 ease-quart ${on ? "h-[28em] w-[45%]" : "h-[16.25em] w-[27%]"}`}
-					>
-						<Link
-							href={work.href}
-							aria-label={work.name}
-							onMouseEnter={() => setCursorOn(true)}
-							onMouseLeave={() => setCursorOn(false)}
-							className="relative block size-full cursor-none"
-						>
-							<PrismicNextImage field={work.image} fill sizes="45vw" imgixParams={{ ar: "3:2", fit: "crop" }} fallbackAlt="" className="object-cover" />
-						</Link>
-						<div className={`absolute bottom-[-17%] h-[4em] overflow-hidden transition-all duration-400 ease-quart`}>
-							<div
-								className={`relative flex items-start justify-between transition-all duration-400 ease-quart ${on ? "translate-y-0 delay-200" : "-translate-y-full"}`}
-							>
-								<p className="w-1/4">{work.name}</p>
-								<p className="w-3/4 pr-[1.25%]">{work.description}</p>
-							</div>
-						</div>
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
 /**
- * "View →" tag that follows the mouse over the photos — timings copied from the old .cursor-A CSS
- * (each step 0.2s, ease cubic-bezier(0.85,0,0.15,1)):
- *   enter: white box scales in → 150ms: black fills left→right + text turns lime → 300ms: underline → 350ms: arrow
- *   leave: arrow out → 150ms: text black + underline out → 300ms: black fill out → 600ms: box scales away
+ * "View project" pill centred on the pointer over the photos: 7 × 14px padding, 6px radius, body text
+ * with an 11px arrow; scales in and out in 0.28s. Rendered into <body> so no transformed ancestor can
+ * trap its position: fixed.
  */
 function ViewCursor({ active }) {
 	const ref = useRef(null);
+	const client = useIsClient();
 
 	useEffect(() => {
 		const move = (e) => {
-			if (!ref.current) return;
-			ref.current.style.left = `${e.clientX}px`;
-			ref.current.style.top = `${e.clientY}px`;
+			if (ref.current) ref.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
 		};
-		document.addEventListener("mousemove", move);
-		return () => document.removeEventListener("mousemove", move);
+		document.addEventListener("pointermove", move);
+		return () => document.removeEventListener("pointermove", move);
 	}, []);
 
-	const q = "duration-200 ease-[cubic-bezier(0.85,0,0.15,1)]";
-	return (
-		<div
-			ref={ref}
-			aria-hidden="true"
-			className={`pointer-events-none fixed z-[200] hidden bg-white text-[1vw] transition-[scale] ${q} [@media(min-width:681px)_and_(hover:hover)]:block ${active ? "scale-100" : "scale-0 delay-600"}`}
-		>
-			<div className="relative p-[0.4em]">
-				<div className={`absolute top-0 left-0 h-full bg-black transition-all ${q} ${active ? "w-full delay-150" : "w-0 delay-300"}`} />
-				<div className={`relative flex items-center text-[0.875em] transition-colors delay-150 ${q} ${active ? "text-lime" : "text-black"}`}>
-					View
-					<span className="overflow-hidden">
-						<span className={`block text-lime transition-transform ${q} ${active ? "translate-x-0 delay-350" : "-translate-x-full"}`}>-&gt;</span>
-					</span>
-					<span className={`absolute bottom-0 left-0 h-px bg-lime transition-all ${q} ${active ? "w-full delay-300" : "w-0 delay-150"}`} />
-				</div>
+	if (!client) return null;
+	return createPortal(
+		<div ref={ref} aria-hidden="true" data-view-cursor className="pointer-events-none fixed top-0 left-0 z-[400] hidden will-change-transform desk-mouse:block">
+			<div
+				className={`flex -translate-1/2 items-center gap-[8px] rounded-ui bg-black px-[14px] py-[7px] whitespace-nowrap text-white transition-[scale] duration-[280ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${active ? "scale-100" : "scale-0"}`}
+			>
+				View project
+				<ArrowIcon className="size-[11px]" />
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 }

@@ -15,7 +15,7 @@ export function toWorks(projects) {
 }
 
 /**
- * ":Featured Works" title, project grid and "View all projects" link.
+ * ":Featured Works" title, the project grid and "View all projects" link.
  *
  * @typedef {import("@prismicio/client").Content.FeaturedWorksSlice} FeaturedWorksSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<FeaturedWorksSlice>} FeaturedWorksProps
@@ -26,13 +26,13 @@ const FeaturedWorks = ({ slice }) => {
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
-			<Reveal as="div" className="relative px-[2vw] text-[3vw] md:top-[4vw] md:text-[1vw]">
-				<h2 data-reveal className="flex items-center text-[3em] leading-[normal] font-normal tracking-[-0.08vw] md:text-[5em]">
+			<Reveal as="div" className="grid-site px-g pt-8 pb-4">
+				<h2 data-reveal className="col-span-5 text-title desk:col-span-7">
 					:{asText(slice.primary.title)}
 				</h2>
 			</Reveal>
 			<WorksGrid works={works} />
-			<LineCta href="/works">{(slice.primary.button_text || "View all projects") + " ->"}</LineCta>
+			<LineCta href="/works">{slice.primary.button_text || "View all projects"}</LineCta>
 		</div>
 	);
 };

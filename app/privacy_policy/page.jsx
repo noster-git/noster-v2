@@ -5,30 +5,28 @@ import { PrismicRichText } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 
-// Live values (1vw font, 3vw on phones ≤580px). Body text is Haffer Regular, subtitles Inter.
-// Block paddings reproduce the live slices' spacing (1em = 1vw above and below each old slice),
-// written in each block's own em, e.g. 0.535em on the 1.87em titles.
-const HAFFER = "font-(family-name:--font-haffer-r-face)";
-const BODY = "leading-[144%] tracking-[-0.022vw]";
+// Type and spacing come from the design system in app/globals.css (spacing unit = one body line).
+// Long-form reading: a step up from the 11–12px interface text, with more generous lines.
+const BODY = "text-[13px] leading-[19px] desk:text-[14px] desk:leading-[21px]";
 
 /** @type {import("@prismicio/react").JSXMapSerializer} */
 const components = {
 	// The first paragraph is the intro (1.1em); the rest are section descriptions (1em).
 	paragraph: ({ children }) => (
-		<p className={`${HAFFER} ${BODY} pb-[1em] first:py-[0.909em] first:text-[1.1em]`}>{children}</p>
+		<p className={`${BODY} pb-1 first:pb-3 first:text-lead`}>{children}</p>
 	),
 	// Section title, e.g. "Interpretation and Definitions"
-	heading2: ({ children }) => <h2 className={`${HAFFER} py-[0.535em] text-[1.87em] font-normal`}>{children}</h2>,
+	heading2: ({ children }) => <h2 className="pt-3 pb-1 text-heading">{children}</h2>,
 	// Subtitle, e.g. "Types of Data Collected"
-	heading3: ({ children }) => <h3 className="font-normal">{children}</h3>,
+	heading3: ({ children }) => <h3 className={`${BODY} pt-1 font-medium`}>{children}</h3>,
 	// Topic, e.g. "Interpretation", "Definitions"
-	heading4: ({ children }) => <h4 className={`${HAFFER} pt-[0.625em] pb-[0.625em] text-[1.6em] font-normal`}>{children}</h4>,
+	heading4: ({ children }) => <h4 className={`${BODY} pt-2 pb-1 font-medium`}>{children}</h4>,
 	// Lead line above a list, e.g. "For the purposes of this Privacy Policy:"
-	heading5: ({ children }) => <p className={`${HAFFER} text-[1.4em]`}>{children}</p>,
-	list: ({ children }) => <ul className={`${HAFFER} list-disc px-[2em] pt-[0.5em] pb-[1.5em]`}>{children}</ul>,
-	oList: ({ children }) => <ol className={`${HAFFER} list-decimal px-[2em] pt-[0.5em] pb-[1.5em]`}>{children}</ol>,
-	listItem: ({ children }) => <li className={`${BODY} py-[0.45em]`}>{children}</li>,
-	oListItem: ({ children }) => <li className={`${BODY} py-[0.45em]`}>{children}</li>,
+	heading5: ({ children }) => <p className={`${BODY} pt-1 text-muted`}>{children}</p>,
+	list: ({ children }) => <ul className="list-disc pb-1 pl-[2.4em]">{children}</ul>,
+	oList: ({ children }) => <ol className="list-decimal pb-1 pl-[2.4em]">{children}</ol>,
+	listItem: ({ children }) => <li className={BODY}>{children}</li>,
+	oListItem: ({ children }) => <li className={BODY}>{children}</li>,
 };
 
 export default async function Page() {
@@ -36,17 +34,11 @@ export default async function Page() {
 	const heading = `:${page.data.title || "Privacy Policy"}`;
 
 	return (
-		<div className="px-[9vw] pt-[25vw] pb-[18vw] text-[3vw] text-black min-[581px]:px-[3vw] min-[581px]:py-[6vw] min-[581px]:text-[1vw]">
-			<div className="relative flex flex-col min-[581px]:items-end">
-				{/* Desktop: the heading scrolls with the page, then stays 10% from the top. */}
-				<div className="w-full min-[581px]:absolute min-[581px]:inset-y-0 min-[581px]:left-0 min-[581px]:w-auto">
-					<h1 className="text-[3em] leading-[normal] font-normal min-[581px]:sticky min-[581px]:top-[10vh] min-[681px]:text-[5em]">
-						{heading}
-					</h1>
-				</div>
-				<div className="w-full min-[581px]:w-[60%]">
-					<PrismicRichText field={page.data.content} components={components} />
-				</div>
+		<div className="grid-site items-start px-g pt-[84px] pb-8 text-black desk:pt-[120px]">
+			{/* Desk: the heading stays in columns 1–3 as the text scrolls past it. */}
+			<h1 className="col-span-5 mb-4 text-title desk:sticky desk:top-[84px] desk:col-span-3 desk:mb-0">{heading}</h1>
+			<div className="col-span-5 max-w-[46em] desk:col-span-6 desk:col-start-5">
+				<PrismicRichText field={page.data.content} components={components} />
 			</div>
 		</div>
 	);

@@ -1,57 +1,238 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
+/* ── Design system ──────────────────────────────────────────────────────────────────────────
+   Documented at /style-guide. Two layouts:
+   - compact (base): phones, and tablets held upright (≤900px, or ≤1100px in portrait)
+   - desk (`desk:`): ≥901px landscape, or ≥1101px; `wide:` adds ≥1800px
+   Grid: 5 columns compact / 10 desk (`grid-site`), 6px gaps and page margins (`g`).
+   Spacing: one unit = one line of body text (`p-1` = 12px compact, 15px desk, 16px wide), so
+   vertical rhythm follows the text. Type sizes are fixed px except the display tiers. */
+
+@custom-variant desk {
+  @media (min-width: 901px) and (orientation: landscape), (min-width: 1101px) {
+    @slot;
+  }
+}
+/* desk with a mouse. Don't stack desk: with another media variant: Tailwind nests the comma list into invalid CSS. */
+@custom-variant desk-mouse {
+  @media (min-width: 901px) and (orientation: landscape) and (hover: hover), (min-width: 1101px) and (hover: hover) {
+    @slot;
+  }
+}
+/* desk without a mouse: landscape tablets. */
+@custom-variant desk-touch {
+  @media (min-width: 901px) and (orientation: landscape) and (hover: none), (min-width: 1101px) and (hover: none) {
+    @slot;
+  }
+}
+@custom-variant wide {
+  @media (min-width: 1800px) {
+    @slot;
+  }
+}
+
+:root {
+  /* compact */
+  --fs: 11px; /* body size */
+  --bl: 12px; /* body line = the spacing unit */
+  --t-heading: 20px;
+  --t-lead: 17px;
+  --t-lead-lh: 1.18;
+  --t-title: 28px;
+  --t-display: 12vw;
+  --r-media: 3px;
+  /* 1/90 of the page width, held between 992 and 1500px: scales the desk title and display tiers */
+  --hf: calc(clamp(992px, 100vw, 1500px) / 90);
+}
+@media (min-width: 901px) and (orientation: landscape), (min-width: 1101px) {
+  :root {
+    --fs: 12px;
+    --bl: 15px;
+    --t-heading: 32px;
+    --t-lead: max(32px, 2.1vw);
+    --t-lead-lh: 1.1;
+    --t-title: calc(var(--hf) * 2.88); /* 46px at 1440 */
+    --t-display: calc(var(--hf) * 7.2); /* 115px at 1440 */
+    --r-media: 6px;
+  }
+}
+@media (min-width: 1800px) {
+  :root {
+    --fs: 13px;
+    --bl: 16px;
+    --t-lead-lh: 1.05;
+  }
+}
+
 @theme {
-  /* Breakpoints match the live site: phone ≤680, tablet 681–1200, laptop/desktop ≥1201 */
-  --breakpoint-md: 681px;
-  --breakpoint-lg: 1201px;
-
-
   --color-lime: #d3fd5e;
+  --color-muted: #666; /* 5.7:1 on white: passes WCAG AA for small text */
 
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --radius-ui: 6px;
 }
 
-/* Like the live site: Inter is the default; Haffer is opted into per section with `font-haffer`.
-   `inline` because these point at the next/font variables set on <html>. */
+/* `inline`: these resolve the responsive variables above at the point of use. */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-haffer: var(--font-haffer-face), ui-sans-serif, system-ui, sans-serif;
+  /* Geist is the site font, loaded with next/font in app/layout.js. */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+
+  --spacing: var(--bl); /* p-1 = one line, p-8 = eight lines */
+  --spacing-g: 6px; /* gutter: grid gap and page margin */
+
+  --radius-media: var(--r-media); /* 3px compact, 6px desk: photos and video */
+
+  /* Type scale. Each `text-<name>` sets size, line height, tracking and weight. */
+  --text-body: var(--fs); /* 11 / 12 / 13px — everything that is read */
+  --text-body--line-height: var(--bl);
+  --text-body--letter-spacing: -0.025em;
+
+  --text-heading: var(--t-heading); /* 20 / 32px — card and block headings */
+  --text-heading--line-height: 1;
+  --text-heading--letter-spacing: -0.025em;
+
+  --text-lead: var(--t-lead); /* 17 / 32px+ — intros and statements, light */
+  --text-lead--line-height: var(--t-lead-lh);
+  --text-lead--letter-spacing: -0.015em;
+  --text-lead--font-weight: 300;
+
+  --text-title: var(--t-title); /* 28 / 46px — page and section titles, light */
+  --text-title--line-height: 1.02;
+  --text-title--letter-spacing: -0.025em;
+  --text-title--font-weight: 300;
+
+  --text-display: var(--t-display); /* 12vw / 115px — one big word or line */
+  --text-display--line-height: 0.8;
+  --text-display--letter-spacing: -0.055em;
 }
 
-/* Page colours. The Contact slice flips the whole page to dark (black ground, white text) as it scrolls in, like live. */
+/* The page grid: 5 columns compact, 10 desk, 6px gaps. Children place themselves with col-span-*. */
+@utility grid-site {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 6px;
+  @media (min-width: 901px) and (orientation: landscape), (min-width: 1101px) {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+/* Page colours. */
 html {
   --paper: #fff;
   --ink: #000;
-}
-html[data-theme="dark"] {
-  --paper: #000;
-  --ink: #fff;
+  /* Text rendering for the whole document (body and anything portalled outside it): greyscale
+     antialiasing (macOS and iOS; Windows always uses ClearType, which pages can't change), proper
+     kerning and ligatures, and no text size boosting on rotated phones. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  @apply font-sans antialiased;
+  @apply font-sans text-body antialiased;
   background-color: var(--paper);
   color: var(--ink);
   transition: background-color 0.3s var(--ease-quart), color 0.3s var(--ease-quart);
-  /* Live site never set a line-height, so text uses the browser default ("normal"), not Tailwind's 1.5. */
-  line-height: normal;
 }
 
-/* Collaborators logo strip */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
+/* ── Hover motion (components/RollText.jsx, components/Arrow.jsx) ───────────────────────────
+   Put `motion-host` on the link or button; its RollText and Arrow children play on hover/focus. */
+
+/* Letter roll: each letter slides up to an identical copy, 0.55s quart, 16ms apart. */
+.roll {
+  display: inline-flex;
+  white-space: pre;
+}
+.roll-letter {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+  line-height: 1.2em;
+  vertical-align: top;
+}
+.roll-letter > span {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+  transition: transform 0.55s var(--ease-quart) calc(var(--i) * 16ms);
+}
+.motion-host:hover .roll-letter > span,
+.motion-host:focus-visible .roll-letter > span {
+  transform: translateY(-100%);
+}
+
+/* Arrow swap: the arrow leaves right and a copy enters from the left 80ms later, 0.5s quart. */
+.arrow {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 0.9em;
+  height: 0.9em;
+  flex: 0 0 0.9em;
+  vertical-align: -0.05em;
+}
+.arrow > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  transition: transform 0.5s var(--ease-quart);
+}
+.arrow > span:last-child {
+  transform: translateX(-140%);
+}
+.motion-host:hover .arrow > span:first-child,
+.motion-host:focus-visible .arrow > span:first-child {
+  transform: translateX(140%);
+}
+.motion-host:hover .arrow > span:last-child,
+.motion-host:focus-visible .arrow > span:last-child {
+  transform: none;
+  transition-delay: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll-letter > span,
+  .arrow > span {
+    transition: none !important;
+  }
+}
+
+/* Collaborators logos (slices/Collaborators/LogoShuffle). Greyscale at 80% until hovered, then full colour.
+   Swaps blur the old logo out and the new one in on the same spot. Blur and opacity sit on the img
+   itself, not a wrapper, so mix-blend-multiply still reaches the page behind. */
+.logo-slot { --gray: 1; --fade: 0.8; }
+@media (hover: hover) {
+  .logo-slot:hover { --gray: 0; --fade: 1; }
+}
+.logo-slot .logo {
+  filter: grayscale(var(--gray)) blur(0);
+  opacity: var(--fade);
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+.logo-slot .logo-in { animation: logo-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.logo-slot .logo-out { animation: logo-out 0.5s cubic-bezier(0.7, 0, 0.84, 0) both; }
+@keyframes logo-in {
+  from { opacity: 0; filter: grayscale(var(--gray)) blur(12px); transform: scale(0.96); }
+}
+@keyframes logo-out {
+  to { opacity: 0; filter: grayscale(var(--gray)) blur(12px); transform: scale(1.04); }
 }
 
 /* Project page photos (slices/ProjectImage). Consecutive photos sit two per row, alternating
    60/40 then 40/60; every row has the same fixed height from the grid's width (cqw), and photos
-   cover their box so a hover never resizes a row from inside. Phones stack them. */
+   cover their box so a hover never resizes a row from inside. Compact layouts stack them. Gaps and margins are the 6px gutter. */
 .project-images {
   display: flex;
   flex-direction: column;
-  gap: 1vw;
-  padding: 0 1.7vw;
+  gap: 6px;
+  padding: 0 6px;
   container-type: inline-size;
   --img-hover-ease: cubic-bezier(0.33, 1, 0.68, 1);
   --img-hover-duration: 0.75s;
@@ -59,18 +240,17 @@ body {
 .project-images > .project-image:not([data-portrait]) {
   aspect-ratio: 3 / 2;
 }
-@media (min-width: 681px) {
+@media (min-width: 901px) and (orientation: landscape), (min-width: 1101px) {
   .project-images {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center; /* a portrait's row grows on hover; its partner stays centred */
-    gap: 2vw;
-    padding: 0 2vw;
+    gap: 6px;
   }
   .project-images > .project-image {
-    flex: 1 1 calc(40% - 1vw);
+    flex: 1 1 calc(40% - 3px);
     aspect-ratio: auto;
-    height: calc((60cqw - 1vw) * 2 / 3);
+    height: calc((60cqw - 3px) * 2 / 3);
     position: relative;
   }
   .project-images > .project-image > .project-image-photo {
@@ -79,15 +259,15 @@ body {
   }
   .project-images > :nth-child(4n + 1),
   .project-images > :nth-child(4n) {
-    flex-basis: calc(60% - 1vw);
+    flex-basis: calc(60% - 3px);
   }
   /* portraits take the narrow slot, their landscape partner the wide one */
   .project-images > .project-image[data-portrait]:nth-child(n) {
-    flex-basis: calc(40% - 1vw);
+    flex-basis: calc(40% - 3px);
   }
   .project-images > [data-portrait]:nth-child(odd) + :not([data-portrait]),
   .project-images > :not([data-portrait]):nth-child(odd):has(+ [data-portrait]) {
-    flex-basis: calc(60% - 1vw);
+    flex-basis: calc(60% - 3px);
   }
   /* a lone landscape fills one screen; an odd last landscape spans the row, capped at the screen */
   .project-images > .project-image:not([data-portrait]):only-child {
@@ -101,20 +281,81 @@ body {
   }
 }
 /* With a mouse: a landscape widens to 80% (partner 20%); a portrait's row grows to its 2:3 height, max 90vh */
-@media (min-width: 681px) and (hover: hover) {
+@media (min-width: 901px) and (orientation: landscape) and (hover: hover), (min-width: 1101px) and (hover: hover) {
   .project-images > .project-image {
     transition-property: flex-basis, height;
     transition-duration: var(--img-hover-duration);
     transition-timing-function: var(--img-hover-ease);
   }
   .project-images > .project-image:not([data-portrait]):nth-child(n):hover {
-    flex-basis: calc(80% - 1vw);
+    flex-basis: calc(80% - 3px);
   }
   .project-images > :not([data-portrait]):nth-child(odd):hover + *,
   .project-images > :nth-child(odd):has(+ :not([data-portrait]):hover) {
-    flex-basis: calc(20% - 1vw);
+    flex-basis: calc(20% - 3px);
   }
   .project-images > [data-portrait]:hover {
-    height: min(calc((40cqw - 1vw) * 3 / 2), 90vh);
+    height: min(calc((40cqw - 3px) * 3 / 2), 90vh);
   }
+}
+
+/* ── Project open transition (components/ProjectTransition.jsx) ──────────────────────────────
+   The clicked card's photo grows (on the live page, from the click's next frame) until it fills the
+   screen exactly as the project hero; then the page changes under it and it hands over in one frame.
+   data-project-opening is set from the click until that hand-over, never on a normal page load:
+   the "View" tag leaves at once, and the project title waits, then rises in. */
+html[data-project-opening] [data-view-cursor] {
+  visibility: hidden;
+}
+[data-project-title] {
+  transition:
+    opacity 500ms cubic-bezier(0.23, 1, 0.32, 1) 80ms,
+    translate 500ms cubic-bezier(0.23, 1, 0.32, 1) 80ms;
+}
+html[data-project-opening] [data-project-title] {
+  opacity: 0;
+  translate: 0 16px;
+  transition: none;
+}
+
+/* ── Page-load intro and reveals (components/Intro.jsx, components/Reveal.jsx, slices/Hero) ──────
+   INTRO_SCRIPT (lib/intro.js) adds .js-anim to <html> before the first paint when JavaScript runs and
+   motion is allowed. Only then are animated elements held in their start state, so they never show,
+   vanish and fade back in; GSAP only ever animates them in. Without JS or with reduced motion
+   everything is simply visible. */
+.curtain {
+  display: none;
+}
+.js-anim:not(.intro-skip) .curtain {
+  display: flex;
+}
+.js-anim [data-curtain-logo] {
+  transform: translateY(110%);
+}
+.js-anim [data-intro],
+.js-anim [data-reveal],
+.js-anim [data-hero-line],
+.js-anim [data-card],
+.js-anim [data-split],
+.js-anim [data-fade],
+.js-anim [data-photo-reveal] {
+  opacity: 0;
+}
+
+/* Keyboard focus: a clear ring on every link, button and field, only for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* The hero photo starts slightly zoomed and settles as the curtain lifts (first visit only). */
+.js-anim:not(.intro-skip) [data-hero-media] {
+  transform: scale(1.12);
+}
+/* SplitText line masks (hero, Contact, project titles): room below each line inside its clip, so
+   descenders (g, y, p) are not cut on tight line heights; the negative margin keeps the layout as it was. */
+[data-split] > div,
+[data-hero-title] h1 > div {
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
 }
