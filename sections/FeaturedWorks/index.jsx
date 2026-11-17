@@ -1,4 +1,3 @@
-import { hasImage } from "@/lib/sanity/image";
 import { scope } from "@/lib/sanity/edit";
 import { toWorks } from "@/lib/projects";
 import WorksGrid from "@/components/WorksGrid";
@@ -8,14 +7,14 @@ import SectionLabel from "@/components/SectionLabel";
 import { editProps } from "@/lib/sanity/edit-props";
 
 /**
- * The section's projects as cards, in the order picked: each card's own photo when it has one, else the
- * project's card photo. In the studio's live preview a card opens its place in the list, its name the project.
+ * The section's projects as cards, in the order picked, each with its project's main photo. In the studio's
+ * live preview a card opens its place in the list, its name the project.
  *
- * @param {Array<{ _key: string, image?: import("@/lib/sanity/image").SanityImage | null, project?: import("@/lib/projects").ProjectCard | null }> | null | undefined} cards
+ * @param {Array<{ _key: string, project?: import("@/lib/projects").ProjectCard | null }> | null | undefined} cards
  * @param {import("@/lib/sanity/edit").Edit} list the section's projects list
  */
 export function featuredWorks(cards, list) {
-	const projects = (cards ?? []).map((card) => card.project && { ...card.project, _key: card._key, image: hasImage(card.image) ? card.image : card.project.image });
+	const projects = (cards ?? []).map((card) => card.project && { ...card.project, _key: card._key });
 	return toWorks(projects, { list, stega: Boolean(list.doc) });
 }
 

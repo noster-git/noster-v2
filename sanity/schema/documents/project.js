@@ -44,15 +44,8 @@ export const project = defineType({
 			title: "Main photo",
 			type: "imageWithAlt",
 			group: "content",
-			description: "The large photo at the top of the project page. Also on the project's card unless a card photo is set.",
+			description: "The large photo at the top of the project page, and the photo on the project's card on the Home and Works pages. Clicking the card grows this photo into the top of the project page.",
 			validation: (rule) => rule.required().error("Add the main photo."),
-		}),
-		defineField({
-			name: "cardImage",
-			title: "Card photo (optional)",
-			type: "imageWithAlt",
-			group: "content",
-			description: "A different photo for the project's card on the Home and Works pages. Leave empty to use the main photo.",
 		}),
 		defineField({
 			name: "summary",

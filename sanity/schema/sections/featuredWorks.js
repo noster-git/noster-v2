@@ -34,16 +34,10 @@ export const featuredWorks = defineType({
 							description: "The project the card shows and opens.",
 							validation: (rule) => rule.required().error("Choose the project."),
 						}),
-						defineField({
-							name: "image",
-							title: "Photo for this card (optional)",
-							type: "imageWithAlt",
-							description: "Leave empty to use the project's own card photo. Add one only to show a different photo here.",
-						}),
 					],
 					preview: {
-						select: { title: "project.name", hero: "project.heroImage", card: "project.cardImage", image: "image" },
-						prepare: ({ title, hero, card, image }) => ({ title: title || "Choose a project", media: image?.asset ? image : card?.asset ? card : hero }),
+						select: { title: "project.name", media: "project.heroImage" },
+						prepare: ({ title, media }) => ({ title: title || "Choose a project", media }),
 					},
 				}),
 			],
