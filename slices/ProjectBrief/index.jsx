@@ -22,8 +22,8 @@ const ProjectBrief = ({ slice }) => (
 				The project
 			</SectionLabel>
 			<dl className="order-last col-span-5 mt-5 grid grid-cols-2 gap-x-g gap-y-2 desk:mt-0 desk:grid-cols-1 desk:pr-4">
-				{slice.primary.details.map((item, i) => (
-					<div key={i} data-reveal className="desk:border-t desk:border-rule desk:pt-[0.5em]">
+				{slice.primary.details.filter((item) => item.label?.trim() && item.value?.trim()).map((item, i) => (
+					<div key={i} data-reveal className="desk:border-t desk:border-rule desk:pt-rule">
 						<dt className="text-muted">{item.label}</dt>
 						<dd className="whitespace-pre-line">{item.value}</dd>
 					</div>

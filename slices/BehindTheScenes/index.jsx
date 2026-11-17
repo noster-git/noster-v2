@@ -42,21 +42,23 @@ const BehindTheScenes = ({ slice, context }) => {
 		<section
 			data-slice-type={slice.slice_type}
 			data-slice-variation={slice.variation}
+			aria-label="Behind the Scenes"
 			className="relative mt-2 h-[min(60vw,100svh)] w-full px-m hidden text-[1vw] board:block"
 		>
 			{/* text-[1vw] above is the board's measuring unit (Canvas.jsx lays photos out in em), not a type size. */}
 			<div className="relative h-full overflow-hidden rounded-ui bg-wash has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-(--ink)">
 				<Canvas>
-					{/* Sits at the board's centre, so it starts mid-frame and moves with the board when dragged. */}
+					{/* Sits at the board's centre, so it starts mid-frame and moves with the board when dragged.
+					    The section's heading above 1180px; below it this whole board is display: none and the
+					    swipe row's title is the heading, so a page only ever exposes one. The space keeps the
+					    words apart in the page's text. */}
 					<h2
 						data-title
 						className="absolute top-1/2 left-1/2 z-10 -translate-1/2 text-center text-display whitespace-nowrap text-white select-none"
 					>
-						<span className="bg-black px-g">Behind</span>
+						<span className="bg-black px-g">Behind</span>{" "}
 						<br />
-						<span className="bg-black px-g">
-							the Scenes
-						</span>
+						<span className="bg-black px-g">the Scenes</span>
 					</h2>
 					{photos.map((p, i) => (
 						<figure key={i} data-photo className="invisible absolute overflow-hidden rounded-ui">

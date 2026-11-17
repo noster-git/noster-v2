@@ -9,7 +9,7 @@ import Link from "next/link";
 import Img from "@/components/Img";
 import { useProjectTransition } from "@/components/ProjectTransition";
 import { ArrowIcon, CornerIcon } from "@/components/Arrow";
-import { hasPlayed, revealBatch } from "@/lib/motion";
+import { hasPlayed, markPlayed, revealBatch } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -83,9 +83,12 @@ const NEAR_MAX = 3; // touch: at most this many cards on screen preload their he
  * `lead`: the grid opens the page, so the first photo is its LCP: it loads at high priority (eager) and
  * is painted under the load curtain (data-lcp, globals.css). Leave it off where the grid sits below the fold.
  *
- * @param {{ lead?: boolean, works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
+ * `entrance` (default on): the cards reveal as they scroll in. Off, they are shown as they are, already
+ * played (the works page's Grid / List toggle).
+ *
+ * @param {{ lead?: boolean, entrance?: boolean, works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
  */
-export default function WorksGrid({ works, lead = false }) {
+export default function WorksGrid({ works, lead = false, entrance = true }) {
 	// The "View project" pill's state lives outside the grid, so hovering a card re-renders only the pill.
 	const [cursor] = useState(() => valueStore(false));
 	const { open, warm } = useProjectTransition();
@@ -139,6 +142,15 @@ export default function WorksGrid({ works, lead = false }) {
 			const stops = [];
 			// Cards already revealed stay as they are when the page comes back (lib/motion.js → hasPlayed).
 			const cards = gsap.utils.toArray("[data-card]", scope.current).filter((card) => !hasPlayed(card));
+			if (!entrance) {
+				// Shown before the first paint (a layout effect), out of the start state CSS holds them in.
+				cards.forEach((card) => {
+					markPlayed(card);
+					card.style.opacity = "1";
+					card.style.visibility = "visible";
+				});
+				return;
+			}
 			const triggers = ScrollTrigger.batch(cards, {
 				start: "top 90%",
 				once: true,
@@ -167,7 +179,9 @@ export default function WorksGrid({ works, lead = false }) {
 							<p className="mb-[3px] overflow-hidden pb-[3px] text-name">
 								<span data-card-name className="flex min-w-0 items-center gap-icon">
 									<CornerIcon className="size-[0.85em] shrink-0" />
-									<span className="truncate">{work.name}</span>
+									<span className="truncate" title={work.name}>
+										{work.name}
+									</span>
 									<span aria-hidden="true" className="ml-auto pl-g text-body text-muted tabular-nums">
 										{pad(i + 1)}
 									</span>
@@ -221,7 +235,8 @@ export default function WorksGrid({ works, lead = false }) {
 
 /**
  * "View project" pill centred on the pointer over the photos: 7 × 14px padding, 4px radius, body text
- * with an 11px arrow; grows in from 0.6 as it fades in (and back out) in 0.28s. Rendered into <body> so
+ * with an 11px arrow; grows in from 0.9 as it fades in (and back out) in 0.28s, only fading under reduced
+ * motion. Rendered into <body> so
  * no transformed ancestor can trap its position: fixed. Shown while `state` (valueStore) is true.
  */
 function ViewCursor({ state }) {
@@ -241,7 +256,7 @@ function ViewCursor({ state }) {
 	return createPortal(
 		<div ref={ref} aria-hidden="true" data-view-cursor className="pointer-events-none fixed top-0 left-0 z-(--z-cursor) hidden will-change-transform desk-mouse:block">
 			<div
-				className={`flex -translate-1/2 items-center gap-[8px] rounded-ui bg-black px-[10px] py-[6px] whitespace-nowrap text-white transition-[scale,opacity] duration-280 ease-out-quint ${active ? "scale-100 opacity-100" : "scale-[0.6] opacity-0"}`}
+				className={`flex -translate-1/2 items-center gap-[8px] rounded-ui bg-black px-[10px] py-[6px] whitespace-nowrap text-white transition-[scale,opacity] duration-280 ease-out-quint motion-reduce:scale-100 ${active ? "scale-100 opacity-100" : "scale-[0.9] opacity-0"}`}
 			>
 				View project
 				<ArrowIcon className="size-[11px]" />

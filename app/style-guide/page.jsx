@@ -49,7 +49,7 @@ const TYPE = [
 	{ token: "text-heading", size: "19px → 32px at 1440", spec: "line 1 · tracking −0.025em · regular", use: "Block headings and the line CTA.", sample: "View all projects" },
 	{ token: "text-body", size: "12px → 12px → 13px", spec: "line 16 → 15 → 16px · tracking −0.025em", use: "Everything that is read: body, captions, nav, footer, details. The page default.", sample: "Trivandrum · Kochi · Hyderabad — Noster designs, builds and furnishes offices." },
 	{ token: "text-body", size: "as body", spec: "the label style, sentence case, after a lime index chip (SectionLabel)", use: "Section labels (Our approach), numbered in page order by CSS.", sample: "Our approach" },
-	{ token: "text-name", size: "14px → 16px at 1440", spec: "line 1.2 · tracking −0.02em", use: "Project names on cards.", sample: "Geeky Wolf" },
+	{ token: "text-name", size: "14px → 16px at 1440", spec: "line 1.2 · tracking −0.02em", use: "Project names on cards.", sample: "GeekyWolf" },
 	{ token: "text-long", size: "14px", spec: "line 21px", use: "Long-form reading: the privacy policy.", sample: "We use your data to provide and improve the service." },
 	{ token: "text-body text-muted", size: "as body", spec: "#666", use: "Secondary text: addresses, detail labels.", sample: "↳ Brand identity, workspace design" },
 ];
@@ -57,8 +57,8 @@ const TYPE = [
 const SPACES = [1, 2, 3, 4, 6, 8, 12];
 
 const COLOURS = [
-	{ name: "Paper", value: "#FFFFFF", token: "bg-(--paper)", use: "Page background.", swatch: "bg-white" },
-	{ name: "Ink", value: "#000000", token: "text-(--ink)", use: "Text, rules and hover fills.", swatch: "bg-black" },
+	{ name: "Paper", value: "#FFFFFF", token: "bg-white · var(--paper) in CSS", use: "Page background.", swatch: "bg-white" },
+	{ name: "Ink", value: "#000000", token: "text-black · var(--ink) in CSS", use: "Text, rules and hover fills. Tints: border-rule (15%), bg-wash (4%), bg-scrim (80%).", swatch: "bg-black" },
 	{ name: "Lime", value: "#D3FD5E", token: "text-lime", use: "The accent: the home hero title, the curtain, the footer, the header CTA, section index chips and text selection. Never as text on white.", swatch: "bg-lime" },
 	{ name: "Stone", value: "#F3F2EE", token: "bg-stone", use: "Warm paper for the bands that hold text: Our Approach with Our Collaborators, and the project brief.", swatch: "bg-stone" },
 	{ name: "Muted", value: "#666666", token: "text-muted", use: "Secondary text (5.7:1 on white, passes AA).", swatch: "bg-muted" },
@@ -315,7 +315,7 @@ export default function Page() {
 				</Block>
 			</Section>
 
-			<Section id="colour" index={5} title="Colour" intro="One light theme. Paper and Ink are CSS variables; Lime and Muted are Tailwind colours.">
+			<Section id="colour" index={5} title="Colour" intro="One light theme. Paper and Ink are Tailwind's white and black in class names, and --paper / --ink in CSS; Lime, Stone and Muted are theme colours.">
 				<ul className="grid grid-cols-2 gap-x-g gap-y-3 min-[600px]:grid-cols-3 desk:grid-cols-5">
 					{COLOURS.map((c) => (
 						<li key={c.name}>
@@ -459,20 +459,20 @@ export default function Page() {
 			<Section id="motion" index={7} title="Motion" intro="Hovers are quick and precise; page motion is slower. Everything stops under reduced motion.">
 				<Rows
 					items={[
-						["Letter roll", "0.55s · cubic-bezier(0.76, 0, 0.24, 1) · 16ms per letter", "Links, buttons, chips (RollText inside a motion-host)."],
-						["Arrow swap", "0.5s · same curve · copy enters 80ms later", "Every arrow inside a motion-host."],
+						["Letter roll", "0.4s · ease-out-quint · 14ms per letter (up to 12 letters) · mouse and keyboard focus only", "Links, buttons, chips (RollText inside a motion-host)."],
+						["Arrow swap", "0.4s · ease-out-quint · copy enters 60ms later", "Every arrow inside a motion-host."],
 						["Colour and opacity", "0.2s", "Link to muted, button opacity, chip border."],
 						["Card hover", "the View project pill follows the pointer; the photo eases to 1.04 · 0.9s · cubic-bezier(0.22, 1, 0.36, 1)", "Project cards (mouse only)."],
-						["View pill", "black, 6 × 10px padding (the tag's size), 4px radius · scale 0.6 → 1 with a fade · 0.28s · ease-out-quint", "Follows the pointer over project photos."],
+						["View pill", "black, 6 × 10px padding (the tag's size), 4px radius · scale 0.9 → 1 with a fade (fade only with reduced motion) · 0.28s · ease-out-quint", "Follows the pointer over project photos."],
 						["Hero drift", "photo sinks 300px and darkens to 50% (home) as the hero scrolls away · scrubbed", "Home and project heroes (components/Parallax.jsx)."],
 						["Scroll progress", "2px line across the top, filled by the page scroll · CSS scroll timeline", "Every page (Navigation)."],
-						["Line CTA fill", "0.6s · ease-quart, cubic-bezier(0.76, 0, 0.24, 1)", "Ink fills from the top."],
+						["Line CTA fill", "0.45s · ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)", "Ink fills from the top."],
 						["Curtain", "lime; wordmark in from a 12px blur on page changes (already in place on a load) · 0.9s · cubic-bezier(0.22, 1, 0.36, 1); wipes up over the page and off it · 0.7s · cubic-bezier(0.58, 0.08, 0.13, 1); holds 0.3s once the page is ready", "Page loads and page changes (Intro, PageTransition, lib/curtain.js)."],
 						["Hero entrance", "photo 1.12× → 1 · 2.4s; title lines rise from masks 1.2s · 0.09s apart", "SplitText lines (lib/motion.js → lineRise)."],
 						["Scroll reveal", "fade and rise 32px · 1.1s · expo.out · 0.08s stagger", "<Reveal> with data-reveal children (lib/motion.js)."],
 						["Project cards", "rise 40px, photo unmasks from the bottom (1.3s) and settles from 1.15×", "ScrollTrigger.batch, 90ms apart (360ms at most)."],
 						["No flash", "start states held by CSS from the first frame (html.js-anim)", "Animations only ever play in; nothing hides after load."],
-						["Project open", "press 0.98 · 0.1s; grow 0.75s · cubic-bezier(0.16, 1, 0.3, 1), no zoom; page fades out 0.35s; corners square off over the last 25%; shade to 25%; title rises on landing", "Card photo grows into the project hero (ProjectTransition)."],
+						["Project open", "press 0.98 · 0.1s; grow 0.75s · cubic-bezier(0.16, 1, 0.3, 1), no zoom; page fades out 0.35s; corners square off over the last 25%; shade to 25%; on landing the page fades back in under the photo (0.3s), then the title rises", "Card photo grows into the project hero (ProjectTransition)."],
 					]}
 					render={([name, spec, use]) => (
 						<div className="motion-host grid grid-cols-1 gap-x-g desk:grid-cols-10">

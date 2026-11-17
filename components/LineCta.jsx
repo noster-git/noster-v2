@@ -11,25 +11,25 @@ import Arrow from "./Arrow";
  * up, then the bottom rule draws.
  * Used for "View all projects" (Home) and "View Next Project" (project pages, with the next project's photo).
  */
-export default function LineCta({ href, children, image, className = "pt-2 pb-6" }) {
+export default function LineCta({ href, children, image, label, className = "pt-2 pb-6" }) {
 	return (
 		<Reveal as="div" className={`px-m ${className}`}>
-			<Link href={href} className="motion-host group relative z-10 flex">
+			<Link href={href} aria-label={label} className="motion-host group relative z-10 flex">
 				<span data-reveal="rule" aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-(--ink)" />
 				<span
 					aria-hidden="true"
-					className="absolute inset-0 -z-10 origin-top scale-y-0 bg-(--ink) transition-[scale] duration-600 ease-quart group-hover:scale-y-100"
+					className="absolute inset-0 -z-10 origin-top scale-y-0 bg-(--ink) transition-[scale] duration-450 ease-out-quint group-hover:scale-y-100"
 				/>
 				<span
 					data-reveal
-					className="flex w-full items-center justify-center gap-icon py-2 text-heading transition-colors duration-600 ease-quart group-hover:text-(--paper)"
+					className="flex w-full max-w-full min-w-0 items-center justify-center gap-icon py-2 text-heading transition-colors duration-450 ease-out-quint group-hover:text-(--paper)"
 				>
 					{image && (
 						<span className="relative mr-[0.2em] block aspect-[5/3] h-[1.5em] shrink-0 overflow-hidden rounded-ui">
 							<Img field={image} fill sizes="160px" alt="" className="object-cover" />
 						</span>
 					)}
-					<RollText>{children}</RollText>
+					<RollText truncate>{children}</RollText>
 					<Arrow />
 				</span>
 				<span data-reveal="rule" aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-(--ink)" />

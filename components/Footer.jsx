@@ -8,6 +8,7 @@ import RollText from "./RollText";
 import Arrow from "./Arrow";
 import FooterSubscribe from "./FooterSubscribe";
 import FooterMotion from "./FooterMotion";
+import { NEWSLETTER } from "@/lib/site";
 
 /**
  * @param {string} [ref]
@@ -62,15 +63,13 @@ const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] i
 /**
  * Site footer. Lime with black type: the NOSTER wordmark across the full width, then two sides under a rule:
  * - left (cols 1–6): "Let's Build Together", with the business-inquiries line and email / phones at its foot;
- * - right (cols 8–10): socials, newsletter sign-up, offices, then rights and copyright.
+ * - right (cols 8–10; 7–10 below 1181px): socials, newsletter sign-up (when NEWSLETTER is on), offices,
+ *   then rights and copyright.
  * Both sides stretch to the same height, so the left's contacts line up with the credits.
  * Fixed, compact gaps: the footer is as tall as its content, which fits one screen on desk; nothing
  * stretches to fill the window, so tall windows get no gaps. Compact layouts stack the two sides.
  * Entrance animation: components/FooterMotion.jsx.
  */
-// The newsletter form shows once a provider is connected in lib/subscribe.js (addSubscriber).
-const SUBSCRIBE = false;
-
 export default async function Footer() {
 	const ref = await getPreviewRef();
 	const [footer, contact] = await Promise.all([getFooter(ref), getContact(ref)]);
@@ -92,12 +91,13 @@ export default async function Footer() {
 						<div>
 							<Rule />
 							{contact.intro && (
-								<p data-fade className="pt-[0.5em]">
+								<p data-fade className="pt-rule">
 									{contact.intro}
 								</p>
 							)}
-							{/* Display size, shrinking with the window on desk so it stays on one line across the 6 columns */}
-							<h2 data-split className="mt-1 text-display py-[0.08em] desk:text-[min(var(--t-display),7.2vw)] desk:whitespace-nowrap">
+							{/* Display size, shrinking with the window on desk so the usual title fits one line across the 6
+							    columns; a longer one wraps rather than running into the right column */}
+							<h2 data-split className="mt-1 text-display text-balance py-[0.08em] desk:text-[min(var(--t-display),7.2vw)]">
 								{contact.title}
 							</h2>
 						</div>
@@ -108,7 +108,7 @@ export default async function Footer() {
 								<li key={c.value} className="border-t border-current">
 									<a href={c.href} className="grid grid-cols-6 items-baseline gap-x-g py-[0.35em] pointer-coarse:min-h-[44px] pointer-coarse:content-center transition-opacity duration-200 hover:opacity-60">
 										<span className="col-span-2">{c.href.startsWith("mailto:") ? "Email" : "Phone"}</span>
-										<span className="col-span-4 text-lead">{c.value}</span>
+										<span className="col-span-4 min-w-0 text-lead [overflow-wrap:anywhere]">{c.value}</span>
 									</a>
 								</li>
 							))}
@@ -118,11 +118,11 @@ export default async function Footer() {
 
 				{/* Right column: fixed gaps; the credits sit at its foot, level with the last contact row. Four
 				    columns on tablets and small laptops so the addresses don't wrap into short lines, three from 1181px. */}
-				<div className="flex flex-col gap-3 desk:col-span-4 desk:col-start-7 board:col-span-3 board:col-start-8">
+				<div className="flex flex-col gap-3 desk:col-span-4 desk:col-start-7 desk:pl-m board:col-span-3 board:col-start-8 board:pl-0">
 					{/* Socials */}
 					<div>
 						<Rule />
-						<div data-fade className="pt-[0.5em]">
+						<div data-fade className="pt-rule">
 							{socials_title && <p>{socials_title}</p>}
 							<ul>
 								{socials.map((s, i) =>
@@ -138,7 +138,7 @@ export default async function Footer() {
 						</div>
 					</div>
 
-					{SUBSCRIBE && (
+					{NEWSLETTER && (
 						<div data-fade>
 							<FooterSubscribe />
 						</div>
@@ -147,7 +147,7 @@ export default async function Footer() {
 					{/* Offices */}
 					<div>
 						<Rule />
-						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-[0.5em]">
+						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule">
 							{offices.map((office, i) => (
 								<div key={i}>
 									<p>{office.city}</p>
@@ -179,7 +179,7 @@ export default async function Footer() {
 								<RollText>Privacy Policy</RollText>
 							</Link>
 						</div>
-						<p className="text-right">{copyright_text}</p>
+						<p className="inline-flex min-h-[24px] items-center text-right pointer-coarse:min-h-[44px]">{copyright_text}</p>
 					</div>
 				</div>
 			</div>

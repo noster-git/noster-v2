@@ -138,9 +138,9 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 	}
 
 	// "Play showreel" and Pause / Play sit on a dark photo: keyboard focus thickens the underline instead of
-	// drawing a box, and hit areas reach 44px on touch.
+	// drawing a box, hit areas reach 44px on touch, and a press dims them at once (touch has no hover).
 	const control =
-		"hit cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50 focus-visible:outline-none focus-visible:decoration-2";
+		"hit cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50 focus-visible:outline-none focus-visible:decoration-2 active:opacity-50 active:duration-100";
 
 	return (
 		<section
@@ -201,12 +201,13 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			</div>
 
 			{videoSrc && (
+				// Fades in as the video grows from 0.96, and fades out (globals.css → .showreel-dialog).
 				<dialog
 					ref={dialogRef}
 					aria-label="Showreel"
 					onClose={handleClose}
 					onClick={(e) => e.target === e.currentTarget && dialogRef.current.close()}
-					className="m-0 size-full max-h-none max-w-none overscroll-contain bg-scrim p-0 backdrop-blur-sm backdrop:bg-transparent"
+					className="showreel-dialog m-0 size-full max-h-none max-w-none overscroll-contain bg-scrim p-0 backdrop-blur-sm backdrop:bg-transparent"
 				>
 					<div className="pointer-events-none flex size-full items-center justify-center">
 						<video
@@ -222,7 +223,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 						type="button"
 						aria-label="Close showreel"
 						onClick={() => dialogRef.current.close()}
-						className="hit absolute! top-m right-m size-[32px] cursor-pointer rounded-ui bg-white text-black focus-visible:outline-white transition-[scale,opacity] duration-500 ease-quart hover:scale-95 hover:opacity-90 desk:size-[40px]"
+						className="hit absolute! top-m right-m size-[32px] cursor-pointer rounded-ui bg-white text-black focus-visible:outline-white transition-[scale,opacity] duration-150 ease-out hover:opacity-80 active:scale-[0.97] desk:size-[40px]"
 					>
 						<svg viewBox="0 0 55 55" fill="none" className="size-full" aria-hidden="true">
 							<path d="M37 17L17.6897 37M36.3103 37L17 17" stroke="currentColor" strokeWidth="2" />

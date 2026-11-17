@@ -43,13 +43,15 @@ function layout(count, reserved) {
 }
 
 /**
- * The draggable board. The CSS transform transition (1.2s overshoot) makes the board trail the
- * pointer with a spring. Photos grow to 1.1 the moment the board is pressed and settle back on release
- * (not under reduced motion).
+ * The draggable board. The CSS transform transition (0.9s ease-out-quint) makes the board trail the
+ * pointer and glide to a stop, never past the edges. Arrow-key steps take a quicker 300ms glide instead,
+ * so each press answers at once; the next press on the board brings the drag glide back. Photos grow
+ * to 1.1 the moment the board is pressed and settle back on release (not under reduced motion).
  */
 // Arrow keys move the board this far (em), the keyboard alternative to dragging.
 const KEY_STEP = 24;
 const KEYS = { ArrowLeft: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+const KEY_GLIDE = "transform 300ms cubic-bezier(0.22, 1, 0.36, 1)";
 
 export default function Canvas({ children }) {
 	const board = useRef(null);
@@ -63,6 +65,7 @@ export default function Canvas({ children }) {
 		const d = drag.current;
 		if (!dir || !d) return;
 		e.preventDefault();
+		if (!matchMedia("(prefers-reduced-motion: reduce)").matches) board.current.style.transition = KEY_GLIDE;
 		const step = KEY_STEP * parseFloat(getComputedStyle(board.current).fontSize);
 		gsap.set(board.current, { x: d.x + dir[0] * step, y: d.y + dir[1] * step });
 		d.update(true);
@@ -129,8 +132,10 @@ export default function Canvas({ children }) {
 			role="group"
 			aria-label="Behind the scenes photos. Drag, or use the arrow keys, to look around."
 			onKeyDown={onKeyDown}
+			// Back to the drag glide (the class below) for a drag.
+			onPointerDown={() => board.current.style.removeProperty("transition")}
 			// Focus shows on the framed box around the board (index.jsx); the board itself is mostly off-screen.
-			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-grab touch-none transition-transform duration-1200 ease-back-out select-none outline-none active:cursor-grabbing motion-reduce:transition-none"
+			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-grab touch-none transition-transform duration-900 ease-out-quint select-none outline-none active:cursor-grabbing motion-reduce:transition-none"
 		>
 			{children}
 		</div>

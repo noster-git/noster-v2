@@ -41,13 +41,19 @@ export default function FooterSubscribe() {
 					type="submit"
 					disabled={pending}
 					aria-busy={pending || undefined}
-					className="h-[2.25em] shrink-0 border border-current px-[0.6em] transition-colors duration-200 hover:bg-black hover:text-lime focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-50"
+					className="h-[2.25em] shrink-0 border border-current px-[0.6em] transition-[color,background-color,border-color,opacity] duration-200 ease-out hover:bg-black hover:text-lime focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-50"
 				>
 					{pending ? "Sending…" : "Subscribe"}
 				</button>
 			</div>
+			{/* The live region itself stays put, so screen readers keep announcing into it; each new message
+			    is a new line inside it, which settles in (globals.css → .subscribe-status). */}
 			<p id="footer-email-status" role="status" className="mt-[0.5em] min-h-[1lh]">
-				{state?.message}
+				{state?.message && (
+					<span key={state.message} className="subscribe-status block">
+						{state.message}
+					</span>
+				)}
 			</p>
 		</form>
 	);

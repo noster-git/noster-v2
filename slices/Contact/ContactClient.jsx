@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { EASE, hasPlayed, lineRise, markPlayed, splitLines } from "@/lib/motion";
+import { hasPlayed, lineRise, markPlayed, reveal, splitLines } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -60,7 +60,7 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 							tl = gsap
 								.timeline()
 								.to(split.lines, { ...lineRise.to, onComplete: split.restore })
-								.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8");
+								.fromTo(fades, reveal.from, reveal.to, "-=0.8");
 						}),
 				});
 			});

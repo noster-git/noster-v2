@@ -35,8 +35,15 @@ export default function Intro() {
 	useEffect(() => {
 		const root = document.documentElement;
 		const nav = gsap.utils.toArray("[data-intro]");
-		const showNav = () =>
-			gsap.fromTo(nav, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE, stagger: 0.06, clearProps: "transform" });
+		// Header items drop in from above; items at the foot of the screen (data-intro="up", the phone CTA)
+		// rise in from below, towards the middle of the screen like the rest.
+		const showNav = () => {
+			const to = { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE, stagger: 0.06, clearProps: "transform" };
+			const up = nav.filter((el) => el.dataset.intro === "up");
+			const down = nav.filter((el) => el.dataset.intro !== "up");
+			if (down.length) gsap.fromTo(down, { autoAlpha: 0, y: -12 }, { ...to });
+			if (up.length) gsap.fromTo(up, { autoAlpha: 0, y: 12 }, { ...to });
+		};
 
 		// From the lift on, the main element (data-lcp) is held in its start state like the rest (globals.css).
 		const lifting = () => root.classList.add("intro-lift");

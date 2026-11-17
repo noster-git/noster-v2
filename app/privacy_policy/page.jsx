@@ -4,6 +4,8 @@ import { PrismicRichText } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import Reveal from "@/components/Reveal";
+import JsonLd from "@/components/JsonLd";
+import { page as pageSchema } from "@/lib/schema";
 import { SITE_NAME, OPEN_GRAPH, shareImage } from "@/lib/site";
 
 // Type and spacing come from the design system in app/globals.css (spacing unit = one body line).
@@ -60,7 +62,9 @@ export default async function Page() {
 	const heading = page.data.title || "Privacy Policy";
 
 	return (
-		// Reveal: the heading rises line by line, then the text fades up.
+		<>
+		<JsonLd data={pageSchema("/privacy_policy", heading)} />
+		{/* Reveal: the heading rises line by line, then the text fades up. */}
 		<Reveal as="div" className="grid-site items-start px-m pt-page pb-8">
 			{/* Desk: the heading stays in columns 1–3 as the text scrolls past it. */}
 			<h1 data-reveal="lines" className="col-span-5 mb-4 text-title desk:sticky desk:top-nav desk:col-span-3 desk:mb-0">
@@ -71,6 +75,7 @@ export default async function Page() {
 				<PrismicRichText field={outline(page.data.content)} components={components} />
 			</div>
 		</Reveal>
+		</>
 	);
 }
 

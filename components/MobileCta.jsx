@@ -20,7 +20,7 @@ export default function MobileCta({ children }) {
 	return (
 		<div
 			inert={hidden}
-			className={`fixed bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2 transition-opacity duration-500 ease-quart desk:hidden ${hidden ? "opacity-0" : "opacity-100"}`}
+			className={`fixed bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2 transition-opacity duration-300 ease-out-cubic desk:hidden ${hidden ? "opacity-0" : "opacity-100"}`}
 		>
 			{children}
 		</div>

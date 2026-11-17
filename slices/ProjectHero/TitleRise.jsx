@@ -64,7 +64,7 @@ export default function TitleRise({ className, children }) {
 	});
 
 	return (
-		<h1 ref={ref} data-project-title data-split className={className}>
+		<h1 ref={ref} data-project-title data-split className={`hyphens-auto [overflow-wrap:anywhere] ${className}`}>
 			{children}
 		</h1>
 	);

@@ -103,7 +103,6 @@
   --ease-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
   --ease-curtain: cubic-bezier(0.58, 0.08, 0.13, 1);
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-back-out: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoots a little: the board settling after a throw */
 
   --radius-ui: 4px; /* the corner radius: buttons, tags, photos, video */
   --radius-chip: 2px; /* the small section-number chip (SectionLabel), half the size of everything else */
@@ -124,6 +123,7 @@
   --spacing-nav: var(--nav-clear); /* top-nav: sticky headings clear of the fixed nav */
   --spacing-page: var(--page-top); /* pt-page: pages without a hero, 84 / 120px */
   --spacing-icon: 0.3em; /* gap-icon: between a label and its arrow or corner icon */
+  --spacing-rule: 0.5em; /* pt-rule: text starting under a 1px rule */
 
   /* Type scale. Each `text-<name>` sets size, line height, tracking and weight. */
   --text-body: var(--fs); /* 12 / 12 / 13px — everything that is read */
@@ -295,7 +295,10 @@ main {
 /* ── Hover motion (components/RollText.jsx, components/Arrow.jsx) ───────────────────────────
    Put `motion-host` on the link or button; its RollText and Arrow children play on hover/focus. */
 
-/* Letter roll: each letter slides up to an identical copy, 0.55s quart, 16ms apart. */
+/* Letter roll: each letter slides up to an identical copy, 0.4s ease-out-quint, 14ms apart (the delay
+   stops growing after the 12th letter, so a long label still answers at once). The letter is in the
+   markup once; the copy below it is drawn from data-c (::after), so the text reads once to anything
+   reading the page's HTML. */
 .roll {
   display: inline-flex;
   white-space: pre;
@@ -311,14 +314,24 @@ main {
   display: block;
   height: 1.2em;
   line-height: 1.2em;
-  transition: transform 0.55s var(--ease-quart) calc(var(--i) * 16ms);
+  transition: transform 0.4s var(--ease-out-quint) calc(min(var(--i), 12) * 14ms);
 }
-.motion-host:hover .roll-letter > span,
+.roll-letter > span::after {
+  content: attr(data-c);
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+}
+@media (hover: hover) and (pointer: fine) {
+  .motion-host:hover .roll-letter > span {
+    transform: translateY(-100%);
+  }
+}
 .motion-host:focus-visible .roll-letter > span {
   transform: translateY(-100%);
 }
 
-/* Arrow swap: the arrow leaves right and a copy enters from the left 80ms later, 0.5s quart. */
+/* Arrow swap: the arrow leaves right and a copy enters from the left 60ms later, 0.4s ease-out-quint. */
 .arrow {
   position: relative;
   display: inline-block;
@@ -332,25 +345,78 @@ main {
   position: absolute;
   inset: 0;
   display: flex;
-  transition: transform 0.5s var(--ease-quart);
+  transition: transform 0.4s var(--ease-out-quint);
 }
 .arrow > span:last-child {
   transform: translateX(-140%);
 }
-.motion-host:hover .arrow > span:first-child,
+@media (hover: hover) and (pointer: fine) {
+  .motion-host:hover .arrow > span:first-child {
+    transform: translateX(140%);
+  }
+  .motion-host:hover .arrow > span:last-child {
+    transform: none;
+    transition-delay: 0.06s;
+  }
+}
 .motion-host:focus-visible .arrow > span:first-child {
   transform: translateX(140%);
 }
-.motion-host:hover .arrow > span:last-child,
 .motion-host:focus-visible .arrow > span:last-child {
   transform: none;
-  transition-delay: 0.08s;
+  transition-delay: 0.06s;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .roll-letter > span,
   .arrow > span {
     transition: none !important;
+  }
+}
+
+/* Showreel dialog (slices/Hero/HeroClient.jsx): fades in over 280ms as the video grows from 0.96, and
+   fades out in 180ms. display and overlay stay on until the fade ends, so the closing fade is seen. */
+.showreel-dialog {
+  opacity: 0;
+  transition:
+    opacity 180ms ease-out,
+    display 180ms allow-discrete,
+    overlay 180ms allow-discrete;
+}
+.showreel-dialog[open] {
+  opacity: 1;
+  transition:
+    opacity 280ms var(--ease-out-quint),
+    display 280ms allow-discrete,
+    overlay 280ms allow-discrete;
+}
+.showreel-dialog[open] video {
+  transition: scale 280ms var(--ease-out-quint);
+}
+@starting-style {
+  .showreel-dialog[open] {
+    opacity: 0;
+  }
+  .showreel-dialog[open] video {
+    scale: 0.96;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showreel-dialog[open] video {
+    transition: none;
+  }
+}
+
+/* Newsletter status line (components/FooterSubscribe.jsx): each new message settles in from 4px below. */
+.subscribe-status {
+  transition:
+    opacity 240ms var(--ease-out-quint),
+    translate 240ms var(--ease-out-quint);
+}
+@starting-style {
+  .subscribe-status {
+    opacity: 0;
+    translate: 0 4px;
   }
 }
 

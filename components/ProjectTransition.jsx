@@ -147,7 +147,8 @@ export default function ProjectTransition({ children }) {
 			for (let k = 0; k <= STEPS; k++) {
 				const p = k / STEPS;
 				const win = { top: lerp(box.top, 0, p), right: lerp(box.right, W, p), bottom: lerp(box.bottom, H, p), left: lerp(box.left, 0, p) };
-				const r = p <= SQUARE_FROM ? radius : radius * (1 - (p - SQUARE_FROM) / (1 - SQUARE_FROM));
+				// Never quite 0: Chrome won't run a clip-path animation on the compositor when a frame's radius is 0px.
+				const r = Math.max(0.01, p <= SQUARE_FROM ? radius : radius * (1 - (p - SQUARE_FROM) / (1 - SQUARE_FROM)));
 				windowFrames.push({ clipPath: `inset(${win.top}px ${W - win.right}px ${VH - win.bottom}px ${win.left}px round ${r}px)` });
 
 				// The photo follows the same progress: card → hero.
@@ -188,10 +189,10 @@ export default function ProjectTransition({ children }) {
 				.then(async () => {
 					// Landed, and the hero is ready under it: fade the page back in under the photo (it is the
 					// project page now), then hand over in one frame. The title rises straight in.
-					const back = page.animate([{ opacity: 0 }, { opacity: 1 }], { duration: HANDOVER_MS, easing: "ease-out" });
+					const back = page.animate([{ opacity: 0 }, { opacity: 1 }], { duration: HANDOVER_MS, easing: FADE.easing });
 					recede?.cancel();
 					await back.finished.catch(() => {});
-					if (!heroReady) await layer.current.animate([{ opacity: 1 }, { opacity: 0 }], { duration: HANDOVER_MS, easing: "ease-out" }).finished;
+					if (!heroReady) await layer.current.animate([{ opacity: 1 }, { opacity: 0 }], { duration: HANDOVER_MS, easing: FADE.easing }).finished;
 				})
 				.catch(() => {})
 				.finally(() => {

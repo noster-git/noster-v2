@@ -8,17 +8,17 @@ import SectionLabel from "@/components/SectionLabel";
 const HOME_LIMIT = 15;
 
 /**
- * Projects newest-first: editors add at the bottom, so the list is reversed. Items without an image or a
- * project page are skipped.
+ * Projects newest-first: editors add at the bottom, so the list is reversed. Items without a name, an
+ * image or a project page are skipped.
  * media (lib/projects.js): each project's hero photo, which its card preloads on hover.
  */
 export function toWorks(projects, media = {}) {
 	return projects
-		.filter((p) => isFilled.image(p.image) && asLink(p.link))
+		.filter((p) => p.name?.trim() && isFilled.image(p.image) && asLink(p.link))
 		.reverse()
 		.map((p) => {
 			const href = asLink(p.link);
-			return { href, name: p.name ?? "", image: p.image, hero: media[href]?.hero ?? null };
+			return { href, name: p.name.trim(), image: p.image, hero: media[href]?.hero ?? null };
 		});
 }
 

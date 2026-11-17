@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { revalidatePrismicPages } from "@prismicio/next";
@@ -8,6 +9,13 @@ import { revalidatePrismicPages } from "@prismicio/next";
  * renders fresh content. Only requests carrying the webhook secret are accepted; with no secret set,
  * every request is refused.
  */
+/** Compares in constant time, so response timing reveals nothing about the secret. */
+function sameSecret(given, secret) {
+	const a = Buffer.from(String(given ?? ""));
+	const b = Buffer.from(secret);
+	return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export async function POST(request) {
 	let body;
 	try {
@@ -17,7 +25,7 @@ export async function POST(request) {
 	}
 
 	const secret = process.env.PRISMIC_WEBHOOK_SECRET;
-	if (!secret || body?.secret !== secret) {
+	if (!secret || !sameSecret(body?.secret, secret)) {
 		return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
 	}
 

@@ -52,7 +52,7 @@ export default function RootLayout({ children }) {
         {/* First stop for keyboard users: jumps past the nav to the page content. Above the curtain. */}
         <a
           href="#main"
-          className="sr-only z-(--z-skip) rounded-ui bg-black px-[12px] py-[8px] text-white focus-visible:not-sr-only focus-visible:fixed focus-visible:top-m focus-visible:left-m focus-visible:outline-white"
+          className="sr-only z-(--z-skip) rounded-ui bg-black px-[10px] py-[6px] text-white focus-visible:not-sr-only focus-visible:fixed focus-visible:top-m focus-visible:left-m focus-visible:outline-white"
         >
           Skip to content
         </a>

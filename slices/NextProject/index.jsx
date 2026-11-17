@@ -15,10 +15,12 @@ const NextProject = async ({ slice }) => {
 	const href = asLink(slice.primary.project);
 	if (!href) return null;
 	const media = await getProjectMedia(await getPreviewRef());
+	const next = media[href];
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
-			<LineCta href={href} image={media[href]?.hero} className="pt-6 pb-6">
+			{/* The accessible name starts with the visible words and adds which project comes next. */}
+			<LineCta href={href} image={next?.hero} label={next?.name ? `View Next Project: ${next.name}` : undefined} className="pt-6 pb-6">
 				View Next Project
 			</LineCta>
 		</div>

@@ -100,8 +100,14 @@ export default async function Navigation() {
 
 			{isFilled.link(cta_link) && mobile_cta_label && (
 				<MobileCta>
-					<PrismicNextLink field={cta_link} data-intro className={`${BUTTON} flex whitespace-nowrap transition-[scale] duration-150 ease-out active:scale-[0.97]`}>
-						<RollText>{mobile_cta_label}</RollText>
+					{/* data-intro="up": at the foot of the screen it rises in, where the header items drop in. A label
+					    too long for the screen ends in an ellipsis rather than running off its edges. */}
+					<PrismicNextLink
+						field={cta_link}
+						data-intro="up"
+						className={`${BUTTON} flex max-w-[calc(100vw-24px)] whitespace-nowrap transition-[scale] duration-150 ease-out active:scale-[0.97]`}
+					>
+						<RollText truncate>{mobile_cta_label}</RollText>
 						<Arrow />
 					</PrismicNextLink>
 				</MobileCta>
