@@ -95,14 +95,10 @@
   --color-rule: rgb(0 0 0 / 0.15); /* hairline rules and outlines on paper */
   --color-wash: rgb(0 0 0 / 0.04); /* a faint tone behind photos while they load */
   --color-scrim: rgb(0 0 0 / 0.8); /* behind the showreel dialog */
+  --color-shade: rgb(0 0 0 / 0.25); /* over hero photos and video, so the white type reads */
 
-  --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
-  /* The same curves lib/motion.js and lib/curtain.js hand to WAAPI, for CSS transitions. */
-  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
-  --ease-curtain: cubic-bezier(0.58, 0.08, 0.13, 1);
-  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1); /* also CSS_OUT_CUBIC, lib/motion.js */
 
   --radius-ui: 4px; /* the corner radius: buttons, tags, photos, video */
   --radius-chip: 2px; /* the small section-number chip (SectionLabel), half the size of everything else */
@@ -255,7 +251,6 @@ body {
   @apply font-sans text-body antialiased;
   background-color: var(--paper);
   color: var(--ink);
-  transition: background-color 0.3s var(--ease-quart), color 0.3s var(--ease-quart);
 }
 ::selection {
   background: var(--color-lime);

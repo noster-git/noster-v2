@@ -54,6 +54,16 @@ function Rule() {
 const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] items-center gap-icon before:content-['↳'] transition-opacity duration-200 hover:opacity-60";
 
 /**
+ * The current year for the copyright line. The clock can only be read inside a cached scope when pages
+ * are prerendered; refreshed daily, so the line moves on by itself on 1 January.
+ */
+async function currentYear() {
+	"use cache";
+	cacheLife("days");
+	return new Date().getFullYear();
+}
+
+/**
  * Site footer. Lime with black type: the NOSTER wordmark across the full width, then two sides under a rule:
  * - left (cols 1–6): "Let's Build Together", with the business-inquiries line and email / phones at its foot;
  * - right (cols 8–10; 7–10 below 1181px): socials, newsletter sign-up (when NEWSLETTER is on), offices,
@@ -65,16 +75,6 @@ const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] i
  * In the studio's live preview each contact, social link and office opens its entry and can be dragged to
  * a new place; an office's phone and directions link open their own fields.
  */
-/**
- * The current year for the copyright line. The clock can only be read inside a cached scope when pages
- * are prerendered; refreshed daily, so the line moves on by itself on 1 January.
- */
-async function currentYear() {
-	"use cache";
-	cacheLife("days");
-	return new Date().getFullYear();
-}
-
 export default async function Footer() {
 	const options = await fetchOptions();
 	const [footer, year] = await Promise.all([getFooter(options), currentYear()]);

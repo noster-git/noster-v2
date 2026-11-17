@@ -9,7 +9,7 @@ export const project = defineType({
 			name: "slug",
 			title: "Web address ending",
 			type: "slug",
-			description: "The last part of the project web address, for example \"villa-aurora\". Click Generate to create it from the project title.",
+			description: "The last part of the project web address, for example \"orbit-labs\". Click Generate to create it from the project title.",
 			options: { source: (doc) => doc.sections?.find((s) => s._type === "projectHero")?.title || "", maxLength: 96 },
 			validation: (rule) => rule.required(),
 		}),

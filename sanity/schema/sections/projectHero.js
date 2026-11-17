@@ -10,7 +10,7 @@ export const projectHero = defineType({
 			name: "title",
 			title: "Title",
 			type: "string",
-			description: "The project name and place, for example \"Villa Aurora, Goa\".",
+			description: "The project name and place, for example \"Orbit Labs, Technopark\".",
 			validation: (rule) => rule.required(),
 		}),
 		defineField({

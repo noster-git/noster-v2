@@ -33,7 +33,7 @@ const ProjectHero = ({ section, context, edit }) => (
 					sizes="100vw"
 					className="object-cover"
 				/>
-				<div className="absolute inset-0 bg-black/25" />
+				<div className="absolute inset-0 bg-shade" />
 				{/* A darker band at the top, so the blended nav stays legible over a light ceiling or sky. */}
 				<div aria-hidden="true" className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/50 to-transparent" />
 			</Parallax>

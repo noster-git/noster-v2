@@ -20,9 +20,9 @@ test("one-off pages point at their own page", () => {
 test("a project points at its page, titled with its hero title", () => {
 	const { select, resolve: locate } = resolve.locations.project;
 	assert.deepEqual(select, { slug: "slug.current", sections: "sections" });
-	const doc = { slug: "villa-aurora", sections: [{ _type: "projectBrief" }, { _type: "projectHero", title: " Villa\nAurora " }] };
-	assert.deepEqual(locate(doc), { locations: [{ title: "Villa Aurora", href: "/works/villa-aurora" }] });
-	assert.deepEqual(locate({ slug: "villa-aurora" }), { locations: [{ title: "villa-aurora", href: "/works/villa-aurora" }] });
+	const doc = { slug: "orbit-labs", sections: [{ _type: "projectBrief" }, { _type: "projectHero", title: " Orbit\nLabs " }] };
+	assert.deepEqual(locate(doc), { locations: [{ title: "Orbit Labs", href: "/works/orbit-labs" }] });
+	assert.deepEqual(locate({ slug: "orbit-labs" }), { locations: [{ title: "orbit-labs", href: "/works/orbit-labs" }] });
 	assert.equal(locate({ sections: [] }), null);
 	assert.equal(locate(null), null);
 });
@@ -34,5 +34,5 @@ test("each page opens its document", () => {
 	assert.equal(byRoute["/privacy_policy"].type, "privacyPolicy");
 	const project = byRoute["/works/:slug"];
 	assert.equal(project.filter, `_type == "project" && slug.current == $slug`);
-	assert.deepEqual(project.params({ origin: "http://localhost", path: "/works/villa-aurora", params: { slug: "villa-aurora" } }), { slug: "villa-aurora" });
+	assert.deepEqual(project.params({ origin: "http://localhost", path: "/works/orbit-labs", params: { slug: "orbit-labs" } }), { slug: "orbit-labs" });
 });

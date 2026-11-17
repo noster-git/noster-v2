@@ -170,8 +170,8 @@ export default function HeroClient({ title, backdrop, videoSrc, loopSources, edi
 							))}
 						</video>
 					)}
-					{/* Slight dark overlay on the video, same 25% shade as the project heroes. */}
-					<div className="absolute inset-0 bg-black/25" />
+					{/* Slight dark overlay on the video, the same shade as the project heroes. */}
+					<div className="absolute inset-0 bg-shade" />
 				</div>
 				<div data-parallax-shade className="absolute inset-0 bg-black opacity-0" />
 			</Parallax>

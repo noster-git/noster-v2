@@ -58,7 +58,7 @@ const SPACES = [1, 2, 3, 4, 6, 8, 12];
 
 const COLOURS = [
 	{ name: "Paper", value: "#FFFFFF", token: "bg-white · var(--paper) in CSS", use: "Page background.", swatch: "bg-white" },
-	{ name: "Ink", value: "#000000", token: "text-black · var(--ink) in CSS", use: "Text, rules and hover fills. Tints: border-rule (15%), bg-wash (4%), bg-scrim (80%).", swatch: "bg-black" },
+	{ name: "Ink", value: "#000000", token: "text-black · var(--ink) in CSS", use: "Text, rules and hover fills. Tints: border-rule (15%), bg-wash (4%), bg-shade (25%, over hero photos), bg-scrim (80%).", swatch: "bg-black" },
 	{ name: "Lime", value: "#D3FD5E", token: "text-lime", use: "The accent: the home hero title, the curtain, the footer, the header CTA, section index chips and text selection. Never as text on white.", swatch: "bg-lime" },
 	{ name: "Stone", value: "#F3F2EE", token: "bg-stone", use: "Warm paper for the bands that hold text: Our Approach with Our Collaborators, and the project brief.", swatch: "bg-stone" },
 	{ name: "Muted", value: "#666666", token: "text-muted", use: "Secondary text (5.7:1 on white, passes AA).", swatch: "bg-muted" },

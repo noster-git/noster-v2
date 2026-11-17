@@ -3,7 +3,7 @@
 import { createContext, memo, use, useCallback, useContext, useMemo, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useLenis } from "lenis/react";
-import { CSS_EXPO_OUT } from "@/lib/motion";
+import { CSS_EXPO_OUT, CSS_OUT_CUBIC } from "@/lib/motion";
 import { shown, transitioning } from "@/lib/intro";
 
 /**
@@ -50,7 +50,7 @@ const GROW_MS = 750;
 const EASE = CSS_EXPO_OUT; // strong ease-out: moves the instant it's clicked, glides in
 const STEPS = 24; // keyframes for the grow (evenly spaced in progress; the whole run is eased)
 const SQUARE_FROM = 0.75; // corners stay rounded until the last quarter of the grow
-const FADE = { duration: 350, easing: "cubic-bezier(0.33, 1, 0.68, 1)" }; // the old page fading out behind the photo
+const FADE = { duration: 350, easing: CSS_OUT_CUBIC }; // the old page fading out behind the photo
 const RISE_MIN_MS = 200; // phones: shortest fade for the project page coming up below the photo
 const START_MS = 300; // longest the grow waits for its photo to decode before it starts
 const ROUTE_MS = 8000; // longest the grown photo waits for the project page to arrive
@@ -277,7 +277,7 @@ export default function ProjectTransition({ children }) {
 				<img ref={photo} alt="" className="absolute max-w-none origin-top-left object-cover" />
 				{/* The hero's shade and its darker band at the top (ProjectHero). */}
 				<div ref={veil} className="absolute inset-0 opacity-0">
-					<div className="absolute inset-0 bg-black/25" />
+					<div className="absolute inset-0 bg-shade" />
 					<div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/50 to-transparent" />
 				</div>
 			</div>
