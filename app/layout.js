@@ -10,6 +10,7 @@ import PageTransition from "@/components/PageTransition";
 import NosterLogo from "@/components/NosterLogo";
 import { INTRO_SCRIPT } from "@/lib/intro";
 import { PrismicPreview } from "@prismicio/next";
+import { Analytics } from "@vercel/analytics/next";
 import { repositoryName } from "@/prismicio";
 import { SITE_URL, SITE_NAME, DEFAULT_TITLE, DEFAULT_DESCRIPTION, OPEN_GRAPH, PAPER } from "@/lib/site";
 
@@ -28,7 +29,6 @@ export const metadata = {
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
     apple: "/apple-touch-icon.png",
-    other: [{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#000000" }],
   },
 };
 
@@ -85,6 +85,9 @@ export default function RootLayout({ children }) {
         </SmoothScroll>
         {/* Prismic's preview toolbar for editors: it refreshes the page on content changes and ends the preview on exit. */}
         <PrismicPreview repositoryName={repositoryName} />
+        {/* Page views (Vercel Web Analytics): no cookies, so no consent banner. Only on Vercel builds: the
+            script is served by Vercel's edge, so anywhere else it would 404. */}
+        {process.env.VERCEL && <Analytics />}
       </body>
     </html>
   );

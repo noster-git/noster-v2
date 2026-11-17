@@ -1,7 +1,7 @@
 import LineCta from "@/components/LineCta";
 
 export const metadata = {
-	title: "Page not found | Noster",
+	title: "Page not found | Noster Associates",
 	robots: { index: false, follow: true },
 };
 

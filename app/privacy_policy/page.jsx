@@ -1,11 +1,10 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
-import { asImageSrc } from "@prismicio/client";
 import { PrismicRichText } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import Reveal from "@/components/Reveal";
-import { OPEN_GRAPH } from "@/lib/site";
+import { SITE_NAME, OPEN_GRAPH, shareImage } from "@/lib/site";
 
 // Type and spacing come from the design system in app/globals.css (spacing unit = one body line).
 // Long-form reading: the text-long tier (14px, generous lines).
@@ -77,7 +76,7 @@ export default async function Page() {
 
 export async function generateMetadata() {
 	const page = await getPage(await getPreviewRef());
-	const title = page?.data.meta_title || "Privacy Policy | Noster";
+	const title = page?.data.meta_title || `Privacy Policy | ${SITE_NAME}`;
 	const description = page?.data.meta_description || "How Noster Associates collects, uses and protects personal data on noster.in.";
 
 	return {
@@ -89,7 +88,7 @@ export async function generateMetadata() {
 			url: "/privacy_policy",
 			title,
 			description,
-			images: [{ url: asImageSrc(page?.data.meta_image) ?? "/noster-meta.png" }],
+			images: [shareImage([page?.data.meta_image])],
 		},
 	};
 }

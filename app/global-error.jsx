@@ -14,7 +14,7 @@ export default function GlobalError({ retry }) {
 	return (
 		<html lang="en">
 			<body style={{ margin: 0, padding: "84px 24px", background: "#ffffff", color: "#000000", fontFamily: "system-ui, sans-serif" }}>
-				<title>Something went wrong | Noster</title>
+				<title>Something went wrong | Noster Associates</title>
 				<h1 style={{ margin: 0, fontSize: 32, fontWeight: 300, lineHeight: 1.1 }}>Something went wrong</h1>
 				<p style={{ margin: "16px 0 0" }}>This page didn&apos;t load.</p>
 				<p style={{ display: "flex", gap: 24, margin: "16px 0 0" }}>

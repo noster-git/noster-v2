@@ -1,13 +1,13 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
-import { asImageSrc, asText, isFilled } from "@prismicio/client";
+import { asText } from "@prismicio/client";
 import { SliceZone } from "@prismicio/react";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import { components } from "@/slices";
 import JsonLd from "@/components/JsonLd";
 import { project } from "@/lib/schema";
-import { OPEN_GRAPH, excerpt } from "@/lib/site";
+import { SITE_NAME, OPEN_GRAPH, excerpt, shareImage } from "@/lib/site";
 
 // All projects are prerendered (generateStaticParams), so the page may block on params.
 export const instant = false;
@@ -33,16 +33,16 @@ export async function generateMetadata({ params }) {
 	const { uid } = await params;
 	const page = (await getPage(uid, await getPreviewRef())) ?? notFound();
 	const { name, description } = describe(page);
-	const title = page.data.meta_title || `${name} | Works | Noster`;
+	const title = page.data.meta_title || `${name} | Works | ${SITE_NAME}`;
 	const path = page.url || `/works/${page.uid}`;
 	const hero = page.data.slices.find((s) => s.slice_type === "project_hero")?.primary.image;
-	const image = asImageSrc(page.data.meta_image) ?? (isFilled.image(hero) ? asImageSrc(hero, { w: 1200 }) : "/noster-meta.png");
+	const image = shareImage([page.data.meta_image, hero], `${name} office interior`);
 
 	return {
 		title,
 		description,
 		alternates: { canonical: path },
-		openGraph: { ...OPEN_GRAPH, type: "article", url: path, title, description, images: [{ url: image }] },
+		openGraph: { ...OPEN_GRAPH, type: "article", url: path, title, description, images: [image] },
 	};
 }
 

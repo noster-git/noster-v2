@@ -45,6 +45,11 @@ async function buildText() {
 		return `- [${name}](${absolute(p.url)}): ${summary}${facts ? ` (${facts})` : ""}`;
 	};
 
+	const contact = home?.data.slices.find((s) => s.slice_type === "contact");
+	const contacts = (contact?.primary.contacts ?? [])
+		.map((c) => c.value?.trim())
+		.filter(Boolean)
+		.map((v) => `- ${v.includes("@") ? "Email" : "Phone"}: ${v}`);
 	const offices = (footer?.data.offices ?? []).map((o) => `- ${o.city}: ${o.address}${o.phone ? ` (${o.phone})` : ""}`);
 
 	return [
@@ -54,6 +59,7 @@ async function buildText() {
 		"",
 		approach ? asText(approach.primary.description) : "",
 		"",
+		...(contacts.length ? ["## Contact", ...contacts, ""] : []),
 		"## Offices",
 		...offices,
 		"",

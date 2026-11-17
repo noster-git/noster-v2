@@ -116,8 +116,9 @@ export default async function Footer() {
 					</div>
 				)}
 
-				{/* Right column: fixed gaps; the credits sit at its foot, level with the last contact row */}
-				<div className="flex flex-col gap-3 desk:col-span-3 desk:col-start-8">
+				{/* Right column: fixed gaps; the credits sit at its foot, level with the last contact row. Four
+				    columns on tablets and small laptops so the addresses don't wrap into short lines, three from 1181px. */}
+				<div className="flex flex-col gap-3 desk:col-span-4 desk:col-start-7 board:col-span-3 board:col-start-8">
 					{/* Socials */}
 					<div>
 						<Rule />

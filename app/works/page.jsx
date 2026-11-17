@@ -1,5 +1,4 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { asImageSrc } from "@prismicio/client";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import { toWorks } from "@/slices/FeaturedWorks";
@@ -8,7 +7,7 @@ import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
-import { DEFAULT_DESCRIPTION, OPEN_GRAPH } from "@/lib/site";
+import { SITE_NAME, DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
 import { getProjectMedia } from "@/lib/projects";
 
 /**
@@ -37,7 +36,7 @@ export default async function Page() {
 export async function generateMetadata() {
 	const { page } = await getData(await getPreviewRef());
 
-	const title = page?.data.meta_title || "Works | Noster";
+	const title = page?.data.meta_title || `Our Works | ${SITE_NAME}`;
 	const description = page?.data.meta_description || DEFAULT_DESCRIPTION;
 
 	return {
@@ -49,7 +48,7 @@ export async function generateMetadata() {
 			url: "/works",
 			title,
 			description,
-			images: [{ url: asImageSrc(page?.data.meta_image) ?? "/noster-meta.png" }],
+			images: [shareImage([page?.data.meta_image])],
 		},
 	};
 }

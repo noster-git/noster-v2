@@ -32,6 +32,8 @@ const ProjectHero = ({ slice }) => (
 					className="object-cover"
 				/>
 				<div className="absolute inset-0 bg-black/25" />
+				{/* A darker band at the top, so the blended nav stays legible over a light ceiling or sky. */}
+				<div aria-hidden="true" className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/50 to-transparent" />
 			</Parallax>
 		</div>
 		<TitleRise className="w-full text-display whitespace-pre-line text-balance desk:w-[80%]">{slice.primary.title}</TitleRise>
