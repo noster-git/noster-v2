@@ -1,6 +1,7 @@
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 import { presentationTool } from "sanity/presentation";
+import { media } from "sanity-plugin-media";
 import { projectId, dataset } from "./sanity/env.js";
 import { schemaTypes, SINGLETON_TYPES } from "./sanity/schema/index.js";
 import { structure } from "./sanity/structure.js";
@@ -26,6 +27,9 @@ export default defineConfig({
 		// Live preview: the site in a frame, opened on whichever address the studio is on, in draft mode so it shows
 		// unpublished edits; click any text or photo there to edit it.
 		presentationTool({ resolve, previewUrl: { previewMode: { enable: "/api/draft-mode/enable" } } }),
+		// Media: every uploaded photo and video in one place, with search, tags, where each is used and
+		// clean-up of unused ones. Also what an image field's "Select" opens.
+		media(),
 	],
 	document: {
 		newDocumentOptions: (prev, { creationContext }) =>
