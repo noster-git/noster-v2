@@ -10,23 +10,23 @@ import { editProps } from "@/lib/sanity/edit-props";
  * the screen on phones (--hero-h).
  *
  * data-project-hero: the page-load curtain waits for this photo before it lifts (components/Intro.jsx).
- * In the studio's live preview the section (the photo with it) opens as a whole, so it can be dragged too;
- * the title opens its field and the location the brief's Location detail.
+ * In the studio's live preview the photo opens the main photo, the title the name and the location the
+ * project's area and city.
  *
- * @param {{ section: { title?: string | null, image?: import("@/lib/sanity/image").SanityImage | null }, context?: { location?: string, editLocation?: string }, edit: import("@/lib/sanity/edit").Edit }} props
+ * @param {{ project: { name?: string | null, heroImage?: import("@/lib/sanity/image").SanityImage | null }, location?: string, edit: import("@/lib/sanity/edit").Edit }} props
  */
-const ProjectHero = ({ section, context, edit }) => (
+const ProjectHero = ({ project, location, edit }) => (
 	<section
 		data-project-hero
-		{...editProps(edit())}
+		{...editProps(edit("heroImage"))}
 		className="relative isolate flex h-(--hero-h) items-end overflow-hidden px-m pb-m text-white"
 	>
 		<div className="absolute inset-0 -z-10">
 			<Parallax className="relative h-[110%] w-full">
 				{/* The photo's own alt text if set, otherwise the project name. */}
 				<Img
-					image={section.image}
-					fallbackAlt={`${stegaClean(section.title)?.replace(/\s+/g, " ")} office interior`}
+					image={project.heroImage}
+					fallbackAlt={`${stegaClean(project.name)?.replace(/\s+/g, " ")} office interior`}
 					fill
 					loading="eager"
 					fetchPriority="high"
@@ -39,14 +39,14 @@ const ProjectHero = ({ section, context, edit }) => (
 			</Parallax>
 		</div>
 		<TitleRise className="w-full text-display whitespace-pre-line text-balance desk:w-[80%]">
-			{section.title}
-			{/* Where the project is, from the brief's Location detail: small under the name, but part of the
+			{project.name}
+			{/* Where the project is, its area and city: small under the name, but part of the
 			    heading, so the page's h1 says what and where. The hidden comma keeps the two apart as text. */}
-			{context?.location && (
+			{location && (
 				<>
 					<span className="sr-only">, </span>
-					<span {...editProps(context.editLocation)} className="mt-2 block text-body before:mr-[0.35em] before:content-['↳']">
-						{context.location}
+					<span {...editProps(edit("area"))} className="mt-2 block text-body before:mr-[0.35em] before:content-['↳']">
+						{location}
 					</span>
 				</>
 			)}

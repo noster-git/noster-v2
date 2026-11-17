@@ -2,12 +2,18 @@ import { notFound } from "next/navigation";
 import { stegaClean } from "next-sanity";
 import { cachedFetch, fetchOptions, fetchOrNull } from "@/lib/sanity/live";
 import { PROJECT_BY_SLUG, PROJECT_SLUGS } from "@/lib/sanity/queries";
+import ProjectHero from "@/sections/ProjectHero";
+import ProjectBrief from "@/sections/ProjectBrief";
+import Photos from "@/sections/Photos";
+import NextProject from "@/sections/NextProject";
 import Sections from "@/components/Sections";
 import JsonLd from "@/components/JsonLd";
 import { project } from "@/lib/schema";
 import { describeProject } from "@/lib/content";
+import { getProjects, nextInOrder } from "@/lib/projects";
+import { getSettings } from "@/lib/settings";
 import { editor } from "@/lib/sanity/edit";
-import { OPEN_GRAPH, shareImage } from "@/lib/site";
+import { pageMetadata } from "@/lib/site";
 
 // All projects are prerendered (generateStaticParams), so the page may block on params.
 export const instant = false;
@@ -20,39 +26,47 @@ async function getPage(slug, options) {
 	return (await fetchOrNull({ query: PROJECT_BY_SLUG, params: { slug }, ...options }).catch(() => null)) ?? notFound();
 }
 
+/**
+ * A project page: its hero, "The project" (its text and facts), its photos, any extra sections, and the
+ * button to the next project (the one picked on the project, else the next in the Works order).
+ */
 export default async function Page({ params }) {
 	const { slug } = await params;
 	const options = await fetchOptions();
-	const page = await getPage(slug, options);
-	const { name, description, location, locationPath } = describeProject(page);
+	const [page, order] = await Promise.all([getPage(slug, options), getProjects(options)]);
+	const { name, description, location, facts } = describeProject(page);
 	const edit = editor(page, options.stega);
+	const next = stegaClean(page.next?.href) ? page.next : nextInOrder(order, page._id);
+	const works = editor({ _id: "works", _type: "works" }, options.stega);
 
 	return (
 		<>
 			<JsonLd data={project(page, { name, description })} />
-			{/* name → sections use it for photo alt text when a photo has none; location → the hero's h1, which
-			    opens the brief's Location detail in the studio's live preview */}
-			<Sections sections={page.sections} context={{ projectName: name, location, editLocation: edit(locationPath) }} edit={edit} />
+			<ProjectHero project={page} location={location} edit={edit} />
+			<ProjectBrief summary={page.summary} facts={facts} edit={edit} />
+			{/* name: the alt text of photos that have none */}
+			<Photos section={{ photos: page.photos }} context={{ projectName: name }} edit={edit} />
+			<Sections sections={page.sections} context={{ projectName: name }} edit={edit} />
+			<NextProject next={next} label={page.nextLabel || "View Next Project"} edit={edit("nextProject")} editLabel={works("nextProjectLabel")} />
 		</>
 	);
 }
 
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
-	const page = await getPage(slug, await fetchOptions());
+	const options = await fetchOptions();
+	const [page, settings] = await Promise.all([getPage(slug, options), getSettings(options)]);
 	const { name, description } = describeProject(page);
-	const seo = stegaClean(page.seo);
-	const title = seo?.title || `${name} Office Interiors | Noster`;
-	const path = `/works/${stegaClean(page.slug)}`;
-	const hero = page.sections?.find((s) => stegaClean(s._type) === "projectHero")?.image;
-	const image = shareImage([seo?.image, stegaClean(hero)], `${name} office interior`);
-
-	return {
-		title,
+	return pageMetadata({
+		path: `/works/${stegaClean(page.slug)}`,
+		seo: page.seo,
+		settings,
+		title: `${name} Office Interiors | Noster`,
 		description,
-		alternates: { canonical: path },
-		openGraph: { ...OPEN_GRAPH, type: "article", url: path, title, description, images: [image] },
-	};
+		images: [page.heroImage],
+		alt: `${name} office interior`,
+		type: "article",
+	});
 }
 
 export async function generateStaticParams() {

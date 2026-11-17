@@ -1,46 +1,32 @@
-import { stegaClean } from "next-sanity";
 import { hasImage } from "@/lib/sanity/image";
-import { NO_EDIT, item, scope } from "@/lib/sanity/edit";
+import { scope } from "@/lib/sanity/edit";
+import { toWorks } from "@/lib/projects";
 import WorksGrid from "@/components/WorksGrid";
 import LineCta from "@/components/LineCta";
 import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 import { editProps } from "@/lib/sanity/edit-props";
 
-// How many of the newest projects Home shows; /works shows them all.
-const HOME_LIMIT = 15;
-
 /**
- * Projects newest-first: editors add at the bottom, so the list is reversed. Items without a name, an
- * image or a project page are skipped. Names are plain text (no click-to-edit markers); in the studio's
- * live preview `edit` (the Featured Works projects list) gives each card what it opens: `edit.item`, the
- * project's entry (photo and page), and `edit.name`.
- * media (lib/projects.js): each project's hero photo, which its card preloads on hover.
+ * The section's projects as cards, in the order picked: each card's own photo when it has one, else the
+ * project's card photo. In the studio's live preview a card opens its place in the list, its name the project.
  *
- * @param {Array<{ _key?: string, name?: string | null, image?: import("@/lib/sanity/image").SanityImage | null, href?: string | null }> | null | undefined} projects
- * @param {Awaited<ReturnType<typeof import("@/lib/projects").getProjectMedia>>} [media]
- * @param {import("@/lib/sanity/edit").Edit} [edit]
+ * @param {Array<{ _key: string, image?: import("@/lib/sanity/image").SanityImage | null, project?: import("@/lib/projects").ProjectCard | null }> | null | undefined} cards
+ * @param {import("@/lib/sanity/edit").Edit} list the section's projects list
  */
-export function toWorks(projects, media = {}, edit = NO_EDIT) {
-	return (projects ?? [])
-		.filter((p) => stegaClean(p.name)?.trim() && hasImage(p.image) && stegaClean(p.href))
-		.reverse()
-		.map((p) => {
-			const href = stegaClean(p.href);
-			const entry = scope(edit, item(p._key));
-			// The photo's alt text without markers too: the photo opens the whole entry, not just its alt text.
-			const work = { href, name: stegaClean(p.name).trim(), image: stegaClean(p.image), hero: media[href]?.hero ?? null };
-			return entry.doc ? { ...work, edit: { item: entry(), name: entry("name") } } : work;
-		});
+export function featuredWorks(cards, list) {
+	const projects = (cards ?? []).map((card) => card.project && { ...card.project, _key: card._key, image: hasImage(card.image) ? card.image : card.project.image });
+	return toWorks(projects, { list, stega: Boolean(list.doc) });
 }
 
 /**
- * "Featured Works" at display size with its section index, the project grid and "View all projects" link.
+ * "Featured Works" at display size with its section index, the project grid and its button ("View all
+ * projects", to the Works page).
  *
- * @param {{ section: { _key: string, title?: string | null, buttonText?: string | null, projects?: Parameters<typeof toWorks>[0] }, context?: { media?: Parameters<typeof toWorks>[1] }, edit: import("@/lib/sanity/edit").Edit }} props
+ * @param {{ section: { title?: string | null, projects?: Parameters<typeof featuredWorks>[0], cta?: { label?: string | null, link?: import("@/lib/content").Link | null } | null }, edit: import("@/lib/sanity/edit").Edit }} props
  */
-const FeaturedWorks = ({ section, context, edit }) => {
-	const works = toWorks(section.projects, context?.media, scope(edit, "projects")).slice(0, HOME_LIMIT);
+const FeaturedWorks = ({ section, edit }) => {
+	const works = featuredWorks(section.projects, scope(edit, "projects"));
 
 	return (
 		<div {...editProps(edit())}>
@@ -52,9 +38,11 @@ const FeaturedWorks = ({ section, context, edit }) => {
 				</SectionLabel>
 			</Reveal>
 			<WorksGrid works={works} />
-			<LineCta href="/works" editLabel={edit("buttonText")}>
-				{section.buttonText || "View all projects"}
-			</LineCta>
+			{section.cta?.label && (
+				<LineCta link={section.cta.link} edit={edit(["cta", "link"])} editLabel={edit(["cta", "label"])}>
+					{section.cta.label}
+				</LineCta>
+			)}
 		</div>
 	);
 };

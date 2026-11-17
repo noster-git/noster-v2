@@ -15,7 +15,7 @@ const FALLBACK_LOOP = [
 const FALLBACK_POSTER = "/video/home/geeky-wolf-hero-poster.webp";
 
 /**
- * Home's first screen: the headline (each line break typed in it kept) over a photo or a looping video.
+ * A page's first screen (Home's): the headline (each line break typed in it kept) over a photo or a looping video.
  *
  * @param {{ section: {
  *   title?: string | null,

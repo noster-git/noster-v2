@@ -6,7 +6,8 @@ import Reveal from "@/components/Reveal";
 import RichText from "@/components/RichText";
 import JsonLd from "@/components/JsonLd";
 import { page as pageSchema } from "@/lib/schema";
-import { OPEN_GRAPH, shareImage } from "@/lib/site";
+import { pageMetadata } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
 
 // Type and spacing come from the design system in app/(site)/globals.css (spacing unit = one body line).
 // Long-form reading: the text-long tier (14px, generous lines).
@@ -86,22 +87,14 @@ export default async function Page() {
 }
 
 export async function generateMetadata() {
-	const seo = stegaClean((await getPage())?.seo);
-	const title = seo?.title || "Privacy Policy | Noster";
-	const description = seo?.description || "How Noster Associates collects, uses and protects personal data on noster.in.";
-
-	return {
-		title,
-		description,
-		alternates: { canonical: "/privacy_policy" },
-		openGraph: {
-			...OPEN_GRAPH,
-			url: "/privacy_policy",
-			title,
-			description,
-			images: [shareImage([seo?.image])],
-		},
-	};
+	const [page, settings] = await Promise.all([getPage(), fetchOptions().then(getSettings)]);
+	return pageMetadata({
+		path: "/privacy_policy",
+		seo: page?.seo,
+		settings,
+		title: "Privacy Policy | Noster",
+		description: "How Noster Associates collects, uses and protects personal data on noster.in.",
+	});
 }
 
 /** The privacy policy document, or null when there is none or the CMS can't be read. */

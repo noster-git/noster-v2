@@ -1,0 +1,698 @@
+[
+	{
+		"project": "Litmus7",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Litmus7 & Deep Future Intelligence (DFI)"
+			},
+			{
+				"label": "Sector",
+				"value": "IT Services, Retail Solutions, Robotics & AI"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nMay 2025"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design, Construction, \nFurniture Design, Biophilic Design"
+			},
+			{
+				"label": "Scale",
+				"value": "29,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Litmus7",
+				"Deep Future Intelligence (DFI)"
+			],
+			"sectors": [
+				"IT Services",
+				"Retail Solutions",
+				"Robotics & AI"
+			],
+			"area": "Technopark",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2025,
+				"month": 5
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design",
+				"Biophilic Design"
+			],
+			"size": 29000
+		}
+	},
+	{
+		"project": "GeekyWolf",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "GeekyWolf"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nJanuary 2024"
+			},
+			{
+				"label": "Location",
+				"value": "Niagara Embassy Taurus Tech Zone,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "17,400 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"GeekyWolf"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Niagara Embassy Taurus Tech Zone",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2024,
+				"month": 1
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 17400
+		}
+	},
+	{
+		"project": "CareStack",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "CareStack"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in\nJune 2024"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "44,650 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"CareStack"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Technopark",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2024,
+				"month": 6
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 44650
+		}
+	},
+	{
+		"project": "dSPACE",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "dSPACE"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nDecember 2023"
+			},
+			{
+				"label": "Location",
+				"value": "Kinfra,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "10,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"dSPACE"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Kinfra",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2023,
+				"month": 12
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 10000
+		}
+	},
+	{
+		"project": "Mozanta",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Mozanta"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nDecember 2023"
+			},
+			{
+				"label": "Location",
+				"value": "Infopark,\nKochi, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "5,400 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Mozanta"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Infopark",
+			"city": {
+				"name": "Kochi",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2023,
+				"month": 12
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 5400
+		}
+	},
+	{
+		"project": "Trenser",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Trenser"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nMay 2024"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark Phase 1, \nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "24,600 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Trenser"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Technopark Phase 1",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2024,
+				"month": 5
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 24600
+		}
+	},
+	{
+		"project": "Adesso",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Adesso"
+			},
+			{
+				"label": "Sector",
+				"value": "IT Services"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nJuly 2024"
+			},
+			{
+				"label": "Location",
+				"value": "Infopark,\nKochi, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "13,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Adesso"
+			],
+			"sectors": [
+				"IT Services"
+			],
+			"area": "Infopark",
+			"city": {
+				"name": "Kochi",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2024,
+				"month": 7
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 13000
+		}
+	},
+	{
+		"project": "CareRevenue",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "CareRevenue"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology, Healthcare"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nSeptember 2022"
+			},
+			{
+				"label": "Location",
+				"value": "Infopark,\nKochi, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "12,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"CareRevenue"
+			],
+			"sectors": [
+				"Technology",
+				"Healthcare"
+			],
+			"area": "Infopark",
+			"city": {
+				"name": "Kochi",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2022,
+				"month": 9
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 12000
+		}
+	},
+	{
+		"project": "Tryzens",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Tryzens"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology, E-Commerce"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nJanuary 2022"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark Phase 3,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "11,200 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Tryzens"
+			],
+			"sectors": [
+				"Technology",
+				"E-Commerce"
+			],
+			"area": "Technopark Phase 3",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2022,
+				"month": 1
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 11200
+		}
+	},
+	{
+		"project": "Vaisesika",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Vaisesika Consulting Pvt. Ltd."
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in\nOctober 2023"
+			},
+			{
+				"label": "Location",
+				"value": "Infopark,\nKochi, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "13,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Vaisesika Consulting Pvt. Ltd."
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Infopark",
+			"city": {
+				"name": "Kochi",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2023,
+				"month": 10
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 13000
+		}
+	},
+	{
+		"project": "Ospyn",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Ospyn"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology, Content platform"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in \nDecember 2022"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark Phase IV,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nFurniture Design, Construction"
+			},
+			{
+				"label": "Scale",
+				"value": "24,600 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Ospyn"
+			],
+			"sectors": [
+				"Technology",
+				"Content platform"
+			],
+			"area": "Technopark Phase IV",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2022,
+				"month": 12
+			},
+			"services": [
+				"Interior Design",
+				"Furniture Design",
+				"Construction"
+			],
+			"size": 24600
+		}
+	},
+	{
+		"project": "Good Methods Global",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "Good Methods Global"
+			},
+			{
+				"label": "Sector",
+				"value": "Technology"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in\nNovember 2016"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark Phase 3,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "14,380 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"Good Methods Global"
+			],
+			"sectors": [
+				"Technology"
+			],
+			"area": "Technopark Phase 3",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2016,
+				"month": 11
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 14380
+		}
+	},
+	{
+		"project": "The Atomic",
+		"brief": [
+			{
+				"label": "Client",
+				"value": "The Atomic"
+			},
+			{
+				"label": "Sector",
+				"value": "Managed workspace"
+			},
+			{
+				"label": "Status",
+				"value": "Project delivered in\nJanuary 2022"
+			},
+			{
+				"label": "Location",
+				"value": "Technopark,\nTrivandrum, Kerala"
+			},
+			{
+				"label": "Scope",
+				"value": "Interior Design,\nConstruction, Furniture Design"
+			},
+			{
+				"label": "Scale",
+				"value": "30,000 sq ft"
+			}
+		],
+		"details": {
+			"clients": [
+				"The Atomic"
+			],
+			"sectors": [
+				"Managed workspace"
+			],
+			"area": "Technopark",
+			"city": {
+				"name": "Trivandrum",
+				"state": "Kerala"
+			},
+			"status": "delivered",
+			"completion": {
+				"year": 2022,
+				"month": 1
+			},
+			"services": [
+				"Interior Design",
+				"Construction",
+				"Furniture Design"
+			],
+			"size": 30000
+		}
+	}
+]

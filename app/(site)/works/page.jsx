@@ -1,31 +1,26 @@
 import { stegaClean } from "next-sanity";
 import { fetchOptions, fetchOrNull } from "@/lib/sanity/live";
 import { WORKS } from "@/lib/sanity/queries";
-import { toWorks } from "@/sections/FeaturedWorks";
 import WorksIndex from "@/components/WorksIndex";
 import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
-import { DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
-import { getProjectMedia } from "@/lib/projects";
-import { editor, item, scope } from "@/lib/sanity/edit";
+import { pageMetadata } from "@/lib/site";
+import { getProjects, toWorks } from "@/lib/projects";
+import { getSettings } from "@/lib/settings";
+import { editor, scope } from "@/lib/sanity/edit";
 
 /**
- * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15), as a grid or
- * a list (WorksIndex).
- * The heading and SEO come from the Works page document; without one, the defaults below.
+ * Our Works: every project, in the order set on the Works page (then any not in it, newest first), as a grid
+ * or a list (WorksIndex). The heading and search fields come from the Works page document; without one, the
+ * defaults below. In the studio's live preview a card opens its place in the Works page's project order.
  */
 export default async function Page() {
 	const options = await fetchOptions();
-	const [data, media] = await Promise.all([
-		fetchOrNull({ query: WORKS, ...options }),
-		getProjectMedia(options), // each project's hero photo, for its card
-	]);
-	const title = data?.page?.title || "Our Works";
-	// Studio preview: the projects open their entries in Home's Featured Works, where they are edited.
-	const featured = editor(data?.featured, options.stega);
-	const works = toWorks(data?.projects, media, scope(featured, ["sections", item(data?.featured?.key), "projects"]));
+	const [page, projects] = await Promise.all([fetchOrNull({ query: WORKS, ...options }).catch(() => null), getProjects(options)]);
+	const title = page?.title || "Our Works";
+	const works = toWorks(projects, { list: scope(editor(page, options.stega), "projects"), stega: options.stega });
 
 	return (
 		<>
@@ -43,22 +38,7 @@ export default async function Page() {
 }
 
 export async function generateMetadata() {
-	const data = await fetchOrNull({ query: WORKS, ...(await fetchOptions()) });
-	const seo = stegaClean(data?.page?.seo);
-
-	const title = seo?.title || "Office Interior Projects in Trivandrum & Kochi | Noster";
-	const description = seo?.description || DEFAULT_DESCRIPTION;
-
-	return {
-		title,
-		description,
-		alternates: { canonical: "/works" },
-		openGraph: {
-			...OPEN_GRAPH,
-			url: "/works",
-			title,
-			description,
-			images: [shareImage([seo?.image])],
-		},
-	};
+	const options = await fetchOptions();
+	const [page, settings] = await Promise.all([fetchOrNull({ query: WORKS, ...options }).catch(() => null), getSettings(options)]);
+	return pageMetadata({ path: "/works", seo: page?.seo, settings, title: "Office Interior Projects in Trivandrum & Kochi | Noster" });
 }

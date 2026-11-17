@@ -24,6 +24,7 @@ const DEFAULT_LINKS = [
  * Logo, links and the progress line: white with mix-blend-difference, so they invert over whatever is under them.
  * The CTA sits outside the blending: lime with black text, the one solid accent on every page.
  * Compact: logo and a Works link; the CTA moves to a button at the bottom of the screen (MobileCta).
+ * The button (a CMS button: words and where it goes) shows its shorter phone words on phones when set.
  * In the studio's live preview each link opens its entry in the menu (words and where it goes) and can be
  * dragged to a new place; the button opens where it leads, its words their own field.
  */
@@ -31,10 +32,12 @@ export default async function Navigation() {
 	// No navigation document (or no answer from the CMS): the default links and no CTA.
 	const options = await fetchOptions();
 	const nav = await fetchOrNull({ query: NAVIGATION, ...options }).catch(() => null);
-	const { links, ctaLabel, ctaLink, mobileCtaLabel } = nav ?? {};
+	const { links, cta, mobileLabel } = nav ?? {};
 	const edit = editor(nav, options.stega);
 	const list = scope(edit, "links");
-	const hasCta = linkHref(ctaLink) && ctaLabel;
+	const ctaLink = cta?.link;
+	const hasCta = linkHref(ctaLink) && cta?.label;
+	const phoneLabel = mobileLabel || cta?.label;
 	const cmsLinks = (links ?? []).filter((entry) => linkHref(entry.link));
 	// Compact: the menu's link to the Works page (the default one until there is one).
 	const works = cmsLinks.find((entry) => linkHref(entry.link) === "/works");
@@ -103,27 +106,27 @@ export default async function Navigation() {
 					<CmsLink
 						link={ctaLink}
 						data-intro
-						{...editProps(edit("ctaLink"))}
+						{...editProps(edit(["cta", "link"]))}
 						className={`${TAG} hit flex [--hit-h:52px] transition-[scale] duration-150 ease-out active:scale-[0.97]`}
 					>
-						<RollText edit={edit("ctaLabel")}>{ctaLabel}</RollText>
+						<RollText edit={edit(["cta", "label"])}>{cta.label}</RollText>
 						<Arrow />
 					</CmsLink>
 				</div>
 			)}
 
-			{linkHref(ctaLink) && mobileCtaLabel && (
+			{hasCta && (
 				<MobileCta>
 					{/* data-intro="up": at the foot of the screen it rises in, where the header items drop in. A label
 					    too long for the screen ends in an ellipsis rather than running off its edges. */}
 					<CmsLink
 						link={ctaLink}
 						data-intro="up"
-						{...editProps(edit("ctaLink"))}
+						{...editProps(edit(["cta", "link"]))}
 						className={`${BUTTON} flex max-w-[calc(100vw-24px)] whitespace-nowrap transition-[scale] duration-150 ease-out active:scale-[0.97]`}
 					>
-						<RollText truncate edit={edit("mobileCtaLabel")}>
-							{mobileCtaLabel}
+						<RollText truncate edit={edit(mobileLabel ? "mobileLabel" : ["cta", "label"])}>
+							{phoneLabel}
 						</RollText>
 						<Arrow />
 					</CmsLink>

@@ -10,15 +10,17 @@ import { editProps } from "@/lib/sanity/edit-props";
  * label in columns 1–3, the logo row across columns 4–10 between two rules that draw in. Four logo slots
  * that swap in place (LogoShuffle); logos sized to the same area so they balance whatever their
  * upload (Large nudges one up), colour on hover. Compact layouts stack them.
- * In the studio's live preview each logo opens its entry in the list.
+ * Each logo is its client's (Library › Clients), described by its own alt text or else the client's name.
+ * In the studio's live preview each logo opens its place in the list.
  *
- * @param {{ section: { title?: string | null, logos?: Array<{ _key: string, large?: boolean | null, logo?: import("@/lib/sanity/image").SanityImage | null }> | null }, edit: import("@/lib/sanity/edit").Edit }} props
+ * @param {{ section: { title?: string | null, clients?: Array<{ _key: string, name?: string | null, large?: boolean | null, logo?: import("@/lib/sanity/image").SanityImage | null }> | null }, edit: import("@/lib/sanity/edit").Edit }} props
  */
 const Collaborators = ({ section, edit }) => {
-	const logos = (section.logos ?? [])
-		.filter((entry) => hasImage(entry.logo))
+	const logos = (section.clients ?? [])
+		.filter((client) => hasImage(client?.logo))
+		.map(({ _key, name, large, logo }) => ({ _key, large, logo: { ...logo, alt: logo.alt || name } }))
 		// Only in the live preview: visitors' logos go to the page as they are.
-		.map((entry) => (edit.doc ? { ...entry, edit: edit(["logos", item(entry._key)]) } : entry));
+		.map((entry) => (edit.doc ? { ...entry, edit: edit(["clients", item(entry._key)]) } : entry));
 
 	return (
 		<Reveal className="grid-site items-center bg-stone px-m pb-10" {...editProps(edit())}>

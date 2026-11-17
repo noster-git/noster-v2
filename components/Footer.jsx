@@ -4,9 +4,9 @@ import { cacheLife } from "next/cache";
 import { stegaClean } from "next-sanity";
 import { fetchOptions, fetchOrNull } from "@/lib/sanity/live";
 import { FOOTER } from "@/lib/sanity/queries";
-import { linkHref } from "@/lib/content";
+import { safeHref, telHref } from "@/lib/content";
 import { editor, item, scope } from "@/lib/sanity/edit";
-import CmsLink from "./CmsLink";
+import ContactRows from "./ContactRows";
 import Ordered from "./Ordered";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
@@ -16,32 +16,16 @@ import { NEWSLETTER, SITE_NAME } from "@/lib/site";
 import { editProps } from "@/lib/sanity/edit-props";
 
 /**
- * The Footer document, with the "Let's Build Together" contact edited in the Contact section on the home
- * page (the home page doesn't render that section: it is rendered here, on every page). Null when there is
- * no footer or the CMS can't be read: pages then go without a footer.
+ * The Footer document's words and the Site settings it shows: `{ footer, settings }`. Null when there is no
+ * footer or the CMS can't be read: pages then go without a footer.
  *
  * @param {import("@/lib/sanity/live").FetchOptions} options
+ * @returns {Promise<{ footer: any, settings: import("@/lib/settings").Settings | null } | null>}
  */
 export function getFooter(options) {
-	return fetchOrNull({ query: FOOTER, ...options }).catch(() => null);
-}
-
-/**
- * The contact block's title, intro and links (mailto: and tel:), each with its key. Values are read without
- * the click-to-edit markers, so the links' addresses stay clean.
- *
- * @param {{ title?: string | null, intro?: string | null, contacts?: Array<{ _key: string, value?: string | null }> | null } | null | undefined} contact
- */
-function toContact(contact) {
-	if (!contact) return null;
-	return {
-		title: contact.title,
-		intro: contact.intro,
-		contacts: (contact.contacts ?? [])
-			.map((c) => ({ key: c._key, value: stegaClean(c.value)?.trim() }))
-			.filter((c) => c.value)
-			.map(({ key, value }) => ({ key, value, href: value.includes("@") ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}` })),
-	};
+	return fetchOrNull({ query: FOOTER, ...options })
+		.then((data) => (data?.footer ? data : null))
+		.catch(() => null);
 }
 
 /** A 1px rule that draws in left → right with the footer's entrance (FooterMotion). */
@@ -72,21 +56,21 @@ async function currentYear() {
  * Fixed, compact gaps: the footer is as tall as its content, which fits one screen on desk; nothing
  * stretches to fill the window, so tall windows get no gaps. Compact layouts stack the two sides.
  * Entrance animation: components/FooterMotion.jsx.
- * In the studio's live preview each contact, social link and office opens its entry and can be dragged to
- * a new place; an office's phone and directions link open their own fields.
+ * The words are the Footer document's; the email, phone numbers, social links and offices come from Site
+ * settings, the offices' addresses from their own records (Library › Offices).
+ * In the studio's live preview each phone number, social link and office opens its entry and can be dragged
+ * to a new place; an office's address, phone and map link open the office.
  */
 export default async function Footer() {
 	const options = await fetchOptions();
-	const [footer, year] = await Promise.all([getFooter(options), currentYear()]);
-	if (!footer) return null;
-	const { offices, socialsTitle, socials } = footer;
-	const contact = toContact(footer.contact);
+	const [data, year] = await Promise.all([getFooter(options), currentYear()]);
+	if (!data) return null;
+	const { footer, settings } = data;
 	const edit = editor(footer, options.stega);
-	// The contact block is edited in Home's Contact section.
-	const contactSection = scope(editor({ _id: "home", _type: "home" }, options.stega), ["sections", item(footer.contact?._key)]);
-	const contacts = scope(contactSection, "contacts");
-	const socialList = scope(edit, "socials");
-	const officeList = scope(edit, "offices");
+	const site = editor(settings, options.stega);
+	const socialList = scope(site, "socials");
+	const officeList = scope(site, "offices");
+	const hasContact = footer.contactTitle || footer.contactIntro || settings?.email || settings?.phones?.length;
 
 	return (
 		<FooterMotion className="relative flex flex-col bg-lime p-m text-black">
@@ -97,48 +81,25 @@ export default async function Footer() {
 
 			<div className="mt-6 flex flex-col gap-6 desk:mt-3 desk:grid-site desk:gap-y-0">
 				{/* Let's Build Together */}
-				{contact && (
-					<div
-						className="flex flex-col justify-between gap-4 desk:col-span-6"
-						// Live preview: opens Home's Contact section. Not dragged: it always shows here, in the footer.
-						{...(contactSection.doc && { ...editProps(contactSection()), "data-sanity-drag-disable": "true" })}
-					>
+				{hasContact && (
+					<div className="flex flex-col justify-between gap-4 desk:col-span-6">
 						{/* Top: the rule, the intro as a small eyebrow, then the title */}
 						<div>
 							<Rule />
-							{contact.intro && (
-								<p data-fade className="pt-rule">
-									{contact.intro}
+							{footer.contactIntro && (
+								<p data-fade className="pt-rule" {...editProps(edit("contactIntro"))}>
+									{footer.contactIntro}
 								</p>
 							)}
 							{/* Display size, shrinking with the window on desk so the usual title fits one line across the 6
 							    columns; a longer one wraps rather than running into the right column */}
 							<h2 data-split className="mt-1 text-display text-balance py-[0.08em] desk:text-[min(var(--t-display),7.2vw)]">
-								{contact.title}
+								{footer.contactTitle}
 							</h2>
 						</div>
 						{/* Foot: one ruled row per contact across the full width; labels in the first two of six
 						    columns, values left-aligned from the third, so both sit on the grid */}
-						<ul data-fade className="border-b border-current" {...editProps(contacts())}>
-							<Ordered
-								edit={contacts}
-								items={contact.contacts.map((c) => ({
-									key: c.key,
-									node: (
-										<li key={c.key} className="border-t border-current">
-											<a
-												href={c.href}
-												{...editProps(contacts(item(c.key)))}
-												className="grid grid-cols-6 items-baseline gap-x-g py-[0.35em] pointer-coarse:min-h-[44px] pointer-coarse:content-center transition-opacity duration-200 hover:opacity-60"
-											>
-												<span className="col-span-2">{c.href.startsWith("mailto:") ? "Email" : "Phone"}</span>
-												<span className="col-span-4 min-w-0 text-lead [overflow-wrap:anywhere]">{c.value}</span>
-											</a>
-										</li>
-									),
-								}))}
-							/>
-						</ul>
+						<ContactRows data-fade settings={settings} edit={site} />
 					</div>
 				)}
 
@@ -149,19 +110,19 @@ export default async function Footer() {
 					<div>
 						<Rule />
 						<div data-fade className="pt-rule">
-							{socialsTitle && <p>{socialsTitle}</p>}
+							{footer.socialsTitle && <p {...editProps(edit("socialsTitle"))}>{footer.socialsTitle}</p>}
 							<ul {...editProps(socialList())}>
 								<Ordered
 									edit={socialList}
-									items={(socials ?? [])
-										.filter((s) => linkHref(s.link))
+									items={(settings?.socials ?? [])
+										.filter((s) => /^https?:\/\//i.test(safeHref(s.url) ?? ""))
 										.map((s) => ({
 											key: s._key,
 											node: (
 												<li key={s._key}>
-													<CmsLink link={s.link} {...editProps(socialList(item(s._key)))} className={LINK}>
+													<a href={safeHref(s.url)} target="_blank" rel="noreferrer" {...editProps(socialList(item(s._key)))} className={LINK}>
 														<RollText>{s.label}</RollText>
-													</CmsLink>
+													</a>
 												</li>
 											),
 										}))}
@@ -182,39 +143,46 @@ export default async function Footer() {
 						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule" {...editProps(officeList())}>
 							<Ordered
 								edit={officeList}
-								items={(offices ?? []).map((office) => {
-									const at = scope(officeList, item(office._key));
-									const city = stegaClean(office.city);
-									const phone = stegaClean(office.phone);
-									return {
-										key: office._key,
-										node: (
-											<div key={office._key} {...editProps(at())}>
-												<p>{city}</p>
-												<p className="whitespace-pre-line">{stegaClean(office.address)}</p>
-												{linkHref(office.directionsLink) && (
-													<CmsLink
-														link={office.directionsLink}
-														aria-label={`View directions to the ${city} office`}
-														{...editProps(at("directionsLink"))}
-														className={LINK}
-													>
-														<RollText>View directions</RollText>
-														<Arrow />
-													</CmsLink>
-												)}
-												{phone && (
-													<p>
-														<a href={`tel:${phone.replace(/\s+/g, "")}`} {...editProps(at("phone"))} className={LINK}>
-															<RollText>{phone}</RollText>
-														</a>{" "}
-														(Sales)
+								items={(settings?.offices ?? [])
+									.filter((office) => office?.city?.name)
+									.map((office) => {
+										const at = editor(office, options.stega);
+										const city = stegaClean(office.city.name);
+										const phone = stegaClean(office.phone);
+										const map = safeHref(office.mapUrl);
+										return {
+											key: office._key,
+											node: (
+												<div key={office._key} {...editProps(officeList(item(office._key)))}>
+													<p>{city}</p>
+													<p className="whitespace-pre-line" {...editProps(at("address"))}>
+														{stegaClean(office.address)}
 													</p>
-												)}
-											</div>
-										),
-									};
-								})}
+													{map && (
+														<a
+															href={map}
+															target="_blank"
+															rel="noreferrer"
+															aria-label={`View directions to the ${city} office`}
+															{...editProps(at("mapUrl"))}
+															className={LINK}
+														>
+															<RollText>View directions</RollText>
+															<Arrow />
+														</a>
+													)}
+													{phone && (
+														<p>
+															<a href={telHref(phone)} {...editProps(at("phone"))} className={LINK}>
+																<RollText>{phone}</RollText>
+															</a>{" "}
+															(Sales)
+														</p>
+													)}
+												</div>
+											),
+										};
+									})}
 							/>
 						</div>
 					</div>
@@ -228,7 +196,7 @@ export default async function Footer() {
 							</Link>
 						</div>
 						<p className="inline-flex min-h-[24px] items-center text-right pointer-coarse:min-h-[44px]">
-							© {year} {SITE_NAME}
+							© {year} {stegaClean(settings?.name) || SITE_NAME}
 						</p>
 					</div>
 				</div>
