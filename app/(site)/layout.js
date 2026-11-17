@@ -45,6 +45,10 @@ export const viewport = {
  * SanityLive, with drafts (and the preview token) only in draft mode, where an edit just re-renders the page
  * (draft mode never reads the cache). For visitors, a publish expires the content it changed and the open
  * page re-renders with it (lib/sanity/actions.js).
+ * In draft mode every change re-renders the page, with no debounce: SanityLive's `action` is either
+ * "refresh" or a server action, and a server action can't hold back the refresh it hands to the browser.
+ * Each re-render reads every query once (lib/sanity/live.js → fetchOrNull), and a dragged list shows its
+ * new order before that (components/EditOrderLive.jsx).
  */
 async function Live() {
   const { isEnabled } = await draftMode();
