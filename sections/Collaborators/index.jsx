@@ -17,7 +17,8 @@ import { editProps } from "@/lib/sanity/edit-props";
 const Collaborators = ({ section, edit }) => {
 	const logos = (section.logos ?? [])
 		.filter((entry) => hasImage(entry.logo))
-		.map((entry) => ({ ...entry, edit: edit(["logos", item(entry._key)]) }));
+		// Only in the live preview: visitors' logos go to the page as they are.
+		.map((entry) => (edit.doc ? { ...entry, edit: edit(["logos", item(entry._key)]) } : entry));
 
 	return (
 		<Reveal className="grid-site items-center bg-stone px-m pb-10" {...editProps(edit())}>

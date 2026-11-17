@@ -14,7 +14,7 @@ export default function CmsLink({ link, children, ...rest }) {
 	if (!href) return children ?? null;
 	const target = link.openInNewTab ? "_blank" : undefined;
 
-	if (href.startsWith("/") && !href.startsWith("//")) {
+	if (/^\/(?![/\\])/.test(href)) {
 		return (
 			<Link href={href} target={target} {...rest}>
 				{children}

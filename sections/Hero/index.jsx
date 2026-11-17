@@ -46,8 +46,8 @@ const Hero = ({ section, edit }) => {
 			backdrop={backdrop}
 			videoSrc={videoSrc}
 			loopSources={loopSources}
-			edit={edit()}
-			editMedia={edit(isVideo ? "video" : "image")}
+			// Only in the live preview: visitors' pages get no click-to-edit props at all.
+			{...(edit.doc && { edit: edit(), editMedia: edit(isVideo ? "video" : "image") })}
 			title={
 				title?.trim() ? (
 					<h1 className="text-title text-balance text-lime">

@@ -18,7 +18,7 @@ export const checkAddress = (url) => {
 	if (/\s/.test(url.trim())) return "Remove the spaces from the address.";
 	if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) return true;
 	if (/^#[^#]+$/.test(url)) return true;
-	if (/^\/(?!\/)/.test(url)) return true;
+	if (/^\/(?![/\\])/.test(url)) return true;
 	return "Start with https:// for a website, mailto: for an email, tel: for a phone number, / for a page on this site, or # for a place on the page.";
 };
 

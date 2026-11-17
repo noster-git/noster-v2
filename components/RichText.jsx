@@ -7,7 +7,7 @@ import { lineBreaks } from "@/lib/content";
 function TextLink({ value, children }) {
 	const href = stegaClean(value?.href)?.trim();
 	if (!href) return children;
-	if (href.startsWith("/") && !href.startsWith("//")) return <Link href={href}>{children}</Link>;
+	if (/^\/(?![/\\])/.test(href)) return <Link href={href}>{children}</Link>;
 	return (
 		<a href={href} rel={/^https?:/i.test(href) ? "noreferrer" : undefined}>
 			{children}

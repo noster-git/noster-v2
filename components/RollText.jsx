@@ -1,4 +1,4 @@
-import { stegaClean } from "@sanity/client/stega";
+import { withoutEditMarkers } from "@/lib/edit-markers";
 import { editProps } from "@/lib/sanity/edit-props";
 
 /**
@@ -16,7 +16,7 @@ import { editProps } from "@/lib/sanity/edit-props";
  * @param {{ children?: import("react").ReactNode, truncate?: boolean, edit?: string }} props
  */
 export default function RollText({ children, truncate = false, edit }) {
-	const text = stegaClean(String(children ?? ""));
+	const text = withoutEditMarkers(String(children ?? ""));
 	return (
 		<>
 			<span className="sr-only">{text}</span>

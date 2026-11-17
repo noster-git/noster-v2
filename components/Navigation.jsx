@@ -53,7 +53,13 @@ export default async function Navigation() {
 
 				{/* Compact: the links row is hidden, so Works stays one tap away at the right of the bar. */}
 				<div className="col-span-3 flex justify-end desk:hidden">
-					<Link href="/works" data-intro {...editProps(works ? list(item(works._key)) : undefined)} className={linkClass}>
+					<Link
+						href="/works"
+						data-intro
+						// Live preview: opens the Works entry. Not dragged: the desk menu holds the same entry in its order.
+						{...(works && list.doc && { ...editProps(list(item(works._key))), "data-sanity-drag-disable": "true" })}
+						className={linkClass}
+					>
 						<RollText>{works?.label || "Works"}</RollText>
 					</Link>
 				</div>
