@@ -22,10 +22,10 @@ export default function LineCta({ href, children, image, className = "pt-2 pb-6"
 				/>
 				<span
 					data-reveal
-					className="flex w-full items-center justify-center gap-[0.3em] py-2 text-heading transition-colors duration-600 ease-quart group-hover:text-(--paper)"
+					className="flex w-full items-center justify-center gap-icon py-2 text-heading transition-colors duration-600 ease-quart group-hover:text-(--paper)"
 				>
 					{image && (
-						<span className="relative mr-[0.2em] block aspect-[5/3] h-[1.5em] shrink-0 overflow-hidden rounded-media">
+						<span className="relative mr-[0.2em] block aspect-[5/3] h-[1.5em] shrink-0 overflow-hidden rounded-ui">
 							<Img field={image} fill sizes="160px" alt="" className="object-cover" />
 						</span>
 					)}

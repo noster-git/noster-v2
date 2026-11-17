@@ -7,10 +7,23 @@
    - desk (`desk:`): ≥768px — tablets, small laptops and desktops share one layout; type steps up again at ≥1800px
    Grid: 5 columns compact / 10 desk (`grid-site`), 6px column gaps (`g`); page margins (`m`) 12px compact, 24px desk.
    Spacing: one unit (`p-1`) = 10.5px at 1440 (scaling with the page below it), 11.2px wide; compact is
-   30% tighter (7.35px). Heroes: full screen on desk, half the screen on phones (--hero-h). Type sizes are fixed px except the display tiers. */
+   30% tighter (7.35px). Project heroes: full screen on desk, half the screen on phones (--hero-h); the home
+   hero is full screen at every width. Type sizes are fixed px except the display tiers. */
 
 @custom-variant desk {
   @media (min-width: 768px) {
+    @slot;
+  }
+}
+/* wide (`wide:`): ≥1800px, where body type and spacing step up again. */
+@custom-variant wide {
+  @media (min-width: 1800px) {
+    @slot;
+  }
+}
+/* board (`board:`): ≥1181px, wide enough for the Behind the Scenes board; below it the photos are a swipe row. */
+@custom-variant board {
+  @media (min-width: 1181px) {
     @slot;
   }
 }
@@ -22,11 +35,11 @@
 }
 
 :root {
-  /* compact. Type steps 12 → 14 → 17 → 19 → 26px (about 1.2× each), lines loosening as sizes shrink. */
+  /* compact. Type steps 12 → 14 → 17 → 19 → 26px (about 1.2× each), then display, lines loosening as sizes shrink. */
   --fs: 12px; /* body size */
   --bl: 16px; /* body line */
   --su: 7.35px; /* spacing unit: 30% tighter than desk */
-  --hero-h: 50svh; /* home and project heroes */
+  --hero-h: 50svh; /* project heroes */
   --t-name: 14px;
   --t-long: 14px;
   --t-long-lh: 21px;
@@ -38,22 +51,21 @@
   --t-title: 26px;
   --t-title-lh: 1.1;
   --t-display: 12vw;
-  --r-media: 3px;
   --pm: 12px; /* page margin */
+  --nav-h: 48px; /* the fixed nav bar: anchor jumps and focus stop below it */
+  --nav-clear: 84px; /* content that sits under the fixed nav (sticky headings) starts this far down */
+  --page-top: 84px; /* top padding of pages without a hero: clear of the nav, 120px on desk */
   /* 1/90 of the page width, held between 768 and 1500px: scales the desk tiers, spacing and margins */
   --hf: calc(clamp(768px, 100vw, 1500px) / 90);
 }
 @media (min-width: 768px) {
   :root {
-    --fs: 12px;
     --bl: 15px;
     /* Below 1440 the layout scales down with the page (--hf is 16px at 1440), so a small laptop looks
        like 1440. Floors keep everything legible; body (12px) and long-form text don't shrink. */
     --su: max(7.35px, var(--hf) * 0.65625); /* 10.5px at 1440 */
     --hero-h: 100svh;
     --t-name: max(14px, var(--hf)); /* 16px at 1440 */
-    --t-long: 14px;
-    --t-long-lh: 21px;
     --t-heading: max(20px, var(--hf) * 2); /* 32px at 1440 */
     --t-lead: max(20px, var(--hf) * 2, 2.1vw); /* 32px at 1440, grows with the page above 1520 */
     --t-brief: max(17px, var(--hf) * 1.5); /* 24px at 1440 */
@@ -62,8 +74,8 @@
     --t-title: max(28px, var(--hf) * 2.88); /* 46px at 1440 */
     --t-title-lh: 1.02;
     --t-display: calc(var(--hf) * 7.2); /* 115px at 1440 */
-    --r-media: 6px;
     --pm: max(16px, var(--hf) * 1.5); /* 24px at 1440 */
+    --page-top: 120px;
   }
 }
 @media (min-width: 1800px) {
@@ -77,12 +89,28 @@
 
 @theme {
   --color-lime: #d3fd5e;
-  --color-muted: #666; /* 5.7:1 on white: passes WCAG AA for small text */
+  --color-stone: #f3f2ee; /* warm paper: the bands that hold text (Approach, Collaborators, project brief) */
+  --color-muted: #666; /* 5.7:1 on white, 5.2:1 on stone: passes WCAG AA for small text */
+  /* Ink and paper are Tailwind's black and white (text-black, bg-white…); these are the tints made from them. */
+  --color-rule: rgb(0 0 0 / 0.15); /* hairline rules and outlines on paper */
+  --color-wash: rgb(0 0 0 / 0.04); /* a faint tone behind photos while they load */
+  --color-scrim: rgb(0 0 0 / 0.8); /* behind the showreel dialog */
 
   --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The same curves lib/motion.js and lib/curtain.js hand to WAAPI, for CSS transitions. */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-expo-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-curtain: cubic-bezier(0.58, 0.08, 0.13, 1);
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-back-out: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoots a little: the board settling after a throw */
 
-  --radius-ui: 6px;
+  --radius-ui: 4px; /* the corner radius: buttons, tags, photos, video */
+  --radius-chip: 2px; /* the small section-number chip (SectionLabel), half the size of everything else */
+
+  /* Reading widths. */
+  --container-long: 46em; /* long-form text (privacy policy) */
+  --container-brief: 32em; /* project descriptions */
 }
 
 /* `inline`: these resolve the responsive variables above at the point of use. */
@@ -93,13 +121,18 @@
   --spacing: var(--su); /* p-1 = one unit, p-8 = eight */
   --spacing-g: 6px; /* gutter: grid and column gaps */
   --spacing-m: var(--pm); /* page margin: 12px compact, 24px desk */
-
-  --radius-media: var(--r-media); /* 3px compact, 6px desk: photos and video */
+  --spacing-nav: var(--nav-clear); /* top-nav: sticky headings clear of the fixed nav */
+  --spacing-page: var(--page-top); /* pt-page: pages without a hero, 84 / 120px */
+  --spacing-icon: 0.3em; /* gap-icon: between a label and its arrow or corner icon */
 
   /* Type scale. Each `text-<name>` sets size, line height, tracking and weight. */
   --text-body: var(--fs); /* 12 / 12 / 13px — everything that is read */
   --text-body--line-height: var(--bl);
   --text-body--letter-spacing: -0.025em;
+
+  --text-button: 13px; /* the phone's floating CTA: a step above body so it reads as the one action */
+  --text-button--line-height: 16px;
+  --text-button--letter-spacing: -0.025em;
 
   --text-name: var(--t-name); /* 14 / 16px — project card names */
   --text-name--line-height: 1.2;
@@ -153,12 +186,20 @@ html::-webkit-scrollbar {
 }
 
 /* Page colours. */
+/* Layers, bottom to top: the nav (z-50) sits over the page and the project photo (z-40); the
+   pointer pill floats over both; the curtain covers everything but the skip link. */
+:root {
+  --z-cursor: 400;
+  --z-curtain: 1000;
+  --z-skip: 1001;
+}
+
 html {
   --paper: #fff;
   --ink: #000;
   color-scheme: light;
   /* Keyboard focus and anchor jumps stop clear of the fixed nav (top) and the phone CTA (bottom). */
-  scroll-padding-top: 48px;
+  scroll-padding-top: var(--nav-h);
   scroll-padding-bottom: 80px;
   /* Taps: no double-tap zoom delay on controls, and no grey flash (every control has its own hover/press state). */
   -webkit-tap-highlight-color: transparent;
@@ -215,6 +256,40 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   transition: background-color 0.3s var(--ease-quart), color 0.3s var(--ease-quart);
+}
+::selection {
+  background: var(--color-lime);
+  color: var(--ink);
+}
+
+/* Section index (components/SectionLabel.jsx): a lime chip numbering each section in page order,
+   "01", "02"… Counted per page: pages left behind stay in the DOM but display: none, which counters skip. */
+main {
+  counter-reset: section;
+}
+.section-index::before {
+  counter-increment: section;
+  content: counter(section, decimal-leading-zero);
+}
+
+/* Scroll progress: a 2px line across the top that fills with the page's scroll, on the compositor
+   (scroll-driven animation, no script). White with difference blending, like the nav: it reads over
+   photos and paper alike. Browsers without scroll timelines don't show it. */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    transform-origin: left;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 /* ── Hover motion (components/RollText.jsx, components/Arrow.jsx) ───────────────────────────
@@ -280,42 +355,47 @@ body {
 }
 
 /* Collaborators logos (slices/Collaborators/LogoShuffle). Greyscale at 80% until hovered, then full colour.
-   Swaps blur the old logo out and the new one in on the same spot. Blur and opacity sit on the img
-   itself, not a wrapper, so mix-blend-multiply still reaches the page behind. */
+   Swaps fade the old logo out and the new one in on the same spot (opacity and transform only, so they
+   stay on the compositor). Opacity sits on the img itself, not a wrapper, so mix-blend-multiply still
+   reaches the page behind. */
 .logo-slot { --gray: 1; --fade: 0.8; }
 @media (hover: hover) {
   .logo-slot:hover { --gray: 0; --fade: 1; }
 }
+/* Small, even logos. Each is sized towards the same area (a --logo-s square), with --logo-k (set per
+   logo) = 1 / square root of its trimmed width / height, so a long wordmark is a little shorter and
+   wider than a compact mark. Heights stay in a narrow band (--logo-min to --logo-max) and widths under
+   --logo-w, so no logo stands out by being much taller or wider than the rest. */
+.logo-slot { --logo-s: 32px; --logo-min: 14px; --logo-max: 22px; --logo-w: 96px; }
+@media (min-width: 768px) {
+  .logo-slot { --logo-s: 44px; --logo-min: 18px; --logo-max: 30px; --logo-w: 130px; }
+}
 .logo-slot .logo {
-  filter: grayscale(var(--gray)) blur(0);
+  height: clamp(var(--logo-min), var(--logo-s) * var(--logo-k, 0.5), var(--logo-max));
+  max-width: min(100%, var(--logo-w));
+  filter: grayscale(var(--gray));
   opacity: var(--fade);
   transition: filter 0.4s ease, opacity 0.4s ease;
 }
-/* Wave: each slot waits its --delay (stagger), then the old logo
-   lifts 20px and blurs out while the new one rises 20px and sharpens, both at once, 0.5s ease-in-out. */
+/* Wave: each slot waits its --delay (stagger), then the old logo lifts 20px and fades out while the new
+   one rises 20px and fades in, both at once, 0.5s ease-in-out. */
 .logo-slot .logo-out { animation: logo-out 0.5s ease-in-out var(--delay, 0s) both; }
 .logo-slot .logo-in { animation: logo-in 0.5s ease-in-out var(--delay, 0s) backwards; }
 @keyframes logo-out {
-  to { opacity: 0; filter: grayscale(var(--gray)) blur(8px); transform: translateY(-20px); }
+  to { opacity: 0; transform: translateY(-20px); }
 }
 @keyframes logo-in {
-  from { opacity: 0; filter: grayscale(var(--gray)) blur(8px); transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(20px); }
 }
 
-/* Project page photos (slices/ProjectImages): a masonry, two columns on desk, one on compact.
-   Each photo keeps its own shape, so nothing is cropped and no row leaves a gap. 6px gaps,
-   page-margin sides; every photo has the media radius. */
-.project-images {
-  padding: 0 var(--pm);
-  column-gap: 6px;
-}
-.project-images > .project-image {
-  break-inside: avoid;
-  margin-bottom: 6px;
-}
-@media (min-width: 768px) {
-  .project-images {
-    columns: 2;
+/* Project card hover (components/WorksGrid.jsx), with a mouse: the photo eases in to 1.04 under the
+   View project pill. `scale`, not `transform`, so it adds to the reveal's WAAPI transform instead of fighting it. */
+@media (min-width: 768px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-card-media] img {
+    transition: scale 0.9s var(--ease-out-quint);
+  }
+  [data-card-media]:hover img {
+    scale: 1.04;
   }
 }
 
@@ -323,20 +403,9 @@ body {
    The clicked card's photo grows (from the click's next frame) until it fills the screen exactly as
    the project hero; then the page changes under it and it hands over in one frame.
    data-project-opening is set from the click until that hand-over, never on a normal page load:
-   the "View" tag leaves at once; the project title waits, then rises in. The transition is only for that
-   hand-over (TitleRise drops data-split then); on a normal load the lines rise and nothing fades. */
+   the "View" tag leaves at once; the project title rises in line by line at the hand-over (TitleRise). */
 html[data-project-opening] [data-view-cursor] {
   visibility: hidden;
-}
-[data-project-title]:not([data-split]) {
-  transition:
-    opacity 500ms var(--ease-out-quint),
-    translate 500ms var(--ease-out-quint);
-}
-html[data-project-opening] [data-project-title] {
-  opacity: 0;
-  translate: 0 16px;
-  transition: none;
 }
 
 /* ── Page-load intro and reveals (components/Intro.jsx, components/Reveal.jsx, slices/Hero) ──────
@@ -352,8 +421,9 @@ html[data-project-opening] [data-project-title] {
 .js-anim:not(.intro-skip) .curtain {
   display: block;
 }
-/* Its wordmark comes in from a blur each time the curtain is shown. */
-.curtain [data-curtain-logo] {
+/* On a page change its wordmark comes in from a blur as the curtain wipes up over the page. On a load the
+   curtain is already there, still, so the wordmark is simply there too, as it is when a page change holds. */
+.intro-skip .curtain [data-curtain-logo] {
   animation: curtain-wordmark 0.9s var(--ease-out-quint) 0.1s both;
 }
 @keyframes curtain-wordmark {
@@ -369,6 +439,13 @@ html[data-project-opening] [data-project-title] {
 .js-anim [data-split],
 .js-anim [data-fade] {
   opacity: 0;
+}
+/* The page's main element (data-lcp: the home title, the first work card) is on show under the load
+   curtain, so the browser paints it, and counts the page as loaded, as soon as it is ready behind the
+   curtain. It is back in its start state the moment the curtain starts to lift (Intro adds .intro-lift),
+   before any of it is uncovered, so its entrance plays as before. */
+.js-anim:not(.intro-lift) [data-lcp] {
+  opacity: 1;
 }
 /* Footer entrance (components/FooterMotion.jsx): the wordmark waits below its mask, the rules undrawn. */
 .js-anim [data-footer-mark] {
@@ -416,11 +493,9 @@ html[data-project-opening] [data-project-title] {
 .js-anim:not(.intro-skip) [data-hero-media] {
   transform: scale(1.12);
 }
-/* SplitText line masks (hero, Contact, project titles): room below each line inside its clip, so
-   descenders (g, y, p) are not cut on tight line heights; the negative margin keeps the line spacing unchanged. */
-[data-split] > div,
-[data-hero-title] h1 > div,
-.reveal-line-mask {
+/* Line masks (splitLines, lib/motion.js): room below each line inside its clip, so descenders (g, y, p)
+   are not cut on tight line heights; the negative margin keeps the line spacing unchanged. */
+.split-line-mask {
   padding-bottom: 0.14em;
   margin-bottom: -0.14em;
 }

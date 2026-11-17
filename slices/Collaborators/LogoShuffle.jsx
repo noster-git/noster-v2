@@ -6,11 +6,22 @@ import Img from "@/components/Img";
 const SLOTS = 4; // logos on show at once, at every width
 const EVERY = 3000; // ms between waves
 const STAGGER = 0.15; // s between neighbouring slots within a wave
+const SWAP_MS = 500; // one slot's swap (.logo-in / .logo-out, globals.css)
+
+// Logos are kept small and even whatever their upload: the image CDN trims any plain border (padding or
+// background baked into the file), then each is sized towards the same area within a narrow height band
+// and a width cap (globals.css .logo-slot .logo). "Large" (CMS) is a manual nudge on top, for a mark that
+// still looks small. SIZES fetches files about the width shown (uploads are often 1000px+ wide for a
+// 130px slot).
+const TRIM = { trim: "auto" };
+const SIZES = "130px";
+const LARGE = 1.25;
+const ratios = new Map(); // logo url → width / height after the trim, measured from the loaded image
 
 /**
  * Logo carousel: a row of four slots (up to 240px each, narrower on phones),
  * each with its own column of logos (logo i goes to slot i % slots). Every EVERY ms a wave runs left to
- * right: in each slot the logo lifts 20px and blurs out while the next rises 20px from below and sharpens,
+ * right: in each slot the logo lifts 20px and fades out while the next rises 20px from below and fades in,
  * both at once, clipped to the slot. Logos sit greyscale and take their colour back on hover. Holds while the
  * row is hovered, off-screen, or paused with its toggle; no swapping under reduced motion. Screen readers read
  * a plain list of the logos' alt texts instead. Keyframes in globals.css (.logo-slot).
@@ -26,6 +37,15 @@ export default function LogoShuffle({ logos }) {
 	const [paused, setPaused] = useState(false);
 	const reduced = useSyncExternalStore(onReducedChange, isReduced, () => false);
 	const rotates = logos.length > count && !reduced;
+	// The logos still to come are fetched once the row is within half a screen of view, not with the page.
+	const [near, setNear] = useState(false);
+
+	useEffect(() => {
+		if (!rotates || near) return;
+		const io = new IntersectionObserver(([e]) => e.isIntersecting && setNear(true), { rootMargin: "50% 0px" });
+		io.observe(root.current);
+		return () => io.disconnect();
+	}, [rotates, near]);
 
 	useEffect(() => {
 		if (!rotates || paused) return;
@@ -33,6 +53,11 @@ export default function LogoShuffle({ logos }) {
 		const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
 		io.observe(root.current);
 
+		// Once a wave is over, its slots settle: the leaving logo goes and the new one drops its keyframes.
+		// CSS animations restart when a hidden page is shown again (pages stay in the DOM, hidden, after
+		// leaving them), so a logo still carrying them would swap in again on coming back.
+		const settle = () => setSlots((prev) => (prev.some((s) => s.moving) ? prev.map((s) => ({ ...s, prev: null, moving: false })) : prev));
+		let settling;
 		const id = setInterval(() => {
 			if (!visible || document.hidden || held.current) return;
 			setSlots((prev) =>
@@ -40,14 +65,18 @@ export default function LogoShuffle({ logos }) {
 					const column = columnOf(i, count, logos.length);
 					if (column.length < 2) return s;
 					const step = (s.step + 1) % column.length;
-					return { step, cur: column[step], prev: s.cur, n: s.n + 1 };
+					return { step, cur: column[step], prev: s.cur, n: s.n + 1, moving: true };
 				}),
 			);
+			clearTimeout(settling);
+			settling = setTimeout(settle, SWAP_MS + count * STAGGER * 1000);
 		}, EVERY);
 
 		return () => {
 			clearInterval(id);
+			clearTimeout(settling);
 			io.disconnect();
+			settle();
 		};
 	}, [count, logos.length, rotates, paused]);
 
@@ -68,31 +97,43 @@ export default function LogoShuffle({ logos }) {
 			aria-hidden="true"
 			onMouseEnter={() => (held.current = true)}
 			onMouseLeave={() => (held.current = false)}
-			className="flex justify-center gap-2 px-m desk:gap-4"
+			className="flex justify-between gap-2 desk:gap-4"
 		>
 			{slots.map((s, i) => (
 				<li
 					key={i}
 					style={{ "--delay": `${(i * STAGGER).toFixed(2)}s` }}
-					// clipped so the 20px rise/lift fades at the slot edge; 20px of air above and below, pulled back with -my-5
-					className="logo-slot -my-5 grid h-[70px] min-w-0 flex-[0_1_240px] place-items-center overflow-hidden desk:h-[80px]"
+					// clipped so the 20px rise/lift fades at the slot edge; the slot's height is the row's, logos centred in it
+					className="logo-slot grid h-[64px] min-w-0 flex-[0_1_240px] place-items-center overflow-hidden desk:h-[88px]"
 				>
 					{s.prev !== null && <Logo key={`o${s.n}`} item={logos[s.prev]} className="logo-out" hidden />}
-					<Logo key={`i${s.n}`} item={logos[s.cur]} className={s.n ? "logo-in" : ""} />
+					<Logo key={`i${s.n}`} item={logos[s.cur]} className={s.moving ? "logo-in" : ""} />
 				</li>
 			))}
-			{/* fetch every logo up front so an incoming one is decoded before it rises in */}
-			<li hidden aria-hidden>
-				{logos.map((item, i) => (
-					<Img key={i} field={item.logo} fallbackAlt="" loading="eager" />
-				))}
-			</li>
+			{/* fetch every logo ahead of its turn so an incoming one is decoded before it rises in */}
+			{/* fill: no width/height attributes, which give the upload's untrimmed shape, not the file's */}
+			{near && (
+				<li hidden aria-hidden className="relative">
+					{logos.map((item, i) => (
+						<Img
+							key={i}
+							field={item.logo}
+							fill
+							fallbackAlt=""
+							loading="eager"
+							imgixParams={TRIM}
+							sizes={SIZES}
+							// so a logo is sized from its trimmed shape the moment it swaps in
+							onLoad={(e) => ratios.set(item.logo.url, e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)}
+						/>
+					))}
+				</li>
+			)}
 		</ul>
 		{rotates && (
 			<button
 				type="button"
 				onClick={() => setPaused(!paused)}
-				aria-pressed={paused}
 				className="sr-only cursor-pointer underline underline-offset-2 focus-visible:not-sr-only focus-visible:absolute focus-visible:top-full focus-visible:left-1/2 focus-visible:mt-2 focus-visible:-translate-x-1/2"
 			>
 				{paused ? "Play logos" : "Pause logos"}
@@ -121,14 +162,35 @@ function initial(n, total) {
 	return Array.from({ length: Math.min(n, total) }, (_, i) => ({ step: 0, cur: i, prev: null, n: 0 }));
 }
 
+/** Width / height of the logo as shown (trimmed), from the loaded image, else from the upload's own size. */
+function useRatio(field) {
+	const { url, dimensions } = field;
+	const [ratio, setRatio] = useState(() => ratios.get(url) ?? (dimensions ? dimensions.width / dimensions.height : 1));
+	// Also from a ref: a logo that finished loading before hydration never fires onLoad.
+	const measure = (img) => {
+		if (!img?.complete || !img.naturalWidth) return;
+		const r = img.naturalWidth / img.naturalHeight;
+		ratios.set(url, r);
+		setRatio((prev) => (Math.abs(prev - r) < 0.01 ? prev : r));
+	};
+	return [ratio, measure];
+}
+
 function Logo({ item, className, hidden }) {
+	const [ratio, measure] = useRatio(item.logo);
 	return (
 		<Img
+			ref={measure}
+			onLoad={(e) => measure(e.currentTarget)}
 			field={item.logo}
+			imgixParams={TRIM}
+			sizes={SIZES}
 			fallbackAlt=""
 			aria-hidden={hidden || undefined}
+			// Sized towards the same area: --logo-k = 1 / √(width / height) (globals.css .logo-slot .logo).
+			style={{ "--logo-k": (item.large ? LARGE : 1) / Math.sqrt(ratio) }}
 			// multiply: white logo backgrounds disappear into the page. Greyscale until hover (globals.css .logo-slot).
-			className={`logo [grid-area:1/1] w-auto max-w-full object-contain mix-blend-multiply ${item.large ? "h-[30px] desk:h-[40px]" : "h-[22px] desk:h-[30px]"} ${className}`}
+			className={`logo [grid-area:1/1] w-auto object-contain mix-blend-multiply ${className}`}
 		/>
 	);
 }

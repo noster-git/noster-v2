@@ -9,42 +9,85 @@ import Link from "next/link";
 import Img from "@/components/Img";
 import { useProjectTransition } from "@/components/ProjectTransition";
 import { ArrowIcon, CornerIcon } from "@/components/Arrow";
-import { revealBatch } from "@/lib/motion";
+import { hasPlayed, revealBatch } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-// Desk: where each card sits on the 10-column grid, repeating every five cards (a row of 3 + 4 + 3
-// columns, then a row of 5 + 5), and the photo's shape. Every row spans the full width, and the shapes
-// keep every row the same height: 3 columns square, 4 columns at 4:3 and 5 columns at 5:3 all come out
-// ≈ 0.29 × the page width tall. Written out so Tailwind sees them.
-const PLACES = [
-	["desk:col-span-3 desk:col-start-1", "desk:aspect-square"],
-	["desk:col-span-4 desk:col-start-4", "desk:aspect-[4/3]"],
-	["desk:col-span-3 desk:col-start-8", "desk:aspect-square"],
-	["desk:col-span-5 desk:col-start-1", "desk:aspect-[5/3]"],
-	["desk:col-span-5 desk:col-start-6", "desk:aspect-[5/3]"],
-];
+// Desk: cards fill rows of the 10-column grid in a repeating cadence: one full-width lead, a row of
+// 3 + 4 + 3 columns (the middle card dropped a little, so the row doesn't read as one straight edge),
+// then a row of 5 + 5. A last row the cards don't fill takes the row shape for the cards it has (one card
+// runs full width, two split 5 + 5), so the grid never ends on a gap. 3 columns are square, 4 at 4:3 and
+// 5 at 5:3 (≈ 0.29 × the page width tall); the lead is 21:9. Written out so Tailwind sees them.
+const CADENCE = [[10], [3, 4, 3], [5, 5]];
+const FIT = { 1: [10], 2: [5, 5], 3: [3, 4, 3] };
+const SPAN = { 3: "desk:col-span-3", 4: "desk:col-span-4", 5: "desk:col-span-5", 10: "desk:col-span-10" };
+const START = { 1: "desk:col-start-1", 4: "desk:col-start-4", 6: "desk:col-start-6", 8: "desk:col-start-8" };
+const SHAPE = { 3: "desk:aspect-square", 4: "desk:aspect-[4/3]", 5: "desk:aspect-[5/3]", 10: "desk:aspect-[21/9]" };
+
+/** Each card's desk place: { span, cls } in card order, following CADENCE. */
+function places(count) {
+	const out = [];
+	for (let r = 0; out.length < count; r++) {
+		let row = CADENCE[r % CADENCE.length];
+		if (out.length + row.length > count) row = FIT[count - out.length];
+		let col = 1;
+		row.forEach((span, k) => {
+			const dropped = row.length === 3 && k === 1 ? "desk:mt-6" : "";
+			out.push({ span, cls: `${SPAN[span]} ${START[col]} ${dropped}` });
+			col += span;
+		});
+	}
+	return out;
+}
+
 // Compact: two columns, every third card full width; large phones (600–767px) keep every card at one column.
 const COMPACT = (i) => (i % 3 === 0 ? "col-span-2 [@media(min-width:600px)_and_(max-width:767px)]:col-span-1" : "");
 // The photo widths those layouts give, so each card fetches a file its own size.
-const SIZES = (i, place) =>
-	`(min-width: 768px) ${+place.match(/col-span-(\d+)/)[1] * 10}vw, ` + (i % 3 === 0 ? "(min-width: 600px) 50vw, 100vw" : "50vw");
+const SIZES = (i, span) => `(min-width: 768px) ${span * 10}vw, ` + (i % 3 === 0 ? "(min-width: 600px) 50vw, 100vw" : "50vw");
+const pad = (n) => String(n).padStart(2, "0");
 
 const noop = () => () => {};
 const useIsClient = () => useSyncExternalStore(noop, () => true, () => false);
 
 /**
- * Project cards on the page grid: the name (Lucide corner-down-right in front, 14 / 16px) above the photo
- * (4:3; on desk shaped per column span so each row is one even height, ≈ 0.29 × the page width),
- * 6px column gaps, 6 lines between rows. With a mouse a "View project" pill follows the pointer over the
- * photos. Clicking a photo grows it into the project hero (components/ProjectTransition.jsx); the page
- * curtain (PageTransition) leaves card links (data-card-media) to that.
- *
- * @param {{ works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
+ * A value kept outside React state: only the components that read it (useSyncExternalStore) re-render
+ * when it changes, not the list that sets it.
  */
-export default function WorksGrid({ works }) {
-	const [cursorOn, setCursorOn] = useState(false);
+export function valueStore(initial) {
+	let value = initial;
+	const subs = new Set();
+	return {
+		get: () => value,
+		set(next) {
+			if (next === value) return;
+			value = next;
+			subs.forEach((fn) => fn());
+		},
+		subscribe(fn) {
+			subs.add(fn);
+			return () => subs.delete(fn);
+		},
+	};
+}
+
+const NEAR_MAX = 3; // touch: at most this many cards on screen preload their hero at once (the newest)
+
+/**
+ * Project cards on the page grid: the name (Lucide corner-down-right in front, 14 / 16px) and its number
+ * above the photo (4:3; on desk shaped per column span, see CADENCE), 6px column gaps, 6 lines between rows.
+ * With a mouse a "View project" pill follows the pointer over the photos and the photo eases in to 1.04
+ * (globals.css). Clicking a photo grows it into the project hero (components/ProjectTransition.jsx); the
+ * page curtain (PageTransition) leaves card links (data-card-media) to that.
+ *
+ * `lead`: the grid opens the page, so the first photo is its LCP: it loads at high priority (eager) and
+ * is painted under the load curtain (data-lcp, globals.css). Leave it off where the grid sits below the fold.
+ *
+ * @param {{ lead?: boolean, works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
+ */
+export default function WorksGrid({ works, lead = false }) {
+	// The "View project" pill's state lives outside the grid, so hovering a card re-renders only the pill.
+	const [cursor] = useState(() => valueStore(false));
 	const { open, warm } = useProjectTransition();
 	// Cards hovered/pressed so far: each preloads its project's hero photo (below), so the photo that
 	// grows on click is already the hero's own and the project page shows it at once.
@@ -53,7 +96,38 @@ export default function WorksGrid({ works }) {
 		warm(e.currentTarget);
 		setPreload((prev) => (prev.has(i) ? prev : new Set(prev).add(i)));
 	};
+	// Touch: the cards on screen now that preload their hero (at most NEAR_MAX, the newest).
+	const [near, setNear] = useState([]);
 	const scope = useRef(null);
+
+	// Touch screens have no hover to warm a card before it's tapped, so there the cards on screen preload
+	// their project's hero photo. The photo that grows on a tap is then the hero's own, as with a mouse,
+	// rather than the card's photo swapping for the hero's as it lands. Only the last few cards to come on
+	// screen do, so a fast scroll down a long grid doesn't fetch every full-width hero on the way.
+	// Starts once the curtain has lifted, so it never competes with the page's own first load.
+	useEffect(() => {
+		if (!window.matchMedia("(hover: none)").matches) return;
+		let io;
+		let live = true;
+		let onScreen = [];
+		ready().then(() => {
+			if (!live || !scope.current) return;
+			io = new IntersectionObserver((entries) => {
+				entries.forEach((e) => {
+					const i = Number(e.target.dataset.i);
+					onScreen = onScreen.filter((n) => n !== i);
+					if (e.isIntersecting) onScreen.push(i);
+				});
+				const next = onScreen.slice(-NEAR_MAX);
+				setNear((prev) => (prev.length === next.length && prev.every((n, k) => n === next[k]) ? prev : next));
+			});
+			scope.current.querySelectorAll("[data-card]").forEach((card) => io.observe(card));
+		});
+		return () => {
+			live = false;
+			io?.disconnect();
+		};
+	}, []);
 
 	// Cards reveal in batches as they scroll in (the start state is held by CSS from the first frame,
 	// .js-anim [data-card]): each rises 40px while its photo unmasks from the bottom, then its name slides
@@ -63,7 +137,9 @@ export default function WorksGrid({ works }) {
 		() => {
 			if (!document.documentElement.classList.contains("js-anim")) return;
 			const stops = [];
-			const triggers = ScrollTrigger.batch(gsap.utils.toArray("[data-card]", scope.current), {
+			// Cards already revealed stay as they are when the page comes back (lib/motion.js → hasPlayed).
+			const cards = gsap.utils.toArray("[data-card]", scope.current).filter((card) => !hasPlayed(card));
+			const triggers = ScrollTrigger.batch(cards, {
 				start: "top 90%",
 				once: true,
 				onEnter: (cards) => stops.push(revealBatch(cards, ready, { rise: 40 })),
@@ -76,20 +152,25 @@ export default function WorksGrid({ works }) {
 		{ scope },
 	);
 
+	const layout = places(works.length);
+
 	return (
 		<section ref={scope}>
-			<ViewCursor active={cursorOn} />
+			<ViewCursor state={cursor} />
 			<div className="grid grid-cols-2 items-start gap-x-g gap-y-4 px-m pt-2 pb-6 desk:grid-cols-10 desk:pb-4">
 				{works.map((work, i) => {
-					const [place, shape] = PLACES[i % PLACES.length];
+					const { span, cls } = layout[i];
 					return (
-						<div key={work.href} data-card className={`relative flex min-w-0 flex-col ${COMPACT(i)} ${place}`}>
+						<div key={work.href} data-card data-i={i} data-lcp={(lead && i === 0) || undefined} className={`relative flex min-w-0 flex-col ${COMPACT(i)} ${cls}`}>
 							{/* Clips the name so it can rise into view after its photo (revealBatch); the padding keeps
 							    descenders inside the clip and the margin makes up for it, so the spacing is unchanged. */}
 							<p className="mb-[3px] overflow-hidden pb-[3px] text-name">
-								<span data-card-name className="flex min-w-0 items-center gap-[0.3em]">
+								<span data-card-name className="flex min-w-0 items-center gap-icon">
 									<CornerIcon className="size-[0.85em] shrink-0" />
 									<span className="truncate">{work.name}</span>
+									<span aria-hidden="true" className="ml-auto pl-g text-body text-muted tabular-nums">
+										{pad(i + 1)}
+									</span>
 								</span>
 							</p>
 							<Link
@@ -99,24 +180,33 @@ export default function WorksGrid({ works }) {
 								// (partialPrefetching), so it's ready when the photo has grown.
 								prefetch
 								onMouseEnter={(e) => {
-									setCursorOn(true);
+									cursor.set(true);
 									warmCard(e, i);
 								}}
-								onMouseLeave={() => setCursorOn(false)}
+								onMouseLeave={() => cursor.set(false)}
 								onPointerDown={(e) => warmCard(e, i)}
 								onClick={(e) => {
-									setCursorOn(false); // the pill scales away as the photo opens
+									cursor.set(false); // the pill scales away as the photo opens
 									open(e, work.href);
 								}}
 								data-card-media
 								// Press feedback: the card gives a little (0.98) the moment it's pressed, before the photo grows.
-								className={`relative block aspect-[4/3] overflow-hidden rounded-media transition-[scale] duration-100 ease-out active:scale-[0.98] desk-mouse:cursor-none ${shape}`}
+								// bg: a faint tone while the photo loads, so it never pops onto white.
+								className={`relative block aspect-[4/3] overflow-hidden rounded-ui bg-wash transition-[scale] duration-100 ease-out active:scale-[0.98] desk-mouse:cursor-none ${SHAPE[span]}`}
 							>
-								<Img field={work.image} fill sizes={SIZES(i, place)} fallbackAlt="" className="object-cover" />
+								<Img
+									field={work.image}
+									fill
+									sizes={SIZES(i, span)}
+									{...(lead && i === 0 && { loading: "eager", fetchPriority: "high" })}
+									fallbackAlt=""
+									className="object-cover"
+								/>
 							</Link>
-							{/* The project hero's photo, loaded invisibly once the card is hovered: same image, same
-							    sizes as ProjectHero, so the browser fetches exactly the file the hero will show. */}
-							{work.hero && preload.has(i) && (
+							{/* The project hero's photo, loaded invisibly once the card is hovered (or, on touch, while it
+							    is on screen): same image, same sizes as ProjectHero, so the browser fetches exactly the
+							    file the hero will show. */}
+							{work.hero && (preload.has(i) || near.includes(i)) && (
 								<span data-hero-preload aria-hidden="true" className="pointer-events-none absolute size-px overflow-hidden opacity-0">
 									<Img field={work.hero} fill sizes="100vw" loading="eager" fallbackAlt="" className="object-cover" />
 								</span>
@@ -130,13 +220,14 @@ export default function WorksGrid({ works }) {
 }
 
 /**
- * "View project" pill centred on the pointer over the photos: 7 × 14px padding, 6px radius, body text
- * with an 11px arrow; scales in and out in 0.28s. Rendered into <body> so no transformed ancestor can
- * trap its position: fixed.
+ * "View project" pill centred on the pointer over the photos: 7 × 14px padding, 4px radius, body text
+ * with an 11px arrow; grows in from 0.6 as it fades in (and back out) in 0.28s. Rendered into <body> so
+ * no transformed ancestor can trap its position: fixed. Shown while `state` (valueStore) is true.
  */
-function ViewCursor({ active }) {
+function ViewCursor({ state }) {
 	const ref = useRef(null);
 	const client = useIsClient();
+	const active = useSyncExternalStore(state.subscribe, state.get, () => false);
 
 	useEffect(() => {
 		const move = (e) => {
@@ -148,9 +239,9 @@ function ViewCursor({ active }) {
 
 	if (!client) return null;
 	return createPortal(
-		<div ref={ref} aria-hidden="true" data-view-cursor className="pointer-events-none fixed top-0 left-0 z-[400] hidden will-change-transform desk-mouse:block">
+		<div ref={ref} aria-hidden="true" data-view-cursor className="pointer-events-none fixed top-0 left-0 z-(--z-cursor) hidden will-change-transform desk-mouse:block">
 			<div
-				className={`flex -translate-1/2 items-center gap-[8px] rounded-ui bg-black px-[14px] py-[7px] whitespace-nowrap text-white transition-[scale] duration-[280ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] ${active ? "scale-100" : "scale-0"}`}
+				className={`flex -translate-1/2 items-center gap-[8px] rounded-ui bg-black px-[10px] py-[6px] whitespace-nowrap text-white transition-[scale,opacity] duration-280 ease-out-quint ${active ? "scale-100 opacity-100" : "scale-[0.6] opacity-0"}`}
 			>
 				View project
 				<ArrowIcon className="size-[11px]" />

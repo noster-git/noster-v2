@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { createClient } from "@/prismicio";
 import { absolute } from "@/lib/site";
 
@@ -6,6 +6,7 @@ import { absolute } from "@/lib/site";
 export default async function sitemap() {
 	"use cache";
 	cacheLife("hours");
+	cacheTag("prismic");
 	const client = createClient();
 	const [singles, projects] = await Promise.all([
 		client.getAllByType("home").catch(() => []),

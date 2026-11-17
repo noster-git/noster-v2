@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { asImageSrc, asText, isFilled } from "@prismicio/client";
 import { SliceZone } from "@prismicio/react";
@@ -7,10 +7,13 @@ import { createClient } from "@/prismicio";
 import { components } from "@/slices";
 import JsonLd from "@/components/JsonLd";
 import { project } from "@/lib/schema";
-import { excerpt } from "@/lib/site";
+import { OPEN_GRAPH, excerpt } from "@/lib/site";
 
 // All projects are prerendered (generateStaticParams), so the page may block on params.
 export const instant = false;
+// A link to no project (a typo, an old or made-up slug) waits for its full render instead of streaming
+// the page shell first, so notFound() still sets a real 404 status rather than a 200 with a not-found page.
+export const ensureStatic = "navigation";
 
 export default async function Page({ params }) {
 	const { uid } = await params;
@@ -39,7 +42,7 @@ export async function generateMetadata({ params }) {
 		title,
 		description,
 		alternates: { canonical: path },
-		openGraph: { type: "article", url: path, title, description, images: [{ url: image }] },
+		openGraph: { ...OPEN_GRAPH, type: "article", url: path, title, description, images: [{ url: image }] },
 	};
 }
 
@@ -71,6 +74,7 @@ export async function generateStaticParams() {
 async function getPage(uid, ref) {
 	"use cache";
 	cacheLife("max");
+	cacheTag("prismic");
 	// Errors thrown inside "use cache" abort prerendering, so a missing page comes back as null → 404.
 	const page = await createClient()
 		.getByUID("project", uid, { ref })

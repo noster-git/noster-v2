@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { asText } from "@prismicio/client";
 import { createClient } from "@/prismicio";
 import { getFooter } from "@/components/Footer";
@@ -16,6 +16,7 @@ export async function GET() {
 async function buildText() {
 	"use cache";
 	cacheLife("hours");
+	cacheTag("prismic");
 	const client = createClient();
 	const [home, footer, projects] = await Promise.all([
 		client.getSingle("home").catch(() => null),

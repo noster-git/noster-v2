@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { EASE, hasPlayed, markPlayed } from "@/lib/motion";
+import { ready } from "@/lib/intro";
 
 gsap.registerPlugin(useGSAP, Draggable, ScrollTrigger);
 
@@ -42,7 +44,8 @@ function layout(count, reserved) {
 
 /**
  * The draggable board. The CSS transform transition (1.2s overshoot) makes the board trail the
- * pointer with a spring. Photos grow to 1.1 the moment the board is pressed and settle back on release.
+ * pointer with a spring. Photos grow to 1.1 the moment the board is pressed and settle back on release
+ * (not under reduced motion).
  */
 // Arrow keys move the board this far (em), the keyboard alternative to dragging.
 const KEY_STEP = 24;
@@ -51,6 +54,8 @@ const KEYS = { ArrowLeft: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], ArrowDow
 export default function Canvas({ children }) {
 	const board = useRef(null);
 	const drag = useRef(null);
+	// The spots are drawn once: coming back to the page shows the board as it was left.
+	const spots = useRef(null);
 
 	// Arrows look around the board (the board moves the opposite way), held inside the same bounds as a drag.
 	const onKeyDown = (e) => {
@@ -65,35 +70,53 @@ export default function Canvas({ children }) {
 
 	useGSAP(
 		() => {
-			const photos = gsap.utils.toArray("[data-photo]", board.current);
-			// Title box in board ems (the title is centred on the board).
-			const em = parseFloat(getComputedStyle(board.current).fontSize);
-			const title = board.current.querySelector("[data-title]");
-			const tw = title.offsetWidth / em;
-			const th = title.offsetHeight / em;
-			const reserved = { x: (BOARD.w - tw) / 2, y: (BOARD.h - th) / 2, w: tw, h: th };
-			layout(photos.length, reserved).forEach((s, i) => {
-				gsap.set(photos[i], { left: `${s.x}em`, top: `${s.y}em`, width: `${s.w}em`, height: `${s.h}em`, autoAlpha: 1 });
-			});
-
+			// The board only shows above 1180px (index.jsx): it is laid out, measured and made draggable only
+			// while it is on show, and all of it is undone when the screen narrows past that.
 			const mm = gsap.matchMedia();
-			mm.add("(prefers-reduced-motion: no-preference)", () => {
-				gsap.to(photos, {
-					scale: 1,
-					duration: 0.3,
-					ease: "expo.inOut",
-					stagger: 0.2,
-					scrollTrigger: { trigger: board.current.parentElement, start: "top center", once: true },
+			mm.add({ shown: "(min-width: 1181px)", motion: "(prefers-reduced-motion: no-preference)" }, ({ conditions }) => {
+				if (!conditions.shown) return;
+				const el = board.current;
+				const photos = gsap.utils.toArray("[data-photo]", el);
+				// Title box in board ems (the title is centred on the board).
+				const em = parseFloat(getComputedStyle(el).fontSize);
+				const title = el.querySelector("[data-title]");
+				const tw = title.offsetWidth / em;
+				const th = title.offsetHeight / em;
+				const reserved = { x: (BOARD.w - tw) / 2, y: (BOARD.h - th) / 2, w: tw, h: th };
+				spots.current ??= layout(photos.length, reserved);
+				spots.current.forEach((s, i) => {
+					gsap.set(photos[i], { left: `${s.x}em`, top: `${s.y}em`, width: `${s.w}em`, height: `${s.h}em` });
 				});
-			});
-			mm.add("(prefers-reduced-motion: reduce)", () => gsap.set(photos, { scale: 1 }));
 
-			const grow = (scale) => gsap.to(photos, { scale, duration: 0.2, ease: "power1.out", overwrite: "auto" });
-			[drag.current] = Draggable.create(board.current, {
-				type: "x,y",
-				bounds: board.current.parentElement,
-				onPress: () => grow(1.1),
-				onRelease: () => grow(1),
+				// Photos come in once the board is half up the screen and the entrances are released: each grows
+				// from 0.6 as it fades in (0.7s expo.out, 0.06s apart). Once only: coming back shows them as left.
+				let live = true;
+				if (!conditions.motion || hasPlayed(el)) gsap.set(photos, { autoAlpha: 1 });
+				else {
+					ScrollTrigger.create({
+						trigger: el.parentElement,
+						start: "top center",
+						once: true,
+						onEnter: () =>
+							ready().then(() => {
+								if (!live) return;
+								markPlayed(el);
+								gsap.fromTo(photos, { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.7, ease: EASE, stagger: 0.06 });
+							}),
+					});
+				}
+
+				// With motion, photos grow to 1.1 while the board is held.
+				const grow = (scale) => gsap.to(photos, { scale, duration: 0.2, ease: "power1.out", overwrite: "auto" });
+				[drag.current] = Draggable.create(el, {
+					type: "x,y",
+					bounds: el.parentElement,
+					...(conditions.motion && { onPress: () => grow(1.1), onRelease: () => grow(1) }),
+				});
+				return () => {
+					live = false;
+					drag.current = null;
+				};
 			});
 		},
 		{ scope: board },
@@ -107,7 +130,7 @@ export default function Canvas({ children }) {
 			aria-label="Behind the scenes photos. Drag, or use the arrow keys, to look around."
 			onKeyDown={onKeyDown}
 			// Focus shows on the framed box around the board (index.jsx); the board itself is mostly off-screen.
-			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-grab touch-none transition-transform duration-[1.2s] ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none outline-none active:cursor-grabbing motion-reduce:transition-none"
+			className="absolute top-[calc(50%-100em)] left-[calc(50%-160em)] h-[200em] w-[320em] cursor-grab touch-none transition-transform duration-1200 ease-back-out select-none outline-none active:cursor-grabbing motion-reduce:transition-none"
 		>
 			{children}
 		</div>

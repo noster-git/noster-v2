@@ -7,7 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { finishIntro, holdEntrances, shown, transitioning } from "@/lib/intro";
 import { CURTAIN_HOLD_MS, CURTAIN_MS, REVEAL_AT, cover, lift } from "@/lib/curtain";
 
-const WAIT_MS = 3000; // longest the curtain waits for the new page and its hero photo
+const ROUTE_MS = 8000; // longest the curtain waits for the new page to arrive
+const DECODE_MS = 3000; // then for its hero photo to decode
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 async function until(fn, ms) {
@@ -74,9 +75,9 @@ function CurtainLinks() {
 				.then(async () => {
 					router.push(href);
 					// The new page (or wherever Back/Forward went meanwhile) is in.
-					await until(() => location.pathname !== from, WAIT_MS);
+					await until(() => location.pathname !== from, ROUTE_MS);
 					const hero = shown("[data-hero-media] img, [data-project-hero] img");
-					if (hero?.decode) await Promise.race([hero.decode().catch(() => {}), sleep(WAIT_MS)]);
+					if (hero?.decode) await Promise.race([hero.decode().catch(() => {}), sleep(DECODE_MS)]);
 					await sleep(CURTAIN_HOLD_MS);
 					up = lift(curtain);
 					lenis?.start();

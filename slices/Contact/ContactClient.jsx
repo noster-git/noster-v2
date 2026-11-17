@@ -3,72 +3,81 @@
 import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import { EASE, lineRise } from "@/lib/motion";
+import { EASE, hasPlayed, lineRise, markPlayed, splitLines } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 /**
  * "Let's Build Together", on the white page:
- * - section top reaches 80% of the screen → the two rules draw in left→right (0.8s); back up → they retract;
+ * - section top reaches 80% of the screen → the two rules draw in left→right (0.8s), once;
  * - section top reaches 75% → the big title rises line by line out of its own masks, then the intro and the
  *   email / phone links rise in (once). Start states are held by CSS from the first frame (.js-anim
- *   [data-split] / [data-fade], globals.css), so nothing flashes.
+ *   [data-rule] / [data-split] / [data-fade], globals.css), so nothing flashes; without them (reduced
+ *   motion, no JS) everything is simply shown, the rules drawn.
  */
 export default function ContactClient({ sliceType, variation, title, intro, contacts }) {
 	const scope = useRef(null);
-	const [lines, setLines] = useState(false);
+	const [drawn, setDrawn] = useState(false);
 
 	useGSAP(
 		() => {
-			ScrollTrigger.create({
-				trigger: scope.current,
-				start: "top 80%",
-				onEnter: () => setLines(true),
-				onLeaveBack: () => setLines(false),
-			});
-
-			if (!document.documentElement.classList.contains("js-anim")) return;
 			const el = scope.current;
+			if (!document.documentElement.classList.contains("js-anim")) return;
+			let live = true;
+			// The rules draw once the entrances are released. The state outlives the page being hidden and
+			// shown again (cacheComponents), so coming back shows them drawn.
+			const rules = ScrollTrigger.create({
+				trigger: el,
+				start: "top 80%",
+				once: true,
+				onEnter: () => ready().then(() => live && setDrawn(true)),
+			});
+			if (hasPlayed(el)) {
+				return () => {
+					live = false;
+					rules.kill();
+				};
+			}
 			// Split as soon as the fonts are in (not in the frame the curtain lifts); plays once in view and
-			// the entrances are released.
+			// the entrances are released. Once only: coming back shows it as it was left.
 			let split;
 			let trigger;
-			let live = true;
+			let tl;
 			document.fonts.ready.then(() => {
 				if (!live || !el.isConnected) return;
-				const heading = el.querySelector("[data-split]");
-				split = SplitText.create(heading, { type: "lines", mask: "lines" });
-				gsap.set(heading, { autoAlpha: 1 });
-				gsap.set(split.lines, lineRise.from);
+				split = splitLines(el.querySelector("[data-split]"));
 				const fades = gsap.utils.toArray("[data-fade]", el);
 				trigger = ScrollTrigger.create({
 					trigger: el,
 					start: "top 75%",
 					once: true,
 					onEnter: () =>
-						ready().then(
-							() =>
-								live &&
-								gsap
-									.timeline()
-									.to(split.lines, lineRise.to)
-									.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8"),
-						),
+						ready().then(() => {
+							if (!live) return;
+							markPlayed(el);
+							tl = gsap
+								.timeline()
+								.to(split.lines, { ...lineRise.to, onComplete: split.restore })
+								.fromTo(fades, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE, stagger: 0.08 }, "-=0.8");
+						}),
 				});
 			});
 			return () => {
 				live = false;
+				rules.kill();
 				trigger?.kill();
-				split?.revert();
+				tl?.progress(1).kill();
+				split?.restore();
 			};
 		},
 		{ scope },
 	);
 
-	const line = `absolute inset-x-0 h-[2px] origin-left bg-(--ink) transition-transform duration-800 ease-quart ${lines ? "scale-x-100" : "scale-x-0"}`;
+	// Held undrawn by CSS while js-anim is set (.js-anim [data-rule], globals.css); drawing clears that.
+	const line = "absolute inset-x-0 h-[2px] bg-(--ink) transition-transform duration-800 ease-quart motion-reduce:transition-none";
+	const rule = drawn ? { transform: "none" } : undefined;
 
 	return (
 		<section
@@ -78,8 +87,8 @@ export default function ContactClient({ sliceType, variation, title, intro, cont
 			className="relative w-full overflow-hidden px-m pt-6 pb-6"
 		>
 			<div className="relative">
-				<div className={`top-0 ${line}`} />
-				<div className={`bottom-0 ${line}`} />
+				<div data-rule aria-hidden="true" style={rule} className={`top-0 ${line}`} />
+				<div data-rule aria-hidden="true" style={rule} className={`bottom-0 ${line}`} />
 
 				<div className="flex flex-col items-start pt-3 desk:items-center">
 					<h2 data-split className="text-display py-[0.08em] desk:text-center">

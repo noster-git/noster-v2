@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import gsap from "gsap";
-import { SplitText } from "gsap/SplitText";
-import { CSS_EXPO_OUT, EASE, lineRise } from "@/lib/motion";
+import { CSS_EXPO_OUT, EASE, hasPlayed, lineRise, markPlayed, splitLines } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 import { useGSAP } from "@gsap/react";
 import { useLenis } from "lenis/react";
+import Parallax from "@/components/Parallax";
 
-gsap.registerPlugin(useGSAP, SplitText);
+gsap.registerPlugin(useGSAP);
 
 const REDUCED_MOTION = typeof window === "undefined" ? null : matchMedia("(prefers-reduced-motion: reduce)");
 const subscribeReducedMotion = (onChange) => {
@@ -18,18 +18,34 @@ const subscribeReducedMotion = (onChange) => {
 
 /**
  * Interactive part of the Hero: entrance animation, poster → video fade-in, and the showreel dialog.
- * Fills the first screen; the title sits at the bottom on the page grid (6 of 10 columns on desk).
+ * Fills the first screen; the title sits at the bottom on the page grid (6 of 10 columns on desk). The
+ * picture drifts and darkens as the hero scrolls away (components/Parallax).
  */
-export default function HeroClient({ sliceType, variation, title, backdrop, videoSrc }) {
+export default function HeroClient({ sliceType, variation, title, backdrop, videoSrc, loopSources }) {
 	const scope = useRef(null);
 	const videoRef = useRef(null);
 	const dialogRef = useRef(null);
 	const showreelRef = useRef(null);
 	const lenis = useLenis();
 	// The background video starts from here, not the autoplay attribute, so a reduced-motion preference
-	// keeps it on its first frame.
+	// keeps it on its first frame. Pause / Play (below) overrides that either way once it is used.
 	const reducedMotion = useSyncExternalStore(subscribeReducedMotion, () => REDUCED_MOTION.matches, () => false);
-	const playing = !reducedMotion;
+	const [choice, setChoice] = useState(null);
+	const playing = choice ?? !reducedMotion;
+
+	// The loop's sources may all be for some screen sizes only (a video picked in Prismic is desk only, so
+	// phones show the poster): Pause / Play is only offered where a loop plays.
+	const loopQuery = loopSources?.every((s) => s.media) ? loopSources.map((s) => s.media).join(", ") : null;
+	const subscribeLoop = useCallback(
+		(onChange) => {
+			if (!loopQuery) return () => {};
+			const mq = matchMedia(loopQuery);
+			mq.addEventListener("change", onChange);
+			return () => mq.removeEventListener("change", onChange);
+		},
+		[loopQuery],
+	);
+	const hasLoop = useSyncExternalStore(subscribeLoop, () => !loopQuery || matchMedia(loopQuery).matches, () => true);
 
 	useEffect(() => {
 		const video = videoRef.current;
@@ -53,9 +69,10 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			if (videoRef.current && videoRef.current.readyState >= 3) revealVideo();
 
 			const root = document.documentElement;
-			if (!root.classList.contains("js-anim")) return;
-			const firstVisit = !root.classList.contains("intro-skip");
 			const el = scope.current;
+			// Once only: coming back home shows the hero as it was left.
+			if (hasPlayed(el) || !root.classList.contains("js-anim")) return;
+			const firstVisit = !root.classList.contains("intro-skip");
 			let tl;
 			let split;
 			let settle;
@@ -66,9 +83,9 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 				const title = el.querySelector("[data-hero-title]");
 				const heading = title?.querySelector("h1");
 				if (heading) {
-					split = SplitText.create(heading, { type: "lines", mask: "lines" });
 					gsap.set(title, { autoAlpha: 1 });
-					tl.fromTo(split.lines, lineRise.from, lineRise.to, firstVisit ? 0.3 : 0.1);
+					split = splitLines(heading);
+					tl.to(split.lines, { ...lineRise.to, onComplete: split.restore }, firstVisit ? 0.3 : 0.1);
 				} else if (title) tl.fromTo(title, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1.1, ease: EASE }, 0.3);
 				const cta = el.querySelector("[data-hero-cta]");
 				if (cta) tl.fromTo(cta, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 1, ease: EASE }, "-=0.85");
@@ -86,14 +103,17 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 							settle.cancel();
 						}, () => {});
 					}
+					markPlayed(el);
 					tl.play();
 				});
 			});
 			return () => {
 				live = false;
+				// Leaving mid-entrance: finish it, so coming back shows the hero as it ends.
+				if (hasPlayed(el)) tl?.progress(1);
 				tl?.kill();
 				settle?.cancel();
-				split?.revert();
+				split?.restore();
 			};
 		},
 		{ scope },
@@ -117,8 +137,8 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 		lenis?.start();
 	}
 
-	// "Play showreel" sits on a dark photo: keyboard focus thickens the underline instead of drawing a
-	// box, and hit areas reach 44px on touch.
+	// "Play showreel" and Pause / Play sit on a dark photo: keyboard focus thickens the underline instead of
+	// drawing a box, and hit areas reach 44px on touch.
 	const control =
 		"hit cursor-pointer text-white underline underline-offset-2 transition-opacity duration-200 hover:opacity-50 focus-visible:outline-none focus-visible:decoration-2";
 
@@ -127,38 +147,54 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 			ref={scope}
 			data-slice-type={sliceType}
 			data-slice-variation={variation}
-			data-nav-hero // the top CTA is white over this (NavCta)
-			className="relative flex h-(--hero-h) min-h-[320px] items-end overflow-hidden bg-black px-m pb-m"
+			// Full screen at every width: the video is the first impression (project heroes are half the screen on
+			// phones). Compact: the title stops clear of the fixed CTA button at the foot of the screen (MobileCta).
+			className="relative flex h-svh min-h-[320px] items-end overflow-hidden bg-black px-m pb-[calc(84px+env(safe-area-inset-bottom))] desk:pb-m"
 		>
-			<div data-hero-media className="absolute inset-0">
-				{backdrop}
-				{videoSrc && (
-					<video
-						ref={videoRef}
-						src={videoSrc}
-												muted
-						loop
-						playsInline
-						preload="auto"
-						onCanPlay={revealVideo}
-						className="invisible absolute inset-0 size-full object-cover opacity-0"
-					/>
-				)}
-				{/* Slight dark overlay on the video, same 25% shade as the project heroes. */}
-				<div className="absolute inset-0 bg-black/25" />
-			</div>
+			{/* Drifts down and darkens as the hero scrolls away (Parallax), so the page comes up over it. */}
+			<Parallax className="absolute inset-x-0 top-0 h-[110%]" shade={0.5}>
+				<div data-hero-media className="absolute inset-0">
+					{backdrop}
+					{videoSrc && (
+						<video
+							ref={videoRef}
+							muted
+							loop
+							playsInline
+							preload="auto"
+							onCanPlay={revealVideo}
+							className="invisible absolute inset-0 size-full object-cover opacity-0"
+						>
+							{loopSources.map(({ src, media }) => (
+								<source key={src} src={src} media={media} type="video/mp4" />
+							))}
+						</video>
+					)}
+					{/* Slight dark overlay on the video, same 25% shade as the project heroes. */}
+					<div className="absolute inset-0 bg-black/25" />
+				</div>
+				<div data-parallax-shade className="absolute inset-0 bg-black opacity-0" />
+			</Parallax>
+			{/* Shade under the title, so the lime reads over a busy frame. */}
+			<div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/50 to-transparent" />
 
 			<div className="grid-site relative z-10 w-full">
 				<div className="col-span-5 desk:col-span-6">
-				<div data-hero-line data-hero-title>
+				<div data-hero-line data-hero-title data-lcp>
 					{title}
 				</div>
 				{videoSrc && (
 					// The wrapper takes the entrance animation; the button keeps its own CSS hover transition.
-					<div data-hero-line data-hero-cta className="mt-1 flex">
+					<div data-hero-line data-hero-cta className="mt-1 flex gap-[24px]">
 						<button type="button" onClick={openShowreel} className={control}>
 							Play showreel
 						</button>
+						{hasLoop && (
+							<button type="button" onClick={() => setChoice(!playing)} className={control}>
+								{playing ? "Pause" : "Play"}
+								<span className="sr-only"> background video</span>
+							</button>
+						)}
 					</div>
 				)}
 				</div>
@@ -170,7 +206,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 					aria-label="Showreel"
 					onClose={handleClose}
 					onClick={(e) => e.target === e.currentTarget && dialogRef.current.close()}
-					className="m-0 size-full max-h-none max-w-none overscroll-contain bg-black/80 p-0 backdrop-blur-[8px] backdrop:bg-transparent"
+					className="m-0 size-full max-h-none max-w-none overscroll-contain bg-scrim p-0 backdrop-blur-sm backdrop:bg-transparent"
 				>
 					<div className="pointer-events-none flex size-full items-center justify-center">
 						<video
@@ -179,7 +215,7 @@ export default function HeroClient({ sliceType, variation, title, backdrop, vide
 							controls
 							playsInline
 							preload="none"
-							className="pointer-events-auto h-[80lvh] w-[80%] rounded-media object-contain desk:h-[90%] desk:w-[90%]"
+							className="pointer-events-auto h-[80lvh] w-[80%] rounded-ui object-contain desk:h-[90%] desk:w-[90%]"
 						/>
 					</div>
 					<button

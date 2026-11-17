@@ -1,19 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { asText, isFilled } from "@prismicio/client";
-import { PrismicNextLink, cacheTagPrismicPages } from "@prismicio/next";
+import { PrismicNextLink, cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
 import FooterSubscribe from "./FooterSubscribe";
 import FooterMotion from "./FooterMotion";
 
-export async function getFooter() {
+/**
+ * @param {string} [ref]
+ */
+export async function getFooter(ref) {
 	"use cache";
 	cacheLife("max");
+	cacheTag("prismic");
 	const footer = await createClient()
-		.getSingle("footer")
+		.getSingle("footer", { ref })
 		.catch(() => null);
 	if (footer) cacheTagPrismicPages([footer]);
 	return footer;
@@ -22,12 +26,15 @@ export async function getFooter() {
 /**
  * "Let's Build Together" content, still edited in the Contact slice on the home page in Prismic.
  * The home page skips that slice (app/page.jsx): it is rendered here, on every page.
+ *
+ * @param {string} [ref]
  */
-async function getContact() {
+async function getContact(ref) {
 	"use cache";
 	cacheLife("max");
+	cacheTag("prismic");
 	const home = await createClient()
-		.getSingle("home")
+		.getSingle("home", { ref })
 		.catch(() => null);
 	if (!home) return null;
 	cacheTagPrismicPages([home]);
@@ -50,7 +57,7 @@ function Rule() {
 
 // A footer link: underline-free, rolls on hover, "↳" in front like every link list on the site.
 // At least 24px tall with a mouse and 44px on touch, so the stacked links stay easy to hit without overlapping.
-const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] items-center gap-[0.3em] before:content-['↳'] transition-opacity duration-200 hover:opacity-60";
+const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] items-center gap-icon before:content-['↳'] transition-opacity duration-200 hover:opacity-60";
 
 /**
  * Site footer. Lime with black type: the NOSTER wordmark across the full width, then two sides under a rule:
@@ -65,7 +72,8 @@ const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] i
 const SUBSCRIBE = false;
 
 export default async function Footer() {
-	const [footer, contact] = await Promise.all([getFooter(), getContact()]);
+	const ref = await getPreviewRef();
+	const [footer, contact] = await Promise.all([getFooter(ref), getContact(ref)]);
 	if (!footer) return null;
 	const { rights_text, copyright_text, offices, socials_title, socials } = footer.data;
 
@@ -144,7 +152,7 @@ export default async function Footer() {
 									<p>{office.city}</p>
 									<p className="whitespace-pre-line">{office.address}</p>
 									{isFilled.link(office.directions_link) && (
-										<PrismicNextLink field={office.directions_link} className={LINK}>
+										<PrismicNextLink field={office.directions_link} aria-label={`View directions to the ${office.city} office`} className={LINK}>
 											<RollText>View directions</RollText>
 											<Arrow />
 										</PrismicNextLink>

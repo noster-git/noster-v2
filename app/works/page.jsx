@@ -1,17 +1,19 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { asImageSrc } from "@prismicio/client";
 import { cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
 import { createClient } from "@/prismicio";
 import { toWorks } from "@/slices/FeaturedWorks";
-import WorksGrid from "@/components/WorksGrid";
+import WorksIndex from "@/components/WorksIndex";
 import Reveal from "@/components/Reveal";
+import SectionLabel from "@/components/SectionLabel";
 import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
-import { DEFAULT_DESCRIPTION } from "@/lib/site";
+import { DEFAULT_DESCRIPTION, OPEN_GRAPH } from "@/lib/site";
 import { getProjectMedia } from "@/lib/projects";
 
 /**
- * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15).
+ * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15), as a grid or
+ * a list (WorksIndex).
  * The heading and SEO come from the "works" page in Prismic.
  */
 export default async function Page() {
@@ -20,12 +22,14 @@ export default async function Page() {
 	return (
 		<>
 			<JsonLd data={worksList(works)} />
-			<Reveal as="div" className="px-m pt-[84px] pb-4 desk:pt-[120px]">
-				<h1 data-reveal="lines" className="text-display">
-					:{title}
-				</h1>
+			<Reveal as="div" className="px-m pt-page pb-2">
+				<SectionLabel as="div" top>
+					<h1 data-reveal="lines" className="min-w-0 text-display">
+						{title}
+					</h1>
+				</SectionLabel>
 			</Reveal>
-			<WorksGrid works={works} />
+			<WorksIndex works={works} />
 		</>
 	);
 }
@@ -41,6 +45,7 @@ export async function generateMetadata() {
 		description,
 		alternates: { canonical: "/works" },
 		openGraph: {
+			...OPEN_GRAPH,
 			url: "/works",
 			title,
 			description,
@@ -55,6 +60,7 @@ export async function generateMetadata() {
 async function getData(ref) {
 	"use cache";
 	cacheLife("max");
+	cacheTag("prismic");
 	const client = createClient();
 	// A missing Works page only means the default heading and SEO.
 	const [home, page, media] = await Promise.all([

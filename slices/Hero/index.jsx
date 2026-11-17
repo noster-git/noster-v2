@@ -6,6 +6,12 @@ import HeroClient from "./HeroClient";
 
 // Used when the slice is set to Video but no video is picked from the media library.
 const FALLBACK_VIDEO = "/video/home/geeky-wolf-hero-video.mp4";
+// Its muted background loops: 720p on phones (a third of the full file), 1080p on desk. The full file, with
+// sound, is only fetched when the showreel opens.
+const FALLBACK_LOOP = [
+	{ src: "/video/home/geeky-wolf-hero-loop-720.mp4", media: "(max-width: 767px)" },
+	{ src: "/video/home/geeky-wolf-hero-loop-1080.mp4" },
+];
 const FALLBACK_POSTER = "/video/home/geeky-wolf-hero-poster.webp";
 
 /**
@@ -26,7 +32,11 @@ const Hero = ({ slice }) => {
 		backdrop = <Image src={FALLBACK_POSTER} alt="" fill preload sizes="100vw" className="object-cover" />;
 	}
 
-	const videoSrc = is_video ? (isFilled.linkToMedia(video) ? video.url : FALLBACK_VIDEO) : null;
+	const picked = isFilled.linkToMedia(video);
+	const videoSrc = is_video ? (picked ? video.url : FALLBACK_VIDEO) : null;
+	// A picked video is the full showreel, sound and all: it only plays as the background on desk. Phones
+	// show the poster and fetch the file only when the showreel is opened.
+	const loopSources = is_video ? (picked ? [{ src: video.url, media: "(min-width: 768px)" }] : FALLBACK_LOOP) : null;
 
 	return (
 		<HeroClient
@@ -34,6 +44,7 @@ const Hero = ({ slice }) => {
 			variation={slice.variation}
 			backdrop={backdrop}
 			videoSrc={videoSrc}
+			loopSources={loopSources}
 			title={
 				<PrismicRichText
 					field={title}

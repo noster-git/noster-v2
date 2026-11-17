@@ -2,6 +2,7 @@ import { asLink, asText, isFilled } from "@prismicio/client";
 import WorksGrid from "@/components/WorksGrid";
 import LineCta from "@/components/LineCta";
 import Reveal from "@/components/Reveal";
+import SectionLabel from "@/components/SectionLabel";
 
 // How many of the newest projects Home shows; /works shows them all.
 const HOME_LIMIT = 15;
@@ -22,7 +23,7 @@ export function toWorks(projects, media = {}) {
 }
 
 /**
- * ":Featured Works" title, the project grid and "View all projects" link.
+ * "Featured Works" at display size with its section index, the project grid and "View all projects" link.
  *
  * @typedef {import("@prismicio/client").Content.FeaturedWorksSlice} FeaturedWorksSlice
  * @typedef {import("@prismicio/react").SliceComponentProps<FeaturedWorksSlice>} FeaturedWorksProps
@@ -33,10 +34,12 @@ const FeaturedWorks = ({ slice, context }) => {
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
-			<Reveal as="div" className="grid-site px-m pt-6 pb-3">
-				<h2 data-reveal="lines" className="col-span-5 text-title desk:col-span-7">
-					:{asText(slice.primary.title)}
-				</h2>
+			<Reveal as="div" className="px-m pt-10 pb-3">
+				<SectionLabel as="div" top>
+					<h2 data-reveal="lines" className="min-w-0 text-display">
+						{asText(slice.primary.title)}
+					</h2>
+				</SectionLabel>
 			</Reveal>
 			<WorksGrid works={works} />
 			<LineCta href="/works">{slice.primary.button_text || "View all projects"}</LineCta>

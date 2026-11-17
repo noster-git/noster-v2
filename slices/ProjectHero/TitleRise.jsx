@@ -2,17 +2,32 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
-import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import { lineRise } from "@/lib/motion";
+import { hasPlayed, lineRise, markPlayed, splitLines } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
-gsap.registerPlugin(useGSAP, SplitText);
+gsap.registerPlugin(useGSAP);
+
+/** Resolves once the project-open photo has handed over to the hero (html[data-project-opening] is gone). */
+function handedOver(onStop) {
+	const root = document.documentElement;
+	return new Promise((done) => {
+		if (!("projectOpening" in root.dataset)) return done();
+		const watch = new MutationObserver(() => {
+			if ("projectOpening" in root.dataset) return;
+			watch.disconnect();
+			done();
+		});
+		watch.observe(root, { attributes: true, attributeFilter: ["data-project-opening"] });
+		onStop(() => watch.disconnect());
+	});
+}
 
 /**
- * The project title, rising line by line out of its own masks when the page arrives (direct load or the
- * curtain lifting). When the page was opened from a project card, the photo-grow transition owns the
- * title instead (html[data-project-opening], globals.css), so this stays out of its way.
+ * The project title, rising line by line out of its own masks as the page arrives: when the curtain lifts
+ * (a load or a page change), or the moment the photo grown from a project card hands over to the hero
+ * (ProjectTransition). Coming back to a project shows the title as it was left; opening it from a card
+ * always brings it in, as part of that transition.
  */
 export default function TitleRise({ className, children }) {
 	const ref = useRef(null);
@@ -21,27 +36,30 @@ export default function TitleRise({ className, children }) {
 		const el = ref.current;
 		const root = document.documentElement;
 		if (!root.classList.contains("js-anim")) return;
-		if ("projectOpening" in root.dataset) {
-			// Opened from a project card: the photo-grow owns the title (it rises in after the hand-over,
-			// html[data-project-opening], globals.css).
-			el.removeAttribute("data-split");
-			return;
-		}
-		// Split as soon as the fonts are in (under the curtain); the gate only starts the rise.
+		const opening = "projectOpening" in root.dataset;
+		if (hasPlayed(el) && !opening) return;
+		// Split as soon as the fonts are in (under the curtain or the growing photo); the rise waits for the
+		// page to be uncovered.
 		let split;
+		let rise;
+		let stopWatch;
 		let live = true;
 		document.fonts.ready
 			.then(() => {
 				if (!live || !el.isConnected) return;
-				split = SplitText.create(el, { type: "lines", mask: "lines" });
-				gsap.set(split.lines, lineRise.from);
-				gsap.set(el, { autoAlpha: 1 });
-				return ready();
+				split = splitLines(el);
+				return opening ? handedOver((stop) => (stopWatch = stop)) : ready();
 			})
-			.then(() => live && split && gsap.to(split.lines, { ...lineRise.to, delay: 0.15 }));
+			.then(() => {
+				if (!live || !split) return;
+				markPlayed(el);
+				rise = gsap.to(split.lines, { ...lineRise.to, delay: opening ? 0 : 0.15, onComplete: split.restore });
+			});
 		return () => {
 			live = false;
-			split?.revert();
+			stopWatch?.();
+			rise?.progress(1).kill();
+			split?.restore();
 		};
 	});
 

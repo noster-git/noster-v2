@@ -9,16 +9,18 @@ import Intro from "@/components/Intro";
 import PageTransition from "@/components/PageTransition";
 import NosterLogo from "@/components/NosterLogo";
 import { INTRO_SCRIPT } from "@/lib/intro";
-import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/site";
+import { PrismicPreview } from "@prismicio/next";
+import { repositoryName } from "@/prismicio";
+import { SITE_URL, SITE_NAME, DEFAULT_TITLE, DEFAULT_DESCRIPTION, OPEN_GRAPH, PAPER } from "@/lib/site";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Noster Associates | Elevating Workspaces",
+  title: DEFAULT_TITLE,
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
-  openGraph: { siteName: SITE_NAME, locale: "en_IN", type: "website" },
+  openGraph: OPEN_GRAPH,
   twitter: { card: "summary_large_image" },
   icons: {
     icon: [
@@ -26,13 +28,13 @@ export const metadata = {
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
     apple: "/apple-touch-icon.png",
-    other: [{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#5bbad5" }],
+    other: [{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#000000" }],
   },
 };
 
 // Browser UI (address bar, overscroll) matches the white page; the site has one light theme.
 export const viewport = {
-  themeColor: "#ffffff",
+  themeColor: PAPER,
   colorScheme: "light",
 };
 
@@ -50,14 +52,14 @@ export default function RootLayout({ children }) {
         {/* First stop for keyboard users: jumps past the nav to the page content. Above the curtain. */}
         <a
           href="#main"
-          className="sr-only z-[1001] rounded-ui bg-black px-[12px] py-[8px] text-white focus-visible:not-sr-only focus-visible:fixed focus-visible:top-m focus-visible:left-m focus-visible:outline-white"
+          className="sr-only z-(--z-skip) rounded-ui bg-black px-[12px] py-[8px] text-white focus-visible:not-sr-only focus-visible:fixed focus-visible:top-m focus-visible:left-m focus-visible:outline-white"
         >
           Skip to content
         </a>
         {/* The curtain: a lime panel with the wordmark across its foot. It covers every page load from the
             first frame (shown when INTRO_SCRIPT has marked the page js-anim, globals.css) until it wipes up off
             the page (Intro), and comes back for page changes (PageTransition). */}
-        <div data-curtain aria-hidden="true" className="curtain fixed inset-0 z-[1000] bg-lime text-black">
+        <div data-curtain aria-hidden="true" className="curtain fixed inset-0 z-(--z-curtain) bg-lime text-black">
           <div className="absolute inset-x-0 bottom-0 px-m pb-m">
             <div data-curtain-logo>
               <NosterLogo className="block h-auto w-full" />
@@ -81,6 +83,8 @@ export default function RootLayout({ children }) {
             </div>
           </ProjectTransition>
         </SmoothScroll>
+        {/* Prismic's preview toolbar for editors: it refreshes the page on content changes and ends the preview on exit. */}
+        <PrismicPreview repositoryName={repositoryName} />
       </body>
     </html>
   );

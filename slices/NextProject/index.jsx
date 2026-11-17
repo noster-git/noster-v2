@@ -1,4 +1,5 @@
 import { asLink } from "@prismicio/client";
+import { getPreviewRef } from "@prismicio/next";
 import LineCta from "@/components/LineCta";
 import { getProjectMedia } from "@/lib/projects";
 
@@ -13,7 +14,7 @@ import { getProjectMedia } from "@/lib/projects";
 const NextProject = async ({ slice }) => {
 	const href = asLink(slice.primary.project);
 	if (!href) return null;
-	const media = await getProjectMedia();
+	const media = await getProjectMedia(await getPreviewRef());
 
 	return (
 		<div data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
