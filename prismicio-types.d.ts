@@ -132,17 +132,6 @@ interface FooterDocumentData {
 	rights_text: prismic.KeyTextField;
 	
 	/**
-	 * Copyright text field in *Footer*
-	 *
-	 * - **Field Type**: Text
-	 * - **Placeholder**: Noster Associates (c) 2024
-	 * - **API ID Path**: footer.copyright_text
-	 * - **Tab**: Main
-	 * - **Documentation**: https://prismic.io/docs/fields/text
-	 */
-	copyright_text: prismic.KeyTextField;
-	
-	/**
 	 * Offices field in *Footer*
 	 *
 	 * - **Field Type**: Group

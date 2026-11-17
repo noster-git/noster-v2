@@ -8,7 +8,7 @@ import RollText from "./RollText";
 import Arrow from "./Arrow";
 import FooterSubscribe from "./FooterSubscribe";
 import FooterMotion from "./FooterMotion";
-import { NEWSLETTER } from "@/lib/site";
+import { NEWSLETTER, SITE_NAME } from "@/lib/site";
 
 /**
  * @param {string} [ref]
@@ -70,11 +70,21 @@ const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] i
  * stretches to fill the window, so tall windows get no gaps. Compact layouts stack the two sides.
  * Entrance animation: components/FooterMotion.jsx.
  */
+/**
+ * The current year for the copyright line. The clock can only be read inside a cached scope when pages
+ * are prerendered; refreshed daily, so the line moves on by itself on 1 January.
+ */
+async function currentYear() {
+	"use cache";
+	cacheLife("days");
+	return new Date().getFullYear();
+}
+
 export default async function Footer() {
 	const ref = await getPreviewRef();
-	const [footer, contact] = await Promise.all([getFooter(ref), getContact(ref)]);
+	const [footer, contact, year] = await Promise.all([getFooter(ref), getContact(ref), currentYear()]);
 	if (!footer) return null;
-	const { rights_text, copyright_text, offices, socials_title, socials } = footer.data;
+	const { rights_text, offices, socials_title, socials } = footer.data;
 
 	return (
 		<FooterMotion className="relative flex flex-col bg-lime p-m text-black">
@@ -179,7 +189,9 @@ export default async function Footer() {
 								<RollText>Privacy Policy</RollText>
 							</Link>
 						</div>
-						<p className="inline-flex min-h-[24px] items-center text-right pointer-coarse:min-h-[44px]">{copyright_text}</p>
+						<p className="inline-flex min-h-[24px] items-center text-right pointer-coarse:min-h-[44px]">
+							© {year} {SITE_NAME}
+						</p>
 					</div>
 				</div>
 			</div>

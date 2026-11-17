@@ -10,13 +10,6 @@
         },
         "type": "Text"
       },
-      "copyright_text": {
-        "config": {
-          "label": "Copyright text",
-          "placeholder": "Noster Associates (c) 2024"
-        },
-        "type": "Text"
-      },
       "offices": {
         "config": {
           "fields": {

@@ -70,8 +70,9 @@ export default async function Page() {
 			<h1 data-reveal="lines" className="col-span-5 mb-4 text-title desk:sticky desk:top-nav desk:col-span-3 desk:mb-0">
 				{heading}
 			</h1>
-			{/* min-w-0 + break-words: long URLs and emails wrap instead of widening the grid past the screen. */}
-			<div data-reveal className="col-span-5 max-w-long min-w-0 break-words desk:col-span-6 desk:col-start-5">
+			{/* min-w-0 + break-words: long URLs and emails wrap instead of widening the grid past the screen.
+			    data-lcp: the text is the page's main element, painted under the load curtain (globals.css). */}
+			<div data-reveal data-lcp className="col-span-5 max-w-long min-w-0 break-words desk:col-span-6 desk:col-start-5">
 				<PrismicRichText field={outline(page.data.content)} components={components} />
 			</div>
 		</Reveal>
