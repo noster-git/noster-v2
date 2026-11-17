@@ -6,8 +6,8 @@ import HeroClient from "./HeroClient";
 
 // Used when the slice is set to Video but no video is picked from the media library.
 const FALLBACK_VIDEO = "/video/home/geeky-wolf-hero-video.mp4";
-// Its muted background loops: 720p on phones (a third of the full file), 1080p on desk. The full file, with
-// sound, is only fetched when the showreel opens.
+// Its muted background loops: the first 25s of the showreel (10 shots, ending on a cut), 720p on phones
+// (1.8MB) and 1080p on desk (3.5MB). The full file, with sound, is only fetched when the showreel opens.
 const FALLBACK_LOOP = [
 	{ src: "/video/home/geeky-wolf-hero-loop-720.mp4", media: "(max-width: 767px)" },
 	{ src: "/video/home/geeky-wolf-hero-loop-1080.mp4" },

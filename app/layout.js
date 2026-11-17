@@ -11,6 +11,7 @@ import NosterLogo from "@/components/NosterLogo";
 import { INTRO_SCRIPT } from "@/lib/intro";
 import { PrismicPreview } from "@prismicio/next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { repositoryName } from "@/prismicio";
 import { SITE_URL, SITE_NAME, DEFAULT_TITLE, DEFAULT_DESCRIPTION, OPEN_GRAPH, PAPER } from "@/lib/site";
 
@@ -85,9 +86,11 @@ export default function RootLayout({ children }) {
         </SmoothScroll>
         {/* Prismic's preview toolbar for editors: it refreshes the page on content changes and ends the preview on exit. */}
         <PrismicPreview repositoryName={repositoryName} />
-        {/* Page views (Vercel Web Analytics): no cookies, so no consent banner. Only on Vercel builds: the
-            script is served by Vercel's edge, so anywhere else it would 404. */}
+        {/* Page views (Vercel Web Analytics) and real visitors' Core Web Vitals, INP included (Speed Insights):
+            no cookies, so no consent banner. Only on Vercel builds: the scripts are served by Vercel's edge, so
+            anywhere else they would 404. */}
         {process.env.VERCEL && <Analytics />}
+        {process.env.VERCEL && <SpeedInsights />}
       </body>
     </html>
   );

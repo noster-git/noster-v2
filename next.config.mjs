@@ -6,7 +6,7 @@ const PRISMIC = `https://${REPO}.prismic.io https://${REPO}.cdn.prismic.io`;
 
 // What pages may load. Pages are prerendered and cached, so per-request nonces aren't available: inline
 // scripts (Next's own bootstrap, the intro script) are allowed with 'unsafe-inline'. Prismic serves the
-// photos and media, and its preview toolbar (script, frame, API) for editors. Vercel Analytics is same-origin.
+// photos and media, and its preview toolbar (script, frame, API) for editors. Vercel Analytics and Speed Insights are same-origin.
 // Development also needs 'unsafe-eval' (React's dev tooling).
 const CSP = [
   "default-src 'self'",
