@@ -18,7 +18,13 @@ Then run `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
 Open `/studio` on the site (for example [http://localhost:3000/studio](http://localhost:3000/studio)) and sign in with your Sanity account. The Presentation tab shows the site beside the editor: click any text or photo to edit it, and unpublished changes appear as you type.
 
-In the Presentation tab, sections, project photos, brief details, menu links, offices, social links and contacts can be dragged into a new order on the page (hover one and use its handle). Right-click a section (or any item in a list) for its menu: move it, duplicate or remove it, or insert a new one before or after it. Menu, button and other links take a page on this site or a typed address: a website (https://…), an email (mailto:…), a phone number (tel:…), a page path (/works) or a place on the page (#contact, the contact details at the foot of every page).
+The studio's menu has four parts. **Site**: settings (studio name, email, phone numbers, offices, social links, default search fields), the menu and the footer's words. **Pages**: Home, Works (its title and the order projects are listed in), the privacy policy, and other pages. **Projects**. **Library**: clients, sectors, services, cities and offices, the records projects and pages point at. A project picks its client, sector, city, services and next project from the Library rather than typing them, so a name is fixed in one place; a new record can be made straight from the picker, and a record still in use can't be deleted.
+
+A new page (Pages › Other pages) is built from the same sections as Home (Hero, Our Approach, Collaborators, Featured Works, Contact, Photos), lives at its own address (`/about`) and is added to the sitemap and `/llms.txt` once published. Projects can add sections under their photos.
+
+Every button is a Button: its words and where it goes: a page, a project, another website, a place on the page (`contact`, the contact details at the foot of every page), a phone number or an email address. Menu links work the same way.
+
+In the Presentation tab, sections, project photos, menu links, phone numbers, offices and social links can be dragged into a new order on the page (hover one and use its handle). Right-click a section (or any item in a list) for its menu: move it, duplicate or remove it, or insert a new one before or after it.
 
 Publishing updates the live site within a few seconds, with no rebuild. The sitemap and `/llms.txt` refresh every hour.
 
@@ -26,4 +32,4 @@ Each address the studio or site runs on (for example `http://localhost:3000`, `h
 
 ## Code
 
-Content queries and fetching live in `lib/sanity/`, the studio's schema in `sanity/`. Each page section (`sections/`) is a component keyed by its type in `sections/index.js`. `npm test` runs the tests, `npm run lint` the linter.
+Content queries and fetching live in `lib/sanity/`, the studio's schema in `sanity/`. Each page section (`sections/`) is a component keyed by its type in `sections/index.js`; a project's facts are written from its details in `lib/project-facts.js`. `npm test` runs the tests, `npm run lint` the linter.
