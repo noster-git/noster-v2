@@ -71,7 +71,7 @@ export function valueStore(initial) {
 	};
 }
 
-const NEAR_MAX = 3; // touch: at most this many cards on screen preload their hero at once (the newest)
+const SETTLE_MS = 200; // touch: cards preload their hero once the cards on screen have stopped changing this long
 
 /**
  * Project cards on the page grid: the name (Lucide corner-down-right in front, 14 / 16px) and its number
@@ -86,7 +86,7 @@ const NEAR_MAX = 3; // touch: at most this many cards on screen preload their he
  * `entrance` (default on): the cards reveal as they scroll in. Off, they are shown as they are, already
  * played (the works page's Grid / List toggle).
  *
- * @param {{ lead?: boolean, entrance?: boolean, works: { href: string, name: string, image: import("@prismicio/client").ImageField, hero?: import("@prismicio/client").ImageField | null }[] }} props
+ * @param {{ lead?: boolean, entrance?: boolean, works: { href: string, name: string, image: import("@/lib/sanity/image").SanityImage, hero?: import("@/lib/sanity/image").SanityImage | null }[] }} props
  */
 export default function WorksGrid({ works, lead = false, entrance = true }) {
 	// The "View project" pill's state lives outside the grid, so hovering a card re-renders only the pill.
@@ -99,35 +99,41 @@ export default function WorksGrid({ works, lead = false, entrance = true }) {
 		warm(e.currentTarget);
 		setPreload((prev) => (prev.has(i) ? prev : new Set(prev).add(i)));
 	};
-	// Touch: the cards on screen now that preload their hero (at most NEAR_MAX, the newest).
+	// Touch: the cards on screen (once the scroll rests) that preload their hero.
 	const [near, setNear] = useState([]);
 	const scope = useRef(null);
 
 	// Touch screens have no hover to warm a card before it's tapped, so there the cards on screen preload
 	// their project's hero photo. The photo that grows on a tap is then the hero's own, as with a mouse,
-	// rather than the card's photo swapping for the hero's as it lands. Only the last few cards to come on
-	// screen do, so a fast scroll down a long grid doesn't fetch every full-width hero on the way.
+	// rather than the card's photo swapping for the hero's as it lands. Every card on screen does, but only
+	// once the cards on screen stop changing (SETTLE_MS), so a fast scroll down a long grid doesn't fetch every
+	// full-width hero on the way.
 	// Starts once the curtain has lifted, so it never competes with the page's own first load.
 	useEffect(() => {
 		if (!window.matchMedia("(hover: none)").matches) return;
 		let io;
 		let live = true;
-		let onScreen = [];
+		let settle;
+		const onScreen = new Set();
 		ready().then(() => {
 			if (!live || !scope.current) return;
 			io = new IntersectionObserver((entries) => {
 				entries.forEach((e) => {
 					const i = Number(e.target.dataset.i);
-					onScreen = onScreen.filter((n) => n !== i);
-					if (e.isIntersecting) onScreen.push(i);
+					if (e.isIntersecting) onScreen.add(i);
+					else onScreen.delete(i);
 				});
-				const next = onScreen.slice(-NEAR_MAX);
-				setNear((prev) => (prev.length === next.length && prev.every((n, k) => n === next[k]) ? prev : next));
+				clearTimeout(settle);
+				settle = setTimeout(() => {
+					const next = [...onScreen].sort((a, b) => a - b);
+					setNear((prev) => (prev.length === next.length && prev.every((n, k) => n === next[k]) ? prev : next));
+				}, SETTLE_MS);
 			});
 			scope.current.querySelectorAll("[data-card]").forEach((card) => io.observe(card));
 		});
 		return () => {
 			live = false;
+			clearTimeout(settle);
 			io?.disconnect();
 		};
 	}, []);
@@ -209,7 +215,7 @@ export default function WorksGrid({ works, lead = false, entrance = true }) {
 								className={`relative block aspect-[4/3] overflow-hidden rounded-ui bg-wash transition-[scale] duration-100 ease-out active:scale-[0.98] desk-mouse:cursor-none ${SHAPE[span]}`}
 							>
 								<Img
-									field={work.image}
+									image={work.image}
 									fill
 									sizes={SIZES(i, span)}
 									{...(lead && i === 0 && { loading: "eager", fetchPriority: "high" })}
@@ -222,7 +228,7 @@ export default function WorksGrid({ works, lead = false, entrance = true }) {
 							    file the hero will show. */}
 							{work.hero && (preload.has(i) || near.includes(i)) && (
 								<span data-hero-preload aria-hidden="true" className="pointer-events-none absolute size-px overflow-hidden opacity-0">
-									<Img field={work.hero} fill sizes="100vw" loading="eager" fallbackAlt="" className="object-cover" />
+									<Img image={work.hero} fill sizes="100vw" loading="eager" fallbackAlt="" className="object-cover" />
 								</span>
 							)}
 						</div>

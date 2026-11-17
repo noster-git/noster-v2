@@ -26,7 +26,7 @@ export default function LineCta({ href, children, image, label, className = "pt-
 				>
 					{image && (
 						<span className="relative mr-[0.2em] block aspect-[5/3] h-[1.5em] shrink-0 overflow-hidden rounded-ui">
-							<Img field={image} fill sizes="160px" alt="" className="object-cover" />
+							<Img image={image} fill sizes="160px" alt="" className="object-cover" />
 						</span>
 					)}
 					<RollText truncate>{children}</RollText>

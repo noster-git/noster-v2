@@ -63,7 +63,7 @@ export default function Intro() {
 		const heroImg = document.querySelector("[data-hero-media] img, [data-project-hero] img");
 		const heroVideo = document.querySelector("[data-hero-media] video");
 		const image = heroImg?.decode ? heroImg.decode().catch(() => {}) : Promise.resolve();
-		// A video with no source for this screen (a showreel picked in Prismic is desk only) never loads.
+		// A video with no source for this screen (an uploaded showreel is desk only) never loads.
 		const loads = [...(heroVideo?.querySelectorAll("source") ?? [])].some((s) => !s.media || matchMedia(s.media).matches);
 		const video = new Promise((done) => {
 			if (!heroVideo || !loads || heroVideo.readyState >= 3) return done();

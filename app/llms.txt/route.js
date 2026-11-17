@@ -1,8 +1,8 @@
-import { cacheLife, cacheTag } from "next/cache";
-import { asText } from "@prismicio/client";
-import { createClient } from "@/prismicio";
-import { getFooter } from "@/components/Footer";
-import { toWorks } from "@/slices/FeaturedWorks";
+import { cacheLife } from "next/cache";
+import { hourlyFetch } from "@/lib/sanity/live";
+import { FOOTER, HOME, PROJECT_SUMMARIES } from "@/lib/sanity/queries";
+import { toWorks } from "@/sections/FeaturedWorks";
+import { plainText } from "@/lib/content";
 import { SITE_NAME, DEFAULT_DESCRIPTION, absolute, excerpt } from "@/lib/site";
 
 /**
@@ -13,51 +13,45 @@ export async function GET() {
 	return new Response(await buildText(), { headers: { "content-type": "text/plain; charset=utf-8" } });
 }
 
+/** A query's published result, re-read every hour, or `fallback` when the CMS can't be read. */
+const read = (query, fallback) =>
+	hourlyFetch({ query })
+		.then(({ data }) => data ?? fallback)
+		.catch(() => fallback);
+
 async function buildText() {
 	"use cache";
 	cacheLife("hours");
-	cacheTag("prismic");
-	const client = createClient();
-	const [home, footer, projects] = await Promise.all([
-		client.getSingle("home").catch(() => null),
-		getFooter(),
-		client.getAllByType("project").catch(() => []),
-	]);
+	const [home, footer, projects] = await Promise.all([read(HOME, null), read(FOOTER, null), read(PROJECT_SUMMARIES, [])]);
 
-	const approach = home?.data.slices.find((s) => s.slice_type === "our_approach");
-	const featured = home?.data.slices.find((s) => s.slice_type === "featured_works");
+	const section = (type) => home?.sections?.find((s) => s._type === type);
+	const approach = section("ourApproach");
 	// Newest first, as on /works; projects not on Home's list go last.
-	const order = featured ? toWorks(featured.primary.projects).map((w) => w.href) : [];
+	const order = toWorks(section("featuredWorks")?.projects).map((w) => w.href);
 	const rank = (p) => {
-		const i = order.indexOf(p.url);
+		const i = order.indexOf(p.href);
 		return i === -1 ? order.length : i;
 	};
 
 	const projectLine = (p) => {
-		const slices = p.data.slices;
-		const name =
-			slices.find((s) => s.slice_type === "project_hero")?.primary.title?.replace(/\s+/g, " ").trim() ||
-			p.data.meta_title?.split("|")[0].trim() ||
-			p.uid;
-		const brief = slices.find((s) => s.slice_type === "project_brief")?.primary;
-		const facts = (brief?.details ?? []).map((d) => `${d.label}: ${d.value?.replace(/\s+/g, " ").trim()}`).join("; ");
-		const summary = p.data.meta_description || excerpt(asText(brief?.description), 200);
-		return `- [${name}](${absolute(p.url)}): ${summary}${facts ? ` (${facts})` : ""}`;
+		const name = p.name?.replace(/\s+/g, " ").trim() || p.seo?.title?.split("|")[0].trim() || p.slug;
+		const facts = (p.brief?.details ?? []).map((d) => `${d.label}: ${d.value?.replace(/\s+/g, " ").trim()}`).join("; ");
+		const summary = p.seo?.description || excerpt(plainText(p.brief?.description), 200);
+		return `- [${name}](${absolute(p.href)}): ${summary}${facts ? ` (${facts})` : ""}`;
 	};
 
-	const contact = home?.data.slices.find((s) => s.slice_type === "contact");
-	const contacts = (contact?.primary.contacts ?? [])
+	const contacts = (section("contact")?.contacts ?? [])
 		.map((c) => c.value?.trim())
 		.filter(Boolean)
 		.map((v) => `- ${v.includes("@") ? "Email" : "Phone"}: ${v}`);
-	const offices = (footer?.data.offices ?? []).map((o) => `- ${o.city}: ${o.address}${o.phone ? ` (${o.phone})` : ""}`);
+	const offices = (footer?.offices ?? []).map((o) => `- ${o.city}: ${o.address}${o.phone ? ` (${o.phone})` : ""}`);
 
 	return [
 		`# ${SITE_NAME}`,
 		"",
-		`> ${home?.data.meta_description || DEFAULT_DESCRIPTION}`,
+		`> ${home?.seo?.description || DEFAULT_DESCRIPTION}`,
 		"",
-		approach ? asText(approach.primary.description) : "",
+		approach?.description ?? "",
 		"",
 		...(contacts.length ? ["## Contact", ...contacts, ""] : []),
 		"## Offices",

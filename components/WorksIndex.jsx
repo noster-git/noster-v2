@@ -22,7 +22,7 @@ const pad = (n) => String(n).padStart(2, "0");
  * The entrances (cards unmasking, rows rising) play on the page's first view only. A view chosen with
  * the toggle is simply faded in (200ms), already in place.
  *
- * @param {{ works: { href: string, name: string, image: import("@prismicio/client").ImageField }[] }} props
+ * @param {{ works: { href: string, name: string, image: import("@/lib/sanity/image").SanityImage }[] }} props
  */
 export default function WorksIndex({ works }) {
 	const [view, setView] = useState("grid");
@@ -159,7 +159,7 @@ function Preview({ works, hovered }) {
 				{works.map((work, i) => (
 					<Img
 						key={work.href}
-						field={work.image}
+						image={work.image}
 						fill
 						sizes="22vw"
 						fallbackAlt=""

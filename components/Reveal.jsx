@@ -15,7 +15,7 @@ const GAP = reveal.to.stagger; // 0.08s between items, in reading order
  * Plays every [data-reveal] element inside it, in DOM (reading) order, as the block scrolls into view,
  * after the page-load intro. The elements are already held hidden by CSS (.js-anim, globals.css), so
  * this only ever animates them in: no flash. Renders as the given element (default section) so it can
- * be a slice's root. One choreography for the whole site; each element says how it enters:
+ * be a section's root. One choreography for the whole site; each element says how it enters:
  *
  *   data-reveal          fades up 32px (1.1s expo.out)              — labels, details, blocks
  *   data-reveal="lines"  its lines rise out of their own masks      — headings, lead statements

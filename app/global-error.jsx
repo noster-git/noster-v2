@@ -1,6 +1,6 @@
 "use client";
 
-import "./globals.css";
+import "./(site)/globals.css";
 
 // Underlined text actions: keyboard focus thickens the underline, no box.
 const ACTION = "cursor-pointer underline underline-offset-2 focus-visible:decoration-2 focus-visible:outline-none";

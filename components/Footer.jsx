@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { cacheLife, cacheTag } from "next/cache";
-import { asText, isFilled } from "@prismicio/client";
-import { PrismicNextLink, cacheTagPrismicPages, getPreviewRef } from "@prismicio/next";
-import { createClient } from "@/prismicio";
+import { cacheLife } from "next/cache";
+import { fetchOptions, fetchOrNull } from "@/lib/sanity/live";
+import { FOOTER } from "@/lib/sanity/queries";
+import { linkHref } from "@/lib/content";
+import CmsLink from "./CmsLink";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
 import FooterSubscribe from "./FooterSubscribe";
@@ -11,40 +12,27 @@ import FooterMotion from "./FooterMotion";
 import { NEWSLETTER, SITE_NAME } from "@/lib/site";
 
 /**
- * @param {string} [ref]
+ * The Footer document, with the "Let's Build Together" contact edited in the Contact section on the home
+ * page (the home page doesn't render that section: it is rendered here, on every page). Null when there is
+ * no footer or the CMS can't be read: pages then go without a footer.
+ *
+ * @param {import("@/lib/sanity/live").FetchOptions} options
  */
-export async function getFooter(ref) {
-	"use cache";
-	cacheLife("max");
-	cacheTag("prismic");
-	const footer = await createClient()
-		.getSingle("footer", { ref })
-		.catch(() => null);
-	if (footer) cacheTagPrismicPages([footer]);
-	return footer;
+export function getFooter(options) {
+	return fetchOrNull({ query: FOOTER, ...options }).catch(() => null);
 }
 
 /**
- * "Let's Build Together" content, still edited in the Contact slice on the home page in Prismic.
- * The home page skips that slice (app/page.jsx): it is rendered here, on every page.
+ * The contact block's title, intro and links (mailto: and tel:).
  *
- * @param {string} [ref]
+ * @param {{ title?: string | null, intro?: string | null, contacts?: Array<{ value?: string | null }> | null } | null | undefined} contact
  */
-async function getContact(ref) {
-	"use cache";
-	cacheLife("max");
-	cacheTag("prismic");
-	const home = await createClient()
-		.getSingle("home", { ref })
-		.catch(() => null);
-	if (!home) return null;
-	cacheTagPrismicPages([home]);
-	const slice = home.data.slices.find((s) => s.slice_type === "contact");
-	if (!slice) return null;
+function toContact(contact) {
+	if (!contact) return null;
 	return {
-		title: asText(slice.primary.title),
-		intro: slice.primary.intro,
-		contacts: (slice.primary.contacts ?? [])
+		title: contact.title,
+		intro: contact.intro,
+		contacts: (contact.contacts ?? [])
 			.map((c) => c.value?.trim())
 			.filter(Boolean)
 			.map((value) => ({ value, href: value.includes("@") ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}` })),
@@ -81,10 +69,10 @@ async function currentYear() {
 }
 
 export default async function Footer() {
-	const ref = await getPreviewRef();
-	const [footer, contact, year] = await Promise.all([getFooter(ref), getContact(ref), currentYear()]);
+	const [footer, year] = await Promise.all([getFooter(await fetchOptions()), currentYear()]);
 	if (!footer) return null;
-	const { rights_text, offices, socials_title, socials } = footer.data;
+	const { offices, socialsTitle, socials } = footer;
+	const contact = toContact(footer.contact);
 
 	return (
 		<FooterMotion className="relative flex flex-col bg-lime p-m text-black">
@@ -133,14 +121,14 @@ export default async function Footer() {
 					<div>
 						<Rule />
 						<div data-fade className="pt-rule">
-							{socials_title && <p>{socials_title}</p>}
+							{socialsTitle && <p>{socialsTitle}</p>}
 							<ul>
-								{socials.map((s, i) =>
-									isFilled.link(s.link) ? (
-										<li key={i}>
-											<PrismicNextLink field={s.link} className={LINK}>
+								{(socials ?? []).map((s) =>
+									linkHref(s.link) ? (
+										<li key={s._key}>
+											<CmsLink link={s.link} className={LINK}>
 												<RollText>{s.label}</RollText>
-											</PrismicNextLink>
+											</CmsLink>
 										</li>
 									) : null,
 								)}
@@ -158,15 +146,15 @@ export default async function Footer() {
 					<div>
 						<Rule />
 						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule">
-							{offices.map((office, i) => (
-								<div key={i}>
+							{(offices ?? []).map((office) => (
+								<div key={office._key}>
 									<p>{office.city}</p>
 									<p className="whitespace-pre-line">{office.address}</p>
-									{isFilled.link(office.directions_link) && (
-										<PrismicNextLink field={office.directions_link} aria-label={`View directions to the ${office.city} office`} className={LINK}>
+									{linkHref(office.directionsLink) && (
+										<CmsLink link={office.directionsLink} aria-label={`View directions to the ${office.city} office`} className={LINK}>
 											<RollText>View directions</RollText>
 											<Arrow />
-										</PrismicNextLink>
+										</CmsLink>
 									)}
 									{office.phone && (
 										<p>
@@ -184,7 +172,7 @@ export default async function Footer() {
 					{/* Credits, at the foot of the column */}
 					<div data-fade className="flex items-end justify-between gap-g desk:mt-auto desk:pt-2">
 						<div>
-							<p>{rights_text}</p>
+							<p>All rights reserved</p>
 							<Link href="/privacy_policy" className={LINK}>
 								<RollText>Privacy Policy</RollText>
 							</Link>

@@ -7,7 +7,7 @@ const AI_TRAINING = ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extende
 export default function robots() {
 	return {
 		rules: [
-			{ userAgent: "*", allow: "/", disallow: ["/api/", "/slice-simulator"] },
+			{ userAgent: "*", allow: "/", disallow: ["/api/", "/studio"] },
 			{ userAgent: AI_TRAINING, disallow: "/" },
 		],
 		sitemap: absolute("/sitemap.xml"),

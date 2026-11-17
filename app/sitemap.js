@@ -1,32 +1,30 @@
-import { cacheLife, cacheTag } from "next/cache";
-import { createClient } from "@/prismicio";
+import { hourlyFetch } from "@/lib/sanity/live";
+import { SITEMAP } from "@/lib/sanity/queries";
 import { absolute } from "@/lib/site";
 
-/** Every page and project, from Prismic, with its last publish date. */
-export default async function sitemap() {
-	"use cache";
-	cacheLife("hours");
-	cacheTag("prismic");
-	const client = createClient();
-	const [singles, projects] = await Promise.all([
-		client.getAllByType("home").catch(() => []),
-		client.getAllByType("project").catch(() => []),
-	]);
-	const [works, privacy] = await Promise.all([
-		client.getSingle("works").catch(() => null),
-		client.getSingle("privacy_policy").catch(() => null),
-	]);
+const PRIORITY = { home: 1, works: 0.9, project: 0.8, privacyPolicy: 0.2 };
 
-	const entry = (path, doc, priority) => ({
+/**
+ * Every page and project, with its last edit: Home and Our Works always, then the projects (latest edit
+ * first), then the privacy policy when it exists. Published content, re-read every hour.
+ */
+export default async function sitemap() {
+	const { data } = await hourlyFetch({ query: SITEMAP }).catch(() => ({ data: null }));
+	const docs = data ?? [];
+	const of = (type) => docs.filter((d) => d._type === type);
+	const entry = (path, doc, type) => ({
 		url: absolute(path),
-		lastModified: doc?.last_publication_date ? new Date(doc.last_publication_date) : undefined,
-		priority,
+		lastModified: doc?._updatedAt ? new Date(doc._updatedAt) : undefined,
+		priority: PRIORITY[type],
 	});
+	const projects = of("project")
+		.filter((p) => p.path)
+		.sort((a, b) => b._updatedAt.localeCompare(a._updatedAt));
 
 	return [
-		entry("/", singles[0], 1),
-		entry("/works", works, 0.9),
-		...projects.map((p) => entry(p.url || `/works/${p.uid}`, p, 0.8)),
-		...(privacy ? [entry("/privacy_policy", privacy, 0.2)] : []),
+		entry("/", of("home")[0], "home"),
+		entry("/works", of("works")[0], "works"),
+		...projects.map((p) => entry(p.path, p, "project")),
+		...of("privacyPolicy").slice(0, 1).map((p) => entry("/privacy_policy", p, "privacyPolicy")),
 	];
 }
