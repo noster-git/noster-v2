@@ -26,6 +26,8 @@
     "styled-components": "^6.6.0"
   },
   "devDependencies": {
+    "@sanity/visual-editing": "6.2.1",
+    "@sanity/visual-editing-csm": "3.0.19",
     "@tailwindcss/turbopack": "4.3.3",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",

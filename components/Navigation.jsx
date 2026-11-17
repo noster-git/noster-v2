@@ -64,7 +64,7 @@ export default async function Navigation() {
 					</Link>
 				</div>
 
-				<ul className="hidden gap-[14px] desk:col-span-5 desk:flex">
+				<ul className="hidden gap-[14px] desk:col-span-5 desk:flex" {...editProps(cmsLinks.length ? list() : undefined)}>
 					{cmsLinks.length ? (
 						<Ordered
 							edit={list}

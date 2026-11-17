@@ -27,7 +27,7 @@ const ProjectBrief = ({ section, edit }) => {
 				<SectionLabel as="h2" data-reveal className="col-span-5 mb-3 desk:mb-4">
 					The project
 				</SectionLabel>
-				<dl className="order-last col-span-5 mt-5 grid grid-cols-2 gap-x-g gap-y-2 desk:mt-0 desk:grid-cols-1 desk:pr-4">
+				<dl className="order-last col-span-5 mt-5 grid grid-cols-2 gap-x-g gap-y-2 desk:mt-0 desk:grid-cols-1 desk:pr-4" {...editProps(details())}>
 					<Ordered
 						edit={details}
 						items={(section.details ?? [])

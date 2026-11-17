@@ -1,6 +1,7 @@
 import { stegaClean } from "next-sanity";
 import { components } from "@/sections";
 import { NO_EDIT, item, scope } from "@/lib/sanity/edit";
+import { editProps } from "@/lib/sanity/edit-props";
 import Ordered from "./Ordered";
 
 /**
@@ -19,5 +20,7 @@ export default function Sections({ sections, context, edit = NO_EDIT }) {
 		const key = stegaClean(section._key);
 		return [{ key, node: <Section key={key} section={section} context={context} edit={scope(list, item(key))} /> }];
 	});
-	return <Ordered edit={list} items={items} />;
+	const ordered = <Ordered edit={list} items={items} />;
+	// Live preview: the list's own element, holding the array, so its sections are one group to drag within.
+	return list.doc ? <div {...editProps(list())}>{ordered}</div> : ordered;
 }

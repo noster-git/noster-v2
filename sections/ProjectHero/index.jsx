@@ -10,7 +10,8 @@ import { editProps } from "@/lib/sanity/edit-props";
  * the screen on phones (--hero-h).
  *
  * data-project-hero: the page-load curtain waits for this photo before it lifts (components/Intro.jsx).
- * In the studio's live preview the photo opens the photo field, and the location the brief's Location detail.
+ * In the studio's live preview the section (the photo with it) opens as a whole, so it can be dragged too;
+ * the title opens its field and the location the brief's Location detail.
  *
  * @param {{ section: { title?: string | null, image?: import("@/lib/sanity/image").SanityImage | null }, context?: { location?: string, editLocation?: string }, edit: import("@/lib/sanity/edit").Edit }} props
  */
@@ -20,7 +21,7 @@ const ProjectHero = ({ section, context, edit }) => (
 		{...editProps(edit())}
 		className="relative isolate flex h-(--hero-h) items-end overflow-hidden px-m pb-m text-white"
 	>
-		<div className="absolute inset-0 -z-10" {...editProps(edit("image"))}>
+		<div className="absolute inset-0 -z-10">
 			<Parallax className="relative h-[110%] w-full">
 				{/* The photo's own alt text if set, otherwise the project name. */}
 				<Img

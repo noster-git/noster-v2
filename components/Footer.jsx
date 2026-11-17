@@ -83,7 +83,8 @@ export default async function Footer() {
 	const contact = toContact(footer.contact);
 	const edit = editor(footer, options.stega);
 	// The contact block is edited in Home's Contact section.
-	const contacts = scope(editor({ _id: "home", _type: "home" }, options.stega), ["sections", item(footer.contact?._key), "contacts"]);
+	const contactSection = scope(editor({ _id: "home", _type: "home" }, options.stega), ["sections", item(footer.contact?._key)]);
+	const contacts = scope(contactSection, "contacts");
 	const socialList = scope(edit, "socials");
 	const officeList = scope(edit, "offices");
 
@@ -97,7 +98,11 @@ export default async function Footer() {
 			<div className="mt-6 flex flex-col gap-6 desk:mt-3 desk:grid-site desk:gap-y-0">
 				{/* Let's Build Together */}
 				{contact && (
-					<div className="flex flex-col justify-between gap-4 desk:col-span-6">
+					<div
+						className="flex flex-col justify-between gap-4 desk:col-span-6"
+						// Live preview: opens Home's Contact section. Not dragged: it always shows here, in the footer.
+						{...(contactSection.doc && { ...editProps(contactSection()), "data-sanity-drag-disable": "true" })}
+					>
 						{/* Top: the rule, the intro as a small eyebrow, then the title */}
 						<div>
 							<Rule />
@@ -114,7 +119,7 @@ export default async function Footer() {
 						</div>
 						{/* Foot: one ruled row per contact across the full width; labels in the first two of six
 						    columns, values left-aligned from the third, so both sit on the grid */}
-						<ul data-fade className="border-b border-current">
+						<ul data-fade className="border-b border-current" {...editProps(contacts())}>
 							<Ordered
 								edit={contacts}
 								items={contact.contacts.map((c) => ({
@@ -145,7 +150,7 @@ export default async function Footer() {
 						<Rule />
 						<div data-fade className="pt-rule">
 							{socialsTitle && <p>{socialsTitle}</p>}
-							<ul>
+							<ul {...editProps(socialList())}>
 								<Ordered
 									edit={socialList}
 									items={(socials ?? [])
@@ -174,7 +179,7 @@ export default async function Footer() {
 					{/* Offices */}
 					<div>
 						<Rule />
-						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule">
+						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule" {...editProps(officeList())}>
 							<Ordered
 								edit={officeList}
 								items={(offices ?? []).map((office) => {
