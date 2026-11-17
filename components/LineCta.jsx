@@ -3,6 +3,7 @@ import Img from "@/components/Img";
 import Reveal from "./Reveal";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
+import { editProps } from "@/lib/sanity/edit-props";
 
 /**
  * Full-width ruled link inside the page margins: a heading-size label with the arrow, and optionally a
@@ -10,11 +11,12 @@ import Arrow from "./Arrow";
  * letters roll and the arrow swaps. As it scrolls in (Reveal): the top rule draws across, the label fades
  * up, then the bottom rule draws.
  * Used for "View all projects" (Home) and "View Next Project" (project pages, with the next project's photo).
+ * Click-to-edit in the studio's live preview: `edit` for the link, `editLabel` for its words.
  */
-export default function LineCta({ href, children, image, label, className = "pt-2 pb-6" }) {
+export default function LineCta({ href, children, image, label, className = "pt-2 pb-6", edit, editLabel }) {
 	return (
 		<Reveal as="div" className={`px-m ${className}`}>
-			<Link href={href} aria-label={label} className="motion-host group relative z-10 flex">
+			<Link href={href} aria-label={label} {...editProps(edit)} className="motion-host group relative z-10 flex">
 				<span data-reveal="rule" aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-(--ink)" />
 				<span
 					aria-hidden="true"
@@ -29,7 +31,9 @@ export default function LineCta({ href, children, image, label, className = "pt-
 							<Img image={image} fill sizes="160px" alt="" className="object-cover" />
 						</span>
 					)}
-					<RollText truncate>{children}</RollText>
+					<RollText truncate edit={editLabel}>
+						{children}
+					</RollText>
 					<Arrow />
 				</span>
 				<span data-reveal="rule" aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-(--ink)" />

@@ -1,15 +1,23 @@
 import { stegaClean } from "next-sanity";
 import { components } from "@/sections";
+import { NO_EDIT, item, scope } from "@/lib/sanity/edit";
+import Ordered from "./Ordered";
 
 /**
  * A page's sections in order, each rendered by the component for its type (sections/index.js). A section
- * of a type the site has no component for is skipped. `context` is passed to every section.
+ * of a type the site has no component for is skipped. `context` is passed to every section, and `edit`
+ * (the page document's click-to-edit) scoped to it: a section puts `edit()` on its root element, so in the
+ * studio's live preview it can be clicked open and dragged to a new place on the page.
  *
- * @param {{ sections: Array<{ _type: string, _key: string }> | null | undefined, context?: Record<string, unknown> }} props
+ * @param {{ sections: Array<{ _type: string, _key: string }> | null | undefined, context?: Record<string, unknown>, edit?: import("@/lib/sanity/edit").Edit }} props
  */
-export default function Sections({ sections, context }) {
-	return (sections ?? []).map((section) => {
+export default function Sections({ sections, context, edit = NO_EDIT }) {
+	const list = scope(edit, "sections");
+	const items = (sections ?? []).flatMap((section) => {
 		const Section = components[stegaClean(section._type)];
-		return Section ? <Section key={section._key} section={section} context={context} /> : null;
+		if (!Section) return [];
+		const key = stegaClean(section._key);
+		return [{ key, node: <Section key={key} section={section} context={context} edit={scope(list, item(key))} /> }];
 	});
+	return <Ordered edit={list} items={items} />;
 }

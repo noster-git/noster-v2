@@ -86,7 +86,9 @@ const SETTLE_MS = 200; // touch: cards preload their hero once the cards on scre
  * `entrance` (default on): the cards reveal as they scroll in. Off, they are shown as they are, already
  * played (the works page's Grid / List toggle).
  *
- * @param {{ lead?: boolean, entrance?: boolean, works: { href: string, name: string, image: import("@/lib/sanity/image").SanityImage, hero?: import("@/lib/sanity/image").SanityImage | null }[] }} props
+ * `edit` on a work (studio preview only): what its photo and name open for editing (toWorks).
+ *
+ * @param {{ lead?: boolean, entrance?: boolean, works: { href: string, name: string, image: import("@/lib/sanity/image").SanityImage, hero?: import("@/lib/sanity/image").SanityImage | null, edit?: { item?: string, name?: string } }[] }} props
  */
 export default function WorksGrid({ works, lead = false, entrance = true }) {
 	// The "View project" pill's state lives outside the grid, so hovering a card re-renders only the pill.
@@ -182,7 +184,7 @@ export default function WorksGrid({ works, lead = false, entrance = true }) {
 						<div key={work.href} data-card data-i={i} data-lcp={(lead && i === 0) || undefined} className={`relative flex min-w-0 flex-col ${COMPACT(i)} ${cls}`}>
 							{/* Clips the name so it can rise into view after its photo (revealBatch); the padding keeps
 							    descenders inside the clip and the margin makes up for it, so the spacing is unchanged. */}
-							<p className="mb-[3px] overflow-hidden pb-[3px] text-name">
+							<p data-sanity={work.edit?.name} className="mb-[3px] overflow-hidden pb-[3px] text-name">
 								<span data-card-name className="flex min-w-0 items-center gap-icon">
 									<CornerIcon className="size-[0.85em] shrink-0" />
 									<span className="truncate" title={work.name}>
@@ -210,6 +212,10 @@ export default function WorksGrid({ works, lead = false, entrance = true }) {
 									open(e, work.href);
 								}}
 								data-card-media
+								// Studio preview: the photo opens the project's entry (photo, name, page). Not dragged:
+								// the grid shows the list newest first, so a drop would land the other way round.
+								data-sanity={work.edit?.item}
+								data-sanity-drag-disable={work.edit ? "true" : undefined}
 								// Press feedback: the card gives a little (0.98) the moment it's pressed, before the photo grows.
 								// bg: a faint tone while the photo loads, so it never pops onto white.
 								className={`relative block aspect-[4/3] overflow-hidden rounded-ui bg-wash transition-[scale] duration-100 ease-out active:scale-[0.98] desk-mouse:cursor-none ${SHAPE[span]}`}

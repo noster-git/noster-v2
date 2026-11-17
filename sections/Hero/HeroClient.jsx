@@ -20,8 +20,9 @@ const subscribeReducedMotion = (onChange) => {
  * Interactive part of the Hero: entrance animation, poster → video fade-in, and the showreel dialog.
  * Fills the first screen; the title sits at the bottom on the page grid (6 of 10 columns on desk). The
  * picture drifts and darkens as the hero scrolls away (components/Parallax).
+ * `edit` / `editMedia`: click-to-edit for the section and for its photo or video (studio preview only).
  */
-export default function HeroClient({ title, backdrop, videoSrc, loopSources }) {
+export default function HeroClient({ title, backdrop, videoSrc, loopSources, edit, editMedia }) {
 	const scope = useRef(null);
 	const videoRef = useRef(null);
 	const dialogRef = useRef(null);
@@ -145,12 +146,13 @@ export default function HeroClient({ title, backdrop, videoSrc, loopSources }) {
 	return (
 		<section
 			ref={scope}
+			data-sanity={edit}
 			// Full screen at every width: the video is the first impression (project heroes are half the screen on
 			// phones). Compact: the title stops clear of the fixed CTA button at the foot of the screen (MobileCta).
 			className="relative flex h-svh min-h-[320px] items-end overflow-hidden bg-black px-m pb-[calc(84px+env(safe-area-inset-bottom))] desk:pb-m"
 		>
 			{/* Drifts down and darkens as the hero scrolls away (Parallax), so the page comes up over it. */}
-			<Parallax className="absolute inset-x-0 top-0 h-[110%]" shade={0.5}>
+			<Parallax className="absolute inset-x-0 top-0 h-[110%]" shade={0.5} data-sanity={editMedia}>
 				<div data-hero-media className="absolute inset-0">
 					{backdrop}
 					{videoSrc && (

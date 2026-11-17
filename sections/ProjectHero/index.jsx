@@ -1,6 +1,8 @@
+import { stegaClean } from "next-sanity";
 import Img from "@/components/Img";
 import Parallax from "@/components/Parallax";
 import TitleRise from "./TitleRise";
+import { editProps } from "@/lib/sanity/edit-props";
 
 /**
  * Project page hero: the project name in white at display size with its location under it, anchored bottom-left within the page margins like
@@ -8,20 +10,22 @@ import TitleRise from "./TitleRise";
  * the screen on phones (--hero-h).
  *
  * data-project-hero: the page-load curtain waits for this photo before it lifts (components/Intro.jsx).
+ * In the studio's live preview the photo opens the photo field, and the location the brief's Location detail.
  *
- * @param {{ section: { title?: string | null, image?: import("@/lib/sanity/image").SanityImage | null }, context?: { location?: string } }} props
+ * @param {{ section: { title?: string | null, image?: import("@/lib/sanity/image").SanityImage | null }, context?: { location?: string, editLocation?: string }, edit: import("@/lib/sanity/edit").Edit }} props
  */
-const ProjectHero = ({ section, context }) => (
+const ProjectHero = ({ section, context, edit }) => (
 	<section
 		data-project-hero
+		{...editProps(edit())}
 		className="relative isolate flex h-(--hero-h) items-end overflow-hidden px-m pb-m text-white"
 	>
-		<div className="absolute inset-0 -z-10">
+		<div className="absolute inset-0 -z-10" {...editProps(edit("image"))}>
 			<Parallax className="relative h-[110%] w-full">
 				{/* The photo's own alt text if set, otherwise the project name. */}
 				<Img
 					image={section.image}
-					fallbackAlt={`${section.title?.replace(/\s+/g, " ")} office interior`}
+					fallbackAlt={`${stegaClean(section.title)?.replace(/\s+/g, " ")} office interior`}
 					fill
 					loading="eager"
 					fetchPriority="high"
@@ -40,7 +44,9 @@ const ProjectHero = ({ section, context }) => (
 			{context?.location && (
 				<>
 					<span className="sr-only">, </span>
-					<span className="mt-2 block text-body before:mr-[0.35em] before:content-['↳']">{context.location}</span>
+					<span {...editProps(context.editLocation)} className="mt-2 block text-body before:mr-[0.35em] before:content-['↳']">
+						{context.location}
+					</span>
 				</>
 			)}
 		</TitleRise>

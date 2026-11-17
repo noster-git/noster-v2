@@ -6,6 +6,7 @@ import Sections from "@/components/Sections";
 import JsonLd from "@/components/JsonLd";
 import { project } from "@/lib/schema";
 import { describeProject } from "@/lib/content";
+import { editor } from "@/lib/sanity/edit";
 import { OPEN_GRAPH, shareImage } from "@/lib/site";
 
 // All projects are prerendered (generateStaticParams), so the page may block on params.
@@ -15,28 +16,30 @@ export const instant = false;
 export const ensureStatic = "navigation";
 
 /** The project at this slug, or a 404 when there is none or the CMS can't be read. */
-async function getPage(slug) {
-	const options = await fetchOptions();
+async function getPage(slug, options) {
 	return (await fetchOrNull({ query: PROJECT_BY_SLUG, params: { slug }, ...options }).catch(() => null)) ?? notFound();
 }
 
 export default async function Page({ params }) {
 	const { slug } = await params;
-	const page = await getPage(slug);
-	const { name, description, location } = describeProject(page);
+	const options = await fetchOptions();
+	const page = await getPage(slug, options);
+	const { name, description, location, locationPath } = describeProject(page);
+	const edit = editor(page, options.stega);
 
 	return (
 		<>
 			<JsonLd data={project(page, { name, description })} />
-			{/* name → sections use it for photo alt text when a photo has none; location → the hero's h1 */}
-			<Sections sections={page.sections} context={{ projectName: name, location }} />
+			{/* name → sections use it for photo alt text when a photo has none; location → the hero's h1, which
+			    opens the brief's Location detail in the studio's live preview */}
+			<Sections sections={page.sections} context={{ projectName: name, location, editLocation: edit(locationPath) }} edit={edit} />
 		</>
 	);
 }
 
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
-	const page = await getPage(slug);
+	const page = await getPage(slug, await fetchOptions());
 	const { name, description } = describeProject(page);
 	const seo = stegaClean(page.seo);
 	const title = seo?.title || `${name} Office Interiors | Noster`;

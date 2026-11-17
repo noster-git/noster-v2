@@ -1,21 +1,26 @@
 import { hasImage } from "@/lib/sanity/image";
+import { item } from "@/lib/sanity/edit";
 import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 import LogoShuffle from "./LogoShuffle";
+import { editProps } from "@/lib/sanity/edit-props";
 
 /**
  * "Our Collaborators", on the stone band (it follows Our Approach, so the two read as one band): the indexed
  * label in columns 1–3, the logo row across columns 4–10 between two rules that draw in. Four logo slots
  * that swap in place (LogoShuffle); logos sized to the same area so they balance whatever their
  * upload (Large nudges one up), colour on hover. Compact layouts stack them.
+ * In the studio's live preview each logo opens its entry in the list.
  *
- * @param {{ section: { title?: string | null, logos?: Array<{ _key: string, large?: boolean | null, logo?: import("@/lib/sanity/image").SanityImage | null }> | null } }} props
+ * @param {{ section: { title?: string | null, logos?: Array<{ _key: string, large?: boolean | null, logo?: import("@/lib/sanity/image").SanityImage | null }> | null }, edit: import("@/lib/sanity/edit").Edit }} props
  */
-const Collaborators = ({ section }) => {
-	const logos = (section.logos ?? []).filter((item) => hasImage(item.logo));
+const Collaborators = ({ section, edit }) => {
+	const logos = (section.logos ?? [])
+		.filter((entry) => hasImage(entry.logo))
+		.map((entry) => ({ ...entry, edit: edit(["logos", item(entry._key)]) }));
 
 	return (
-		<Reveal className="grid-site items-center bg-stone px-m pb-10">
+		<Reveal className="grid-site items-center bg-stone px-m pb-10" {...editProps(edit())}>
 			<SectionLabel as="h2" data-reveal className="col-span-5 mb-3 desk:col-span-3 desk:mb-0">
 				{section.title}
 			</SectionLabel>

@@ -7,6 +7,7 @@ import { getFooter } from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { organization } from "@/lib/schema";
 import { getProjectMedia } from "@/lib/projects";
+import { editor } from "@/lib/sanity/edit";
 import { DEFAULT_TITLE, DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
 
 /** The home page document, or a 404 when there is none or the CMS can't be read. */
@@ -27,7 +28,7 @@ export default async function Page() {
 			<JsonLd data={organization(footer, { description: stegaClean(page.seo?.description), email, phones })} />
 			{/* The Contact section ("Let's Build Together") is shown in the site footer instead (components/Footer.jsx):
 			    it has no component of its own, so Sections skips it here. */}
-			<Sections sections={page.sections} context={{ media }} />
+			<Sections sections={page.sections} context={{ media }} edit={editor(page, options.stega)} />
 		</>
 	);
 }

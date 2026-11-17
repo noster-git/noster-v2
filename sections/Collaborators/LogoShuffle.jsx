@@ -157,6 +157,9 @@ function Logo({ item, className, hidden }) {
 			sizes={SIZES}
 			fallbackAlt=""
 			aria-hidden={hidden || undefined}
+			// Studio preview: opens the logo's entry. Not dragged: the slots show the logos in turns, not in order.
+			data-sanity={item.edit}
+			data-sanity-drag-disable={item.edit ? "true" : undefined}
 			// Sized towards the same area: --logo-k = 1 / √(width / height) (globals.css .logo-slot .logo).
 			style={{ "--logo-k": (item.large ? LARGE : 1) / Math.sqrt(ratio) }}
 			// multiply: white logo backgrounds disappear into the page. Greyscale until hover (globals.css .logo-slot).

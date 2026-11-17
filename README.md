@@ -18,6 +18,8 @@ Then run `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
 Open `/studio` on the site (for example [http://localhost:3000/studio](http://localhost:3000/studio)) and sign in with your Sanity account. The Presentation tab shows the site beside the editor: click any text or photo to edit it, and unpublished changes appear as you type.
 
+In the Presentation tab, sections, project photos, brief details, menu links, offices, social links and contacts can be dragged into a new order on the page (hover one and use its handle). Right-click a section (or any item in a list) for its menu: move it, duplicate or remove it, or insert a new one before or after it. Menu, button and other links take a page on this site or a typed address: a website (https://…), an email (mailto:…), a phone number (tel:…), a page path (/works) or a place on the page (#contact, the contact details at the foot of every page).
+
 Publishing updates the live site within a few seconds, with no rebuild. The sitemap and `/llms.txt` refresh every hour.
 
 Each address the studio or site runs on (for example `http://localhost:3000`, `https://www.noster.in`, a new domain) must be added to the Sanity project's CORS origins, with credentials allowed.

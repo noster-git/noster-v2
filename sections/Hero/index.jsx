@@ -22,9 +22,9 @@ const FALLBACK_POSTER = "/video/home/geeky-wolf-hero-poster.webp";
  *   isVideo?: boolean | null,
  *   video?: { asset?: { url?: string } | null } | null,
  *   image?: import("@/lib/sanity/image").SanityImage | null,
- * } }} props
+ * }, edit: import("@/lib/sanity/edit").Edit }} props
  */
-const Hero = ({ section }) => {
+const Hero = ({ section, edit }) => {
 	const { title, isVideo, video, image } = section;
 
 	// The image is the hero picture in Picture mode, and the poster shown while the video loads in Video mode.
@@ -46,6 +46,8 @@ const Hero = ({ section }) => {
 			backdrop={backdrop}
 			videoSrc={videoSrc}
 			loopSources={loopSources}
+			edit={edit()}
+			editMedia={edit(isVideo ? "video" : "image")}
 			title={
 				title?.trim() ? (
 					<h1 className="text-title text-balance text-lime">

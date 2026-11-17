@@ -1,15 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cacheLife } from "next/cache";
+import { stegaClean } from "next-sanity";
 import { fetchOptions, fetchOrNull } from "@/lib/sanity/live";
 import { FOOTER } from "@/lib/sanity/queries";
 import { linkHref } from "@/lib/content";
+import { editor, item, scope } from "@/lib/sanity/edit";
 import CmsLink from "./CmsLink";
+import Ordered from "./Ordered";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
 import FooterSubscribe from "./FooterSubscribe";
 import FooterMotion from "./FooterMotion";
 import { NEWSLETTER, SITE_NAME } from "@/lib/site";
+import { editProps } from "@/lib/sanity/edit-props";
 
 /**
  * The Footer document, with the "Let's Build Together" contact edited in the Contact section on the home
@@ -23,9 +27,10 @@ export function getFooter(options) {
 }
 
 /**
- * The contact block's title, intro and links (mailto: and tel:).
+ * The contact block's title, intro and links (mailto: and tel:), each with its key. Values are read without
+ * the click-to-edit markers, so the links' addresses stay clean.
  *
- * @param {{ title?: string | null, intro?: string | null, contacts?: Array<{ value?: string | null }> | null } | null | undefined} contact
+ * @param {{ title?: string | null, intro?: string | null, contacts?: Array<{ _key: string, value?: string | null }> | null } | null | undefined} contact
  */
 function toContact(contact) {
 	if (!contact) return null;
@@ -33,9 +38,9 @@ function toContact(contact) {
 		title: contact.title,
 		intro: contact.intro,
 		contacts: (contact.contacts ?? [])
-			.map((c) => c.value?.trim())
-			.filter(Boolean)
-			.map((value) => ({ value, href: value.includes("@") ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}` })),
+			.map((c) => ({ key: c._key, value: stegaClean(c.value)?.trim() }))
+			.filter((c) => c.value)
+			.map(({ key, value }) => ({ key, value, href: value.includes("@") ? `mailto:${value}` : `tel:${value.replace(/\s+/g, "")}` })),
 	};
 }
 
@@ -57,6 +62,8 @@ const LINK = "motion-host inline-flex min-h-[24px] pointer-coarse:min-h-[44px] i
  * Fixed, compact gaps: the footer is as tall as its content, which fits one screen on desk; nothing
  * stretches to fill the window, so tall windows get no gaps. Compact layouts stack the two sides.
  * Entrance animation: components/FooterMotion.jsx.
+ * In the studio's live preview each contact, social link and office opens its entry and can be dragged to
+ * a new place; an office's phone and directions link open their own fields.
  */
 /**
  * The current year for the copyright line. The clock can only be read inside a cached scope when pages
@@ -69,10 +76,16 @@ async function currentYear() {
 }
 
 export default async function Footer() {
-	const [footer, year] = await Promise.all([getFooter(await fetchOptions()), currentYear()]);
+	const options = await fetchOptions();
+	const [footer, year] = await Promise.all([getFooter(options), currentYear()]);
 	if (!footer) return null;
 	const { offices, socialsTitle, socials } = footer;
 	const contact = toContact(footer.contact);
+	const edit = editor(footer, options.stega);
+	// The contact block is edited in Home's Contact section.
+	const contacts = scope(editor({ _id: "home", _type: "home" }, options.stega), ["sections", item(footer.contact?._key), "contacts"]);
+	const socialList = scope(edit, "socials");
+	const officeList = scope(edit, "offices");
 
 	return (
 		<FooterMotion className="relative flex flex-col bg-lime p-m text-black">
@@ -102,14 +115,24 @@ export default async function Footer() {
 						{/* Foot: one ruled row per contact across the full width; labels in the first two of six
 						    columns, values left-aligned from the third, so both sit on the grid */}
 						<ul data-fade className="border-b border-current">
-							{contact.contacts.map((c) => (
-								<li key={c.value} className="border-t border-current">
-									<a href={c.href} className="grid grid-cols-6 items-baseline gap-x-g py-[0.35em] pointer-coarse:min-h-[44px] pointer-coarse:content-center transition-opacity duration-200 hover:opacity-60">
-										<span className="col-span-2">{c.href.startsWith("mailto:") ? "Email" : "Phone"}</span>
-										<span className="col-span-4 min-w-0 text-lead [overflow-wrap:anywhere]">{c.value}</span>
-									</a>
-								</li>
-							))}
+							<Ordered
+								edit={contacts}
+								items={contact.contacts.map((c) => ({
+									key: c.key,
+									node: (
+										<li key={c.key} className="border-t border-current">
+											<a
+												href={c.href}
+												{...editProps(contacts(item(c.key)))}
+												className="grid grid-cols-6 items-baseline gap-x-g py-[0.35em] pointer-coarse:min-h-[44px] pointer-coarse:content-center transition-opacity duration-200 hover:opacity-60"
+											>
+												<span className="col-span-2">{c.href.startsWith("mailto:") ? "Email" : "Phone"}</span>
+												<span className="col-span-4 min-w-0 text-lead [overflow-wrap:anywhere]">{c.value}</span>
+											</a>
+										</li>
+									),
+								}))}
+							/>
 						</ul>
 					</div>
 				)}
@@ -123,15 +146,21 @@ export default async function Footer() {
 						<div data-fade className="pt-rule">
 							{socialsTitle && <p>{socialsTitle}</p>}
 							<ul>
-								{(socials ?? []).map((s) =>
-									linkHref(s.link) ? (
-										<li key={s._key}>
-											<CmsLink link={s.link} className={LINK}>
-												<RollText>{s.label}</RollText>
-											</CmsLink>
-										</li>
-									) : null,
-								)}
+								<Ordered
+									edit={socialList}
+									items={(socials ?? [])
+										.filter((s) => linkHref(s.link))
+										.map((s) => ({
+											key: s._key,
+											node: (
+												<li key={s._key}>
+													<CmsLink link={s.link} {...editProps(socialList(item(s._key)))} className={LINK}>
+														<RollText>{s.label}</RollText>
+													</CmsLink>
+												</li>
+											),
+										}))}
+								/>
 							</ul>
 						</div>
 					</div>
@@ -146,26 +175,42 @@ export default async function Footer() {
 					<div>
 						<Rule />
 						<div data-fade className="grid grid-cols-2 gap-x-g gap-y-2 pt-rule">
-							{(offices ?? []).map((office) => (
-								<div key={office._key}>
-									<p>{office.city}</p>
-									<p className="whitespace-pre-line">{office.address}</p>
-									{linkHref(office.directionsLink) && (
-										<CmsLink link={office.directionsLink} aria-label={`View directions to the ${office.city} office`} className={LINK}>
-											<RollText>View directions</RollText>
-											<Arrow />
-										</CmsLink>
-									)}
-									{office.phone && (
-										<p>
-											<a href={`tel:${office.phone.replace(/\s+/g, "")}`} className={LINK}>
-												<RollText>{office.phone}</RollText>
-											</a>{" "}
-											(Sales)
-										</p>
-									)}
-								</div>
-							))}
+							<Ordered
+								edit={officeList}
+								items={(offices ?? []).map((office) => {
+									const at = scope(officeList, item(office._key));
+									const city = stegaClean(office.city);
+									const phone = stegaClean(office.phone);
+									return {
+										key: office._key,
+										node: (
+											<div key={office._key} {...editProps(at())}>
+												<p>{city}</p>
+												<p className="whitespace-pre-line">{stegaClean(office.address)}</p>
+												{linkHref(office.directionsLink) && (
+													<CmsLink
+														link={office.directionsLink}
+														aria-label={`View directions to the ${city} office`}
+														{...editProps(at("directionsLink"))}
+														className={LINK}
+													>
+														<RollText>View directions</RollText>
+														<Arrow />
+													</CmsLink>
+												)}
+												{phone && (
+													<p>
+														<a href={`tel:${phone.replace(/\s+/g, "")}`} {...editProps(at("phone"))} className={LINK}>
+															<RollText>{phone}</RollText>
+														</a>{" "}
+														(Sales)
+													</p>
+												)}
+											</div>
+										),
+									};
+								})}
+							/>
 						</div>
 					</div>
 

@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { isInternal, linkHref } from "@/lib/content";
+import { linkHref } from "@/lib/content";
 
 /**
- * A link from the CMS: next/link for a page on this site, a plain <a> for anything else (another website,
- * an email address, a phone number), which sends no referrer. A link set to open in a new tab gets
- * target="_blank". An empty or half-filled link renders its children only.
+ * A link from the CMS: next/link for a page on this site (a chosen page, or a path such as "/works"), a
+ * plain <a> for a place on the page ("#contact": Lenis glides to it, SmoothScroll) and for anything else
+ * (another website, an email address, a phone number), which sends no referrer. A link set to open in a
+ * new tab gets target="_blank". An empty or half-filled link renders its children only.
  *
  * @param {Omit<import("react").ComponentProps<"a">, "href"> & { link: import("@/lib/content").Link | null | undefined }} props
  */
@@ -13,7 +14,7 @@ export default function CmsLink({ link, children, ...rest }) {
 	if (!href) return children ?? null;
 	const target = link.openInNewTab ? "_blank" : undefined;
 
-	if (isInternal(link)) {
+	if (href.startsWith("/") && !href.startsWith("//")) {
 		return (
 			<Link href={href} target={target} {...rest}>
 				{children}
@@ -21,7 +22,7 @@ export default function CmsLink({ link, children, ...rest }) {
 		);
 	}
 	return (
-		<a href={href} target={target} rel="noreferrer" {...rest}>
+		<a href={href} target={target} rel={href.startsWith("#") ? undefined : "noreferrer"} {...rest}>
 			{children}
 		</a>
 	);

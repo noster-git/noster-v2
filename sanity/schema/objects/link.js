@@ -7,6 +7,21 @@ export const checkLinkTarget = (value) => {
 	return value.reference ? true : "Choose the page this link opens.";
 };
 
+/**
+ * A web address the site can open: a full address (https://, mailto:, tel:), a page path on this site
+ * starting with "/" ("/works"), or a place on the page starting with "#" ("#contact"). True or a message.
+ *
+ * @param {string | undefined} url
+ */
+export const checkAddress = (url) => {
+	if (!url) return true;
+	if (/\s/.test(url.trim())) return "Remove the spaces from the address.";
+	if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) return true;
+	if (/^#[^#]+$/.test(url)) return true;
+	if (/^\/(?!\/)/.test(url)) return true;
+	return "Start with https:// for a website, mailto: for an email, tel: for a phone number, / for a page on this site, or # for a place on the page.";
+};
+
 export const link = defineType({
 	name: "link",
 	title: "Link",
@@ -16,11 +31,11 @@ export const link = defineType({
 			name: "kind",
 			title: "Where does it go?",
 			type: "string",
-			description: "Choose a page on this site, or a web address somewhere else.",
+			description: "Choose a page on this site, or type an address: another website, an email, a phone number, or a place on the page.",
 			options: {
 				list: [
 					{ title: "A page on this site", value: "internal" },
-					{ title: "Another website", value: "external" },
+					{ title: "An address I type", value: "external" },
 				],
 				layout: "radio",
 			},
@@ -36,10 +51,14 @@ export const link = defineType({
 		}),
 		defineField({
 			name: "url",
-			title: "Web address",
+			title: "Address",
 			type: "url",
-			description: "The full address, starting with https:// (or mailto: or tel: for an email or phone number).",
-			validation: (rule) => rule.uri({ scheme: ["http", "https", "mailto", "tel"] }),
+			description:
+				"Another website: the full address, starting with https://. An email: mailto: then the address. A phone number: tel: then the number. A page on this site: its path, such as /works. A place on the page: # and its name, such as #contact (the contact details at the foot of every page).",
+			validation: (rule) => [
+				rule.uri({ scheme: ["http", "https", "mailto", "tel"], allowRelative: true }),
+				rule.custom(checkAddress),
+			],
 			hidden: ({ parent }) => parent?.kind !== "external",
 		}),
 		defineField({
@@ -53,6 +72,6 @@ export const link = defineType({
 	validation: (rule) => rule.custom(checkLinkTarget),
 	preview: {
 		select: { kind: "kind", url: "url", ref: "reference.title" },
-		prepare: ({ kind, url, ref }) => ({ title: kind === "external" ? url || "Another website" : ref || "A page on this site" }),
+		prepare: ({ kind, url, ref }) => ({ title: kind === "external" ? url || "An address" : ref || "A page on this site" }),
 	},
 });

@@ -9,6 +9,7 @@ import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
 import { DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
 import { getProjectMedia } from "@/lib/projects";
+import { editor, item, scope } from "@/lib/sanity/edit";
 
 /**
  * Our Works: every project from Home's Featured Works list (newest first; Home shows only 15), as a grid or
@@ -22,7 +23,9 @@ export default async function Page() {
 		getProjectMedia(options), // each project's hero photo, for its card
 	]);
 	const title = data?.page?.title || "Our Works";
-	const works = toWorks(data?.projects, media);
+	// Studio preview: the projects open their entries in Home's Featured Works, where they are edited.
+	const featured = editor(data?.featured, options.stega);
+	const works = toWorks(data?.projects, media, scope(featured, ["sections", item(data?.featured?.key), "projects"]));
 
 	return (
 		<>

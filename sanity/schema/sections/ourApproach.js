@@ -18,7 +18,8 @@ export const ourApproach = defineType({
 			title: "Description",
 			type: "text",
 			rows: 5,
-			description: "A few sentences about the studio. Press Enter to start a new line.",
+			description:
+				"A few sentences about the studio. The first sentence shows large, as a statement; the rest shows in smaller text under it. Leave an empty line between paragraphs.",
 		}),
 	],
 	preview: {

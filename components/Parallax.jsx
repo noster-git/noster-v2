@@ -13,8 +13,9 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
  * ~0.33px per px scrolled, so the gap it opens at the top stays above the screen). Give it 110% of the
  * hero's height so the foot never shows. Optional [data-parallax-shade] children darken from 0 to
  * `shade` over the same scroll, so the photo recedes as the next section comes up. Off under reduced motion.
+ * Other props (a click-to-edit `data-sanity`) go on its element.
  */
-export default function Parallax({ children, className, drift = 300, shade = 0 }) {
+export default function Parallax({ children, className, drift = 300, shade = 0, ...props }) {
 	const ref = useRef(null);
 
 	useGSAP(() => {
@@ -27,7 +28,7 @@ export default function Parallax({ children, className, drift = 300, shade = 0 }
 	});
 
 	return (
-		<div ref={ref} className={className}>
+		<div ref={ref} className={className} {...props}>
 			{children}
 		</div>
 	);

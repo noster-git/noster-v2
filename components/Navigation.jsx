@@ -2,12 +2,15 @@ import Link from "next/link";
 import { fetchOptions, fetchOrNull } from "@/lib/sanity/live";
 import { NAVIGATION } from "@/lib/sanity/queries";
 import { linkHref } from "@/lib/content";
+import { editor, item, scope } from "@/lib/sanity/edit";
 import CmsLink from "./CmsLink";
 import NosterLogo from "./NosterLogo";
 import MobileCta from "./MobileCta";
+import Ordered from "./Ordered";
 import RollText from "./RollText";
 import Arrow from "./Arrow";
 import { TAG, BUTTON } from "@/lib/buttons";
+import { editProps } from "@/lib/sanity/edit-props";
 
 // Until links are set in the CMS, the nav shows these.
 const DEFAULT_LINKS = [
@@ -21,13 +24,20 @@ const DEFAULT_LINKS = [
  * Logo, links and the progress line: white with mix-blend-difference, so they invert over whatever is under them.
  * The CTA sits outside the blending: lime with black text, the one solid accent on every page.
  * Compact: logo and a Works link; the CTA moves to a button at the bottom of the screen (MobileCta).
+ * In the studio's live preview each link opens its entry in the menu (words and where it goes) and can be
+ * dragged to a new place; the button opens where it leads, its words their own field.
  */
 export default async function Navigation() {
 	// No navigation document (or no answer from the CMS): the default links and no CTA.
-	const nav = await fetchOrNull({ query: NAVIGATION, ...(await fetchOptions()) }).catch(() => null);
+	const options = await fetchOptions();
+	const nav = await fetchOrNull({ query: NAVIGATION, ...options }).catch(() => null);
 	const { links, ctaLabel, ctaLink, mobileCtaLabel } = nav ?? {};
+	const edit = editor(nav, options.stega);
+	const list = scope(edit, "links");
 	const hasCta = linkHref(ctaLink) && ctaLabel;
-	const cmsLinks = (links ?? []).filter((item) => linkHref(item.link));
+	const cmsLinks = (links ?? []).filter((entry) => linkHref(entry.link));
+	// Compact: the menu's link to the Works page (the default one until there is one).
+	const works = cmsLinks.find((entry) => linkHref(entry.link) === "/works");
 	const linkClass = "motion-host hit flex focus-visible:outline-white";
 
 	return (
@@ -43,31 +53,39 @@ export default async function Navigation() {
 
 				{/* Compact: the links row is hidden, so Works stays one tap away at the right of the bar. */}
 				<div className="col-span-3 flex justify-end desk:hidden">
-					<Link href="/works" data-intro className={linkClass}>
-						<RollText>Works</RollText>
+					<Link href="/works" data-intro {...editProps(works ? list(item(works._key)) : undefined)} className={linkClass}>
+						<RollText>{works?.label || "Works"}</RollText>
 					</Link>
 				</div>
 
 				<ul className="hidden gap-[14px] desk:col-span-5 desk:flex">
-					{cmsLinks.length
-						? cmsLinks.map((item) => (
-								<li key={item._key} data-intro>
-									<CmsLink link={item.link} className={linkClass}>
-										<RollText>{item.label}</RollText>
-									</CmsLink>
-								</li>
-							))
-						: DEFAULT_LINKS.map((item) => {
-								// In-page anchors are plain links: Lenis glides to them (SmoothScroll: anchors).
-								const A = item.href.startsWith("#") ? "a" : Link;
-								return (
-									<li key={item.href} data-intro>
-										<A href={item.href} className={linkClass}>
-											<RollText>{item.label}</RollText>
-										</A>
+					{cmsLinks.length ? (
+						<Ordered
+							edit={list}
+							items={cmsLinks.map((entry) => ({
+								key: entry._key,
+								node: (
+									<li key={entry._key} data-intro>
+										<CmsLink link={entry.link} {...editProps(list(item(entry._key)))} className={linkClass}>
+											<RollText>{entry.label}</RollText>
+										</CmsLink>
 									</li>
-								);
-							})}
+								),
+							}))}
+						/>
+					) : (
+						DEFAULT_LINKS.map((entry) => {
+							// In-page anchors are plain links: Lenis glides to them (SmoothScroll: anchors).
+							const A = entry.href.startsWith("#") ? "a" : Link;
+							return (
+								<li key={entry.href} data-intro>
+									<A href={entry.href} className={linkClass}>
+										<RollText>{entry.label}</RollText>
+									</A>
+								</li>
+							);
+						})
+					)}
 				</ul>
 			</nav>
 
@@ -77,9 +95,10 @@ export default async function Navigation() {
 					<CmsLink
 						link={ctaLink}
 						data-intro
+						{...editProps(edit("ctaLink"))}
 						className={`${TAG} hit flex transition-[scale] duration-150 ease-out active:scale-[0.97]`}
 					>
-						<RollText>{ctaLabel}</RollText>
+						<RollText edit={edit("ctaLabel")}>{ctaLabel}</RollText>
 						<Arrow />
 					</CmsLink>
 				</div>
@@ -92,9 +111,12 @@ export default async function Navigation() {
 					<CmsLink
 						link={ctaLink}
 						data-intro="up"
+						{...editProps(edit("ctaLink"))}
 						className={`${BUTTON} flex max-w-[calc(100vw-24px)] whitespace-nowrap transition-[scale] duration-150 ease-out active:scale-[0.97]`}
 					>
-						<RollText truncate>{mobileCtaLabel}</RollText>
+						<RollText truncate edit={edit("mobileCtaLabel")}>
+							{mobileCtaLabel}
+						</RollText>
 						<Arrow />
 					</CmsLink>
 				</MobileCta>

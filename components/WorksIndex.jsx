@@ -22,7 +22,7 @@ const pad = (n) => String(n).padStart(2, "0");
  * The entrances (cards unmasking, rows rising) play on the page's first view only. A view chosen with
  * the toggle is simply faded in (200ms), already in place.
  *
- * @param {{ works: { href: string, name: string, image: import("@/lib/sanity/image").SanityImage }[] }} props
+ * @param {{ works: import("react").ComponentProps<typeof WorksGrid>["works"] }} props
  */
 export default function WorksIndex({ works }) {
 	const [view, setView] = useState("grid");
@@ -107,13 +107,18 @@ function WorksList({ works, entrance = true }) {
 							href={work.href}
 							onMouseEnter={() => hovered.set(i)}
 							onFocus={() => hovered.set(-1)}
+							// Studio preview: the row opens the project's entry, its name the name. Not dragged (newest first).
+							data-sanity={work.edit?.item}
+							data-sanity-drag-disable={work.edit ? "true" : undefined}
 							className="motion-host grid-site items-baseline py-2 transition-opacity duration-300 ease-out group-hover/list:opacity-30 hover:opacity-100! focus-visible:outline-offset-0"
 						>
 							<span aria-hidden="true" className="col-span-1 text-muted tabular-nums">
 								{pad(i + 1)}
 							</span>
 							<span className="col-span-3 min-w-0 text-heading desk:col-span-8">
-								<RollText truncate>{work.name}</RollText>
+								<RollText truncate edit={work.edit?.name}>
+									{work.name}
+								</RollText>
 							</span>
 							{/* Centred on the row rather than on the baseline, so it lines up with the name's capitals. */}
 							<span className="col-span-1 flex justify-end self-center text-heading">
