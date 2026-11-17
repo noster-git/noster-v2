@@ -9,6 +9,8 @@ import WorksGrid, { valueStore } from "@/components/WorksGrid";
 import Reveal from "@/components/Reveal";
 import RollText from "@/components/RollText";
 import Arrow from "@/components/Arrow";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CSS_OUT_CUBIC } from "@/lib/motion";
 
 const noop = () => () => {};
 const useIsClient = () => useSyncExternalStore(noop, () => true, () => false);
@@ -43,10 +45,20 @@ export default function WorksIndex({ works }) {
 	// Each view is a new element (keyed below): once the toggle has been used, it fades in as it mounts.
 	const fadeIn = useCallback(
 		(el) => {
-			if (el && switched) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "cubic-bezier(0.33, 1, 0.68, 1)" });
+			if (el && switched) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: CSS_OUT_CUBIC });
 		},
 		[switched],
 	);
+
+	// The page changes height with the view: scroll-linked motion further down (the footer) is measured
+	// again once the new view is in. Not on the first view, which is measured as the page loads.
+	const measured = useRef(view);
+	useEffect(() => {
+		if (measured.current === view) return;
+		measured.current = view;
+		const frame = requestAnimationFrame(() => ScrollTrigger.refresh());
+		return () => cancelAnimationFrame(frame);
+	}, [view]);
 
 	return (
 		<>

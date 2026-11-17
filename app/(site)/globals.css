@@ -536,7 +536,9 @@ html[data-project-opening] [data-view-cursor] {
 }
 
 /* Hit area: at least 24px with a mouse, 44px on touch, centred on the element, without changing its
-   layout. Only for controls with nothing interactive close by (overlapping areas steal each other's taps). */
+   layout. Only for controls with nothing interactive close by (overlapping areas steal each other's taps).
+   --hit-h sets a taller touch area, for controls near the top of the screen whose area would otherwise
+   start above it. */
 @utility hit {
   position: relative;
   &::after {
@@ -551,7 +553,7 @@ html[data-project-opening] [data-view-cursor] {
   @media (pointer: coarse) {
     &::after {
       width: max(100%, 44px);
-      height: max(100%, 44px);
+      height: max(100%, var(--hit-h, 44px));
     }
   }
 }

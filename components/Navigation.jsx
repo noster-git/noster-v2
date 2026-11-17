@@ -38,7 +38,9 @@ export default async function Navigation() {
 	const cmsLinks = (links ?? []).filter((entry) => linkHref(entry.link));
 	// Compact: the menu's link to the Works page (the default one until there is one).
 	const works = cmsLinks.find((entry) => linkHref(entry.link) === "/works");
-	const linkClass = "motion-host hit flex focus-visible:outline-white";
+	// --hit-h: the bar's items sit about 20px from the top of the screen, so a 44px touch area centred on them
+	// would lose its top few pixels off the screen; 52px keeps a full 44px on it (globals.css → hit).
+	const linkClass = "motion-host hit flex [--hit-h:52px] focus-visible:outline-white";
 
 	return (
 		<>
@@ -46,7 +48,7 @@ export default async function Navigation() {
 			<nav className="grid-site fixed inset-x-0 top-0 z-50 items-center px-m pt-[12px] pb-g text-white mix-blend-difference">
 				<div className="col-span-2">
 					{/* Focus rings white: the nav is mix-blend-difference, where a black ring vanishes. */}
-					<Link href="/" aria-label="Noster home" data-intro className="hit flex focus-visible:outline-white">
+					<Link href="/" aria-label="Noster home" data-intro className="hit flex [--hit-h:52px] focus-visible:outline-white">
 						<NosterLogo className="h-[13px] w-auto desk:h-[15px]" />
 					</Link>
 				</div>
@@ -102,7 +104,7 @@ export default async function Navigation() {
 						link={ctaLink}
 						data-intro
 						{...editProps(edit("ctaLink"))}
-						className={`${TAG} hit flex transition-[scale] duration-150 ease-out active:scale-[0.97]`}
+						className={`${TAG} hit flex [--hit-h:52px] transition-[scale] duration-150 ease-out active:scale-[0.97]`}
 					>
 						<RollText edit={edit("ctaLabel")}>{ctaLabel}</RollText>
 						<Arrow />
