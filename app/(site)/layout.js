@@ -10,7 +10,7 @@ import ProjectTransition from "@/components/ProjectTransition";
 import Intro from "@/components/Intro";
 import PageTransition from "@/components/PageTransition";
 import NosterLogo from "@/components/NosterLogo";
-import { INTRO_SCRIPT } from "@/lib/intro";
+import { INTRO_SCRIPT, NO_ENTRANCES_SCRIPT } from "@/lib/intro";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SanityLive } from "@/lib/sanity/live";
@@ -51,10 +51,20 @@ async function Live() {
   return <SanityLive includeDrafts={isEnabled} action={isEnabled ? "refresh" : expirePublishedContent} />;
 }
 
-/** Click-to-edit overlays, in draft mode only (the studio's live preview): visitors never load them. */
+/**
+ * Click-to-edit overlays, in draft mode only (the studio's live preview): visitors never load them. Content
+ * shows at once there, with no curtain or entrances (lib/intro.js), so edits and reordered sections are
+ * never held hidden.
+ */
 async function Preview() {
   const { isEnabled } = await draftMode();
-  return isEnabled ? <VisualEditing /> : null;
+  if (!isEnabled) return null;
+  return (
+    <>
+      <script dangerouslySetInnerHTML={{ __html: NO_ENTRANCES_SCRIPT }} />
+      <VisualEditing />
+    </>
+  );
 }
 
 export default function RootLayout({ children }) {
