@@ -49,18 +49,23 @@ const STUDIO_CSP = [
   "object-src 'none'",
 ].join("; ");
 
-const STUDIO_HEADERS = [
-  { key: "Content-Security-Policy", value: STUDIO_CSP },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Robots-Tag", value: "noindex, nofollow" },
-];
-
-const SECURITY_HEADERS = [
-  { key: "Content-Security-Policy", value: CSP },
+// Shared by the site and the studio: HTTPS only, for two years, subdomains too (browsers ignore it over plain
+// HTTP, so local servers are unaffected); the origin only as referrer to other sites; no camera, microphone,
+// location or ad-topic access.
+const COMMON_HEADERS = [
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
 ];
+
+const STUDIO_HEADERS = [
+  { key: "Content-Security-Policy", value: STUDIO_CSP },
+  ...COMMON_HEADERS,
+  { key: "X-Robots-Tag", value: "noindex, nofollow" },
+];
+
+const SECURITY_HEADERS = [{ key: "Content-Security-Policy", value: CSP }, ...COMMON_HEADERS];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
