@@ -3,7 +3,7 @@ import Parallax from "@/components/Parallax";
 import TitleRise from "./TitleRise";
 
 /**
- * Project page hero: the title in white at display size, anchored bottom-left within the page margins like
+ * Project page hero: the project name in white at display size with its location under it, anchored bottom-left within the page margins like
  * the home hero's, over a darkened, edge-to-edge photo that drifts with scroll. Full screen on desk and half
  * the screen on phones (--hero-h).
  *
@@ -13,7 +13,7 @@ import TitleRise from "./TitleRise";
  * @typedef {import("@prismicio/react").SliceComponentProps<ProjectHeroSlice>} ProjectHeroProps
  * @type {import("react").FC<ProjectHeroProps>}
  */
-const ProjectHero = ({ slice }) => (
+const ProjectHero = ({ slice, context }) => (
 	<section
 		data-slice-type={slice.slice_type}
 		data-slice-variation={slice.variation}
@@ -36,7 +36,17 @@ const ProjectHero = ({ slice }) => (
 				<div aria-hidden="true" className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/50 to-transparent" />
 			</Parallax>
 		</div>
-		<TitleRise className="w-full text-display whitespace-pre-line text-balance desk:w-[80%]">{slice.primary.title}</TitleRise>
+		<TitleRise className="w-full text-display whitespace-pre-line text-balance desk:w-[80%]">
+			{slice.primary.title}
+			{/* Where the project is, from the brief's Location detail: small under the name, but part of the
+			    heading, so the page's h1 says what and where. The hidden comma keeps the two apart as text. */}
+			{context?.location && (
+				<>
+					<span className="sr-only">, </span>
+					<span className="mt-2 block text-body before:mr-[0.35em] before:content-['↳']">{context.location}</span>
+				</>
+			)}
+		</TitleRise>
 	</section>
 );
 

@@ -6,7 +6,7 @@ import { createClient } from "@/prismicio";
 import Reveal from "@/components/Reveal";
 import JsonLd from "@/components/JsonLd";
 import { page as pageSchema } from "@/lib/schema";
-import { SITE_NAME, OPEN_GRAPH, shareImage } from "@/lib/site";
+import { OPEN_GRAPH, shareImage } from "@/lib/site";
 
 // Type and spacing come from the design system in app/globals.css (spacing unit = one body line).
 // Long-form reading: the text-long tier (14px, generous lines).
@@ -82,7 +82,7 @@ export default async function Page() {
 
 export async function generateMetadata() {
 	const page = await getPage(await getPreviewRef());
-	const title = page?.data.meta_title || `Privacy Policy | ${SITE_NAME}`;
+	const title = page?.data.meta_title || "Privacy Policy | Noster";
 	const description = page?.data.meta_description || "How Noster Associates collects, uses and protects personal data on noster.in.";
 
 	return {

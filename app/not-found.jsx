@@ -2,7 +2,7 @@ import LineCta from "@/components/LineCta";
 import Reveal from "@/components/Reveal";
 
 export const metadata = {
-	title: "Page not found | Noster Associates",
+	title: "Page not found | Noster",
 	robots: { index: false, follow: true },
 };
 

@@ -7,7 +7,7 @@ import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 import JsonLd from "@/components/JsonLd";
 import { worksList } from "@/lib/schema";
-import { SITE_NAME, DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
+import { DEFAULT_DESCRIPTION, OPEN_GRAPH, shareImage } from "@/lib/site";
 import { getProjectMedia } from "@/lib/projects";
 
 /**
@@ -36,7 +36,7 @@ export default async function Page() {
 export async function generateMetadata() {
 	const { page } = await getData(await getPreviewRef());
 
-	const title = page?.data.meta_title || `Our Works | ${SITE_NAME}`;
+	const title = page?.data.meta_title || "Office Interior Projects in Trivandrum & Kochi | Noster";
 	const description = page?.data.meta_description || DEFAULT_DESCRIPTION;
 
 	return {
