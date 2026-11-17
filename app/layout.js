@@ -50,6 +50,9 @@ export default function RootLayout({ children }) {
         {/* First in <body> (not <head>, where dev tooling injects its own scripts): runs before any page
             content is drawn, so the start states apply from the first frame. */}
         <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+        {/* Points AI tools at the plain-text site guide. React moves it into <head>. It sits here, not in
+            `metadata.alternates`, because each page sets its own alternates (canonical), which would replace it. */}
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="Site guide for AI tools" />
         {/* First stop for keyboard users: jumps past the nav to the page content. Above the curtain. */}
         <a
           href="#main"
