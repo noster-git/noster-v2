@@ -1,41 +1,57 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { resolve } from "./presentation.js";
+import { of, firstValueFrom, isObservable } from "rxjs";
+import { LOCATED_TYPES, resolve } from "./presentation.js";
 import { schemaTypes } from "./schema/index.js";
 
-const hrefs = (state) => state?.locations?.map((l) => l.href);
 const DOCUMENT_TYPES = schemaTypes.filter((t) => t.type === "document").map((t) => t.name);
 
+/** The locations for a document of `type`, with the live query answered by `data`. */
+async function locate(type, data) {
+	const asked = [];
+	const documentStore = { listenQuery: (query, params, options) => (asked.push({ query, params, options }), of(data)) };
+	const state = resolve.locations({ id: `drafts.${type}-1`, type, version: undefined, perspectiveStack: [] }, { documentStore });
+	const value = isObservable(state) ? await firstValueFrom(state) : state;
+	return { value, hrefs: value?.locations?.map((l) => l.href), asked };
+}
+
 test("every document type lists where it shows", () => {
-	assert.deepEqual(Object.keys(resolve.locations).sort(), [...DOCUMENT_TYPES].sort());
+	assert.deepEqual([...LOCATED_TYPES].sort(), [...DOCUMENT_TYPES].sort());
 });
 
-test("fixed pages point at their own page; what is on every page lists the main pages", () => {
-	assert.deepEqual(hrefs(resolve.locations.home), ["/"]);
-	assert.deepEqual(hrefs(resolve.locations.works), ["/works"]);
-	assert.deepEqual(hrefs(resolve.locations.privacyPolicy), ["/privacy_policy"]);
-	for (const type of ["siteSettings", "navigation", "footer", "office", "city"]) assert.deepEqual(hrefs(resolve.locations[type]), ["/", "/works", "/privacy_policy"], type);
-	assert.deepEqual(hrefs(resolve.locations.client), ["/", "/works"]);
-	for (const type of ["sector", "service"]) assert.ok(resolve.locations[type].message, type);
+test("fixed pages point at their own page; what is on every page lists the main pages", async () => {
+	assert.deepEqual((await locate("home")).hrefs, ["/"]);
+	assert.deepEqual((await locate("works")).hrefs, ["/works"]);
+	assert.deepEqual((await locate("privacyPolicy")).hrefs, ["/privacy_policy"]);
+	for (const type of ["siteSettings", "navigation", "footer", "office"]) assert.deepEqual((await locate(type)).hrefs, ["/", "/works", "/privacy_policy"], type);
 });
 
-test("a project points at its page, titled with its name, and the Works page", () => {
-	const { select, resolve: locate } = resolve.locations.project;
-	assert.deepEqual(select, { slug: "slug.current", name: "name" });
-	assert.deepEqual(locate({ slug: "orbit-labs", name: " Orbit\nLabs " }).locations, [
+test("a project shows on its page, titled with its name, on Home and on the Works page", async () => {
+	const { value, asked } = await locate("project", { slug: "orbit-labs", name: " Orbit\nLabs " });
+	assert.deepEqual(value.locations, [
 		{ title: "Orbit Labs", href: "/works/orbit-labs" },
+		{ title: "Home", href: "/" },
 		{ title: "Works", href: "/works" },
 	]);
-	assert.equal(locate({ slug: "orbit-labs" }).locations[0].title, "orbit-labs");
-	assert.equal(locate({ name: "x" }), null);
-	assert.equal(locate(null), null);
+	assert.deepEqual(asked[0].params, { id: "project-1" });
+	assert.equal((await locate("project", { slug: "orbit-labs" })).value.locations[0].title, "orbit-labs");
+	assert.equal((await locate("project", { name: "x" })).value, null);
 });
 
-test("a page built from sections points at its address", () => {
-	const { select, resolve: locate } = resolve.locations.page;
-	assert.deepEqual(select, { slug: "slug.current", title: "title" });
-	assert.deepEqual(locate({ slug: "about", title: "About us" }), { locations: [{ title: "About us", href: "/about" }] });
-	assert.equal(locate({ title: "No address yet" }), null);
+test("a page built from sections shows at its address", async () => {
+	assert.deepEqual((await locate("page", { slug: "about", title: "About us" })).value, { locations: [{ title: "About us", href: "/about" }] });
+	assert.equal((await locate("page", { title: "No address yet" })).value, null);
+});
+
+test("library records show where their projects do", async () => {
+	const projects = [{ name: "Adesso", slug: "adesso" }, { name: "Mozanta", slug: "mozanta" }];
+	assert.deepEqual((await locate("client", projects)).hrefs, ["/", "/works/adesso", "/works/mozanta"]);
+	assert.deepEqual((await locate("city", projects)).hrefs, ["/", "/works", "/privacy_policy", "/works/adesso", "/works/mozanta"]);
+	assert.deepEqual((await locate("sector", projects)).hrefs, ["/works/adesso", "/works/mozanta"]);
+	const unused = await locate("service", []);
+	assert.equal(unused.value.locations, undefined);
+	assert.ok(unused.value.message);
+	assert.match(unused.asked[0].query, /references\(\$id\)/);
 });
 
 test("each page opens its document", () => {

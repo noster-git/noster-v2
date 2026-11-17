@@ -1,11 +1,11 @@
 import { defineField, defineType } from "sanity";
-import { HomeIcon } from "@sanity/icons/Home";
+import { PinIcon } from "@sanity/icons/Pin";
 
 export const office = defineType({
 	name: "office",
 	title: "Office",
 	type: "document",
-	icon: HomeIcon,
+	icon: PinIcon,
 	fields: [
 		defineField({
 			name: "city",

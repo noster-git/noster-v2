@@ -1,6 +1,18 @@
 import { defineField, defineType } from "sanity";
 import { PlayIcon } from "@sanity/icons/Play";
 
+/**
+ * A hero is a page's opening: placed further down, it fills the screen in the middle of the page. True, or a
+ * plain-words warning.
+ *
+ * @param {{ _key?: string } | undefined} value the hero
+ * @param {{ document?: { sections?: Array<{ _key?: string }> } }} context
+ */
+export function checkHeroPlace(value, context) {
+	const at = (context.document?.sections ?? []).findIndex((s) => s?._key === value?._key);
+	return at > 0 ? "A Hero is made to open the page. Drag it to the top, or use another section here." : true;
+}
+
 export const hero = defineType({
 	name: "hero",
 	title: "Hero",
@@ -38,6 +50,7 @@ export const hero = defineType({
 			description: "The photo shown behind the headline. Also shown while a video loads.",
 		}),
 	],
+	validation: (rule) => rule.custom(checkHeroPlace).warning(),
 	preview: {
 		select: { title: "title", media: "image" },
 		prepare: ({ title, media }) => ({ title: title || "Hero", subtitle: "Hero", media }),

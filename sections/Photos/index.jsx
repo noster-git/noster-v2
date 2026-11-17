@@ -10,8 +10,8 @@ import { editProps } from "@/lib/sanity/edit-props";
  * of the stone brief above; every photo has the 4px corner radius.
  * A project page shows its own photos with it (context.projectName names the photos that have no alt text);
  * any page can add it as a section.
- * In the studio's live preview each photo opens its entry, and can be dragged to a new place. The section
- * and its photo list are then two elements (the section in the page margins, the list in its columns), so
+ * In the studio's live preview each photo opens its entry, and can be dragged to a new place. As a
+ * section, it and its photo list are then two elements (the section in the page margins, the list in its columns), so
  * each opens as itself.
  *
  * @param {{ section: { photos?: Array<import("@/lib/sanity/image").SanityImage & { _key: string }> | null }, context?: { projectName?: string }, edit: import("@/lib/sanity/edit").Edit }} props
@@ -38,7 +38,15 @@ const Photos = ({ section, context, edit }) => {
 				}))}
 		/>
 	);
-	if (!edit.doc) return <div className="columns-1 gap-g px-m pt-m desk:columns-2">{list}</div>;
+	// Visitors, and a project's own photos (`edit` is the project itself, not a section): one element, which
+	// in the live preview opens the photos field and holds them for dragging.
+	if (!edit.doc || !edit.path?.length) {
+		return (
+			<div className="columns-1 gap-g px-m pt-m desk:columns-2" {...editProps(photos())}>
+				{list}
+			</div>
+		);
+	}
 	return (
 		<div className="px-m pt-m" {...editProps(edit())}>
 			<div className="columns-1 gap-g desk:columns-2" {...editProps(photos())}>

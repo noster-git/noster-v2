@@ -123,3 +123,11 @@ test("a page's web address can't take one the site already uses", () => {
 	}
 	assert.equal(slugify(" About Us! "), "about-us");
 });
+
+test("a hero below the top of the page is flagged", async () => {
+	const { checkHeroPlace } = await import("./sections/hero.js");
+	const document = { sections: [{ _key: "a" }, { _key: "b" }] };
+	assert.equal(checkHeroPlace({ _key: "a" }, { document }), true);
+	assert.notEqual(checkHeroPlace({ _key: "b" }, { document }), true);
+	assert.equal(checkHeroPlace({ _key: "x" }, {}), true);
+});
