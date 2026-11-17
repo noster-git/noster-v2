@@ -6,7 +6,7 @@ const HOME = { title: "Home", href: "/" };
 const WORKS = { title: "Works", href: "/works" };
 const PRIVACY = { title: "Privacy policy", href: "/privacy_policy" };
 
-/** Site settings, the menu, the footer and the offices in it are on every page: these are the main ones. */
+/** Settings, the menu, the footer and the offices in it are on every page: these are the main ones. */
 const EVERY_PAGE = [HOME, WORKS, PRIVACY];
 
 /** Documents shown in the same places whatever is in them. */

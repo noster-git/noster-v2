@@ -1,27 +1,28 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { CogIcon } from "@sanity/icons/Cog";
+import { CaseIcon } from "@sanity/icons/Case";
 import { CONTENT, SEO } from "./groups.js";
 
 export const siteSettings = defineType({
 	name: "siteSettings",
-	title: "Site settings",
+	title: "Settings",
 	type: "document",
 	icon: CogIcon,
-	groups: [{ ...CONTENT, title: "Studio" }, SEO],
+	groups: [{ ...CONTENT, title: "Company & contact", icon: CaseIcon }, SEO],
 	fields: [
 		defineField({
 			name: "name",
-			title: "Studio name",
+			title: "Company name",
 			type: "string",
-			description: "The studio's full name, for example \"Noster Associates\". Used in the footer and for search engines.",
+			description: "The company's full name, for example \"Noster Associates\". Used in the footer and for search engines.",
 			group: "content",
-			validation: (rule) => rule.required().error("Add the studio's name."),
+			validation: (rule) => rule.required().error("Add the company's name."),
 		}),
 		defineField({
 			name: "email",
 			title: "Main email address",
 			type: "string",
-			description: "The address for new business, shown in the contact details at the foot of every page.",
+			description: "The address for new business, shown in the footer and the Contact section.",
 			group: "content",
 			validation: (rule) => rule.regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { name: "email address" }).error("This doesn't look like an email address."),
 		}),
@@ -62,7 +63,7 @@ export const siteSettings = defineType({
 			name: "socials",
 			title: "Social links",
 			type: "array",
-			description: "The studio's social media pages, in the footer and for search engines. Drag to change the order.",
+			description: "The company's social media pages, in the footer and for search engines. Drag to change the order.",
 			group: "content",
 			of: [
 				defineArrayMember({
@@ -98,13 +99,13 @@ export const siteSettings = defineType({
 		}),
 		defineField({
 			name: "organizationDescription",
-			title: "Studio description for search engines",
+			title: "Company description for search engines",
 			type: "text",
 			rows: 3,
-			description: "One or two sentences about the studio that search engines and AI tools read as its description.",
+			description: "One or two sentences about the company that search engines and AI tools read as its description.",
 			group: "seo",
 			validation: (rule) => rule.max(300).warning("Keep it to about two sentences."),
 		}),
 	],
-	preview: { prepare: () => ({ title: "Site settings" }) },
+	preview: { prepare: () => ({ title: "Settings" }) },
 });

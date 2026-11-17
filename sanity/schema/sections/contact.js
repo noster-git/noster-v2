@@ -6,7 +6,7 @@ export const contact = defineType({
 	title: "Contact",
 	type: "object",
 	icon: EnvelopeIcon,
-	description: "An invitation to get in touch, with the email address and phone numbers from Site settings.",
+	description: "An invitation to get in touch, with the email address and phone numbers from Settings.",
 	fields: [
 		defineField({
 			name: "title",
@@ -19,7 +19,7 @@ export const contact = defineType({
 			name: "intro",
 			title: "Intro text",
 			type: "string",
-			description: "A line above the contact details, for example \"For new business inquiries contact us:\". The email and phone numbers themselves are edited in Site settings.",
+			description: "A line above the contact details, for example \"For new business inquiries contact us:\". The email and phone numbers themselves are edited in Settings.",
 		}),
 	],
 	preview: {

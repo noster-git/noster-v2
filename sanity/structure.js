@@ -1,33 +1,24 @@
-import { CogIcon } from "@sanity/icons/Cog";
 import { DocumentsIcon } from "@sanity/icons/Documents";
 import { BookIcon } from "@sanity/icons/Book";
 
-/** A one-off document, opened straight from the menu. */
+/** A one-off document, opened straight from the menu (with its schema's icon). */
 const single = (S, type, title) => S.listItem().title(title).id(type).schemaType(type).child(S.document().schemaType(type).documentId(type).title(title));
 
 /** A list of one type's documents. */
 const list = (S, type, title) => S.documentTypeListItem(type).title(title);
 
 /**
- * The studio's menu:
- * - Site: settings, the menu and the footer, on every page;
+ * The studio's menu, what's on the site first:
  * - Pages: the fixed pages, then the pages built from sections;
  * - Projects;
- * - Library: the records projects and pages point at.
+ * - Navigation and Footer: on every page;
+ * - Library: the records projects and pages point at;
+ * - Settings: the company's name and contact details and the default search fields, used across the site.
  */
 export const structure = (S) =>
 	S.list()
 		.title("Content")
 		.items([
-			S.listItem()
-				.title("Site")
-				.id("site")
-				.icon(CogIcon)
-				.child(
-					S.list()
-						.title("Site")
-						.items([single(S, "siteSettings", "Site settings"), single(S, "navigation", "Navigation"), single(S, "footer", "Footer")]),
-				),
 			S.listItem()
 				.title("Pages")
 				.id("pages")
@@ -44,6 +35,8 @@ export const structure = (S) =>
 						]),
 				),
 			list(S, "project", "Projects"),
+			single(S, "navigation", "Navigation"),
+			single(S, "footer", "Footer"),
 			S.divider(),
 			S.listItem()
 				.title("Library")
@@ -60,4 +53,6 @@ export const structure = (S) =>
 							list(S, "office", "Offices"),
 						]),
 				),
+			S.divider(),
+			single(S, "siteSettings", "Settings"),
 		]);

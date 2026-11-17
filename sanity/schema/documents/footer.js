@@ -11,7 +11,7 @@ export const footer = defineType({
 			name: "contactTitle",
 			title: "Contact heading",
 			type: "string",
-			description: "The large heading over the contact details, for example \"Let's Build Together\". The email, phone numbers, offices and social links are edited in Site settings.",
+			description: "The large heading over the contact details, for example \"Let's Build Together\". The email, phone numbers, offices and social links are edited in Settings.",
 		}),
 		defineField({
 			name: "contactIntro",

@@ -5,7 +5,7 @@ import { editProps } from "@/lib/sanity/edit-props";
 import Ordered from "./Ordered";
 
 /**
- * The studio's email address and phone numbers (Site settings), one ruled row each across the full width:
+ * The studio's email address and phone numbers (Settings), one ruled row each across the full width:
  * "Email" or "Phone" in the first two of six columns, the value from the third. Values are read without the
  * click-to-edit markers, so the addresses stay clean. Other props go on the list (the footer's and the
  * Contact section's entrance attributes).

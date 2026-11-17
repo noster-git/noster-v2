@@ -8,8 +8,8 @@ import ContactRows from "@/components/ContactRows";
 
 /**
  * An invitation to get in touch: the title at display size with its section index, then the intro and the
- * studio's email and phone numbers from Site settings (ContactRows), in columns 5–10 on desk. In the studio's
- * live preview the title and intro open the section, the contact details Site settings.
+ * studio's email and phone numbers from Settings (ContactRows), in columns 5–10 on desk. In the studio's
+ * live preview the title and intro open the section, the contact details Settings.
  *
  * @param {{ section: { title?: string | null, intro?: string | null }, edit: import("@/lib/sanity/edit").Edit }} props
  */

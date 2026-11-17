@@ -16,7 +16,7 @@ import { NEWSLETTER, SITE_NAME } from "@/lib/site";
 import { editProps } from "@/lib/sanity/edit-props";
 
 /**
- * The Footer document's words and the Site settings it shows: `{ footer, settings }`. Null when there is no
+ * The Footer document's words and the Settings it shows: `{ footer, settings }`. Null when there is no
  * footer or the CMS can't be read: pages then go without a footer.
  *
  * @param {import("@/lib/sanity/live").FetchOptions} options
