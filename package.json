@@ -15,6 +15,7 @@
     "@sanity/client": "^8.16.0",
     "@sanity/icons": "^5.4.0",
     "@sanity/image-url": "^2.2.0",
+    "@sanity/vision": "^6.24.0",
     "@sanity/visual-editing": "6.2.1",
     "@sanity/visual-editing-csm": "3.0.19",
     "@vercel/analytics": "^2.0.1",

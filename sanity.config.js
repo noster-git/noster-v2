@@ -2,7 +2,8 @@ import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 import { presentationTool } from "sanity/presentation";
 import { media } from "sanity-plugin-media";
-import { projectId, dataset } from "./sanity/env.js";
+import { visionTool } from "@sanity/vision";
+import { projectId, dataset, apiVersion } from "./sanity/env.js";
 import { schemaTypes, SINGLETON_TYPES } from "./sanity/schema/index.js";
 import { structure } from "./sanity/structure.js";
 import { resolve } from "./sanity/presentation.js";
@@ -29,7 +30,10 @@ export default defineConfig({
 		presentationTool({ resolve, previewUrl: { previewMode: { enable: "/api/draft-mode/enable" } } }),
 		// Media: every uploaded photo and video in one place, with search, tags, where each is used and
 		// clean-up of unused ones. Also what an image field's "Select" opens.
-		media(),
+t	// Vision: run read-only content queries against the live data, to check what the site will get. For
+		// developers; editors can ignore it.
+		// unless a query says otherwise). For developers; editors can ignore it.
+		visionTool({ defaultApiVersion: apiVersion }),
 	],
 	document: {
 		newDocumentOptions: (prev, { creationContext }) =>
