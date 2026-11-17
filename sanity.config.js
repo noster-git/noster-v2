@@ -7,7 +7,7 @@ import { structure } from "./sanity/structure.js";
 import { resolve } from "./sanity/presentation.js";
 import { NosterIcon } from "./sanity/icon.js";
 
-// Actions a one-off page must not offer: it is never deleted or copied.
+// Actions a one-off document must not offer: it is never deleted or copied.
 const BLOCKED_ACTIONS = new Set(["delete", "duplicate", "unpublish"]);
 
 export default defineConfig({

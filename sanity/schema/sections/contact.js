@@ -1,10 +1,12 @@
-import { defineArrayMember, defineField, defineType } from "sanity";
+import { defineField, defineType } from "sanity";
+import { EnvelopeIcon } from "@sanity/icons/Envelope";
 
 export const contact = defineType({
 	name: "contact",
 	title: "Contact",
 	type: "object",
-	description: "An invitation to get in touch, with email addresses and phone numbers.",
+	icon: EnvelopeIcon,
+	description: "An invitation to get in touch, with the email address and phone numbers from Site settings.",
 	fields: [
 		defineField({
 			name: "title",
@@ -17,32 +19,11 @@ export const contact = defineType({
 			name: "intro",
 			title: "Intro text",
 			type: "string",
-			description: "A line above the contact details, for example \"For new business inquiries contact us:\".",
-		}),
-		defineField({
-			name: "contacts",
-			title: "Contacts",
-			type: "array",
-			description: "Each email address or phone number, one per line.",
-			of: [
-				defineArrayMember({
-					type: "object",
-					name: "contactItem",
-					fields: [
-						defineField({
-							name: "value",
-							title: "Email or phone",
-							type: "string",
-							description: "An email address or a phone number, exactly as it should appear.",
-						}),
-					],
-					preview: { select: { title: "value" } },
-				}),
-			],
+			description: "A line above the contact details, for example \"For new business inquiries contact us:\". The email and phone numbers themselves are edited in Site settings.",
 		}),
 	],
 	preview: {
 		select: { title: "title" },
-		prepare: ({ title }) => ({ title: title || "Contact", subtitle: "Contact" }),
+		prepare: ({ title }) => ({ title: title?.replace(/\s+/g, " ") || "Contact", subtitle: "Contact" }),
 	},
 });

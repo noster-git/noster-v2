@@ -1,10 +1,12 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
+import { UsersIcon } from "@sanity/icons/Users";
 
 export const collaborators = defineType({
 	name: "collaborators",
 	title: "Collaborators",
 	type: "object",
-	description: "A row of logos of the people and companies the studio works with.",
+	icon: UsersIcon,
+	description: "A row of logos of the companies the studio works with.",
 	fields: [
 		defineField({
 			name: "title",
@@ -14,43 +16,26 @@ export const collaborators = defineType({
 			description: "The section heading, for example \"Our Collaborators\".",
 		}),
 		defineField({
-			name: "logos",
-			title: "Logos",
+			name: "clients",
+			title: "Clients",
 			type: "array",
-			description: "Drag to change the order the logos appear in.",
+			description: "The clients whose logos are shown. Only clients with a logo can be picked. Drag to change the order.",
 			of: [
 				defineArrayMember({
-					type: "object",
-					name: "logoItem",
-					fields: [
-						defineField({
-							name: "logo",
-							title: "Logo",
-							type: "imageWithAlt",
-							description: "The logo image. A transparent background looks best.",
-						}),
-						defineField({
-							name: "large",
-							title: "Show larger",
-							type: "boolean",
-							description: "Turn on for logos that look too small next to the others.",
-							initialValue: false,
-						}),
-					],
-					preview: {
-						select: { title: "logo.alt", media: "logo" },
-						prepare: ({ title, media }) => ({ title: title || "Logo", media }),
-					},
+					type: "reference",
+					to: [{ type: "client" }],
+					options: { filter: "defined(logo.asset)" },
 				}),
 			],
+			validation: (rule) => rule.unique().error("Each client can be in the row once."),
 		}),
 	],
 	preview: {
-		select: { title: "title", logos: "logos" },
-		prepare: ({ title, logos }) => ({
-			title: title || "Collaborators",
-			subtitle: `Collaborators, ${logos?.length || 0} logos`,
-			media: logos?.[0]?.logo,
+		select: { title: "title", clients: "clients", logo: "clients.0.logo" },
+		prepare: ({ title, clients, logo }) => ({
+			title: title?.replace(/\s+/g, " ") || "Collaborators",
+			subtitle: `Collaborators, ${clients?.length || 0} logos`,
+			media: logo,
 		}),
 	},
 });

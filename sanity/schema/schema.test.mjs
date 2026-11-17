@@ -1,24 +1,66 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { schemaTypes } from "./index.js";
+import { LIBRARY_TYPES, SINGLETON_TYPES, schemaTypes } from "./index.js";
+import { PAGE_SECTIONS, PROJECT_SECTIONS } from "./sections/index.js";
+import { describeLink, linkProblem } from "./objects/link.js";
+import { RESERVED_SLUGS, checkPageSlug, slugify } from "./documents/page.js";
 
 const byName = (name) => schemaTypes.find((t) => t.name === name);
-const memberTypes = (doc) => byName(doc).fields.find((f) => f.name === "sections").of.map((m) => m.type);
+const field = (type, name) => byName(type).fields.find((f) => f.name === name);
+const memberTypes = (type) => field(type, "sections").of.map((m) => m.type);
 
-test("every type the site reads exists", () => {
-	const names = new Set(schemaTypes.map((t) => t.name));
-	const expected = [
-		"home", "works", "privacyPolicy", "navigation", "footer", "project",
-		"seo", "link", "imageWithAlt", "blockContent",
-		"hero", "ourApproach", "collaborators", "featuredWorks", "contact",
-		"projectHero", "projectBrief", "projectImages", "nextProject",
-	];
-	for (const name of expected) assert.ok(names.has(name), `missing type ${name}`);
+test("every type the site reads exists, and no section type is left over", () => {
+	const names = schemaTypes.map((t) => t.name).sort();
+	assert.deepEqual(names, [
+		"blockContent", "briefContent", "city", "client", "collaborators", "contact", "cta", "featuredWorks",
+		"footer", "hero", "home", "imageWithAlt", "link", "navigation", "office", "ourApproach", "page", "photos",
+		"privacyPolicy", "project", "sector", "seo", "service", "siteSettings", "works",
+	]);
+	for (const type of [...SINGLETON_TYPES, ...LIBRARY_TYPES]) assert.equal(byName(type).type, "document", type);
 });
 
-test("home and project sections", () => {
-	assert.deepEqual(memberTypes("home"), ["hero", "ourApproach", "collaborators", "featuredWorks", "contact"]);
-	assert.deepEqual(memberTypes("project"), ["projectHero", "projectBrief", "projectImages", "nextProject"]);
+test("pages share one section library; projects add extras without a hero", () => {
+	assert.deepEqual(PAGE_SECTIONS, ["hero", "ourApproach", "collaborators", "featuredWorks", "contact", "photos"]);
+	assert.deepEqual(memberTypes("home"), PAGE_SECTIONS);
+	assert.deepEqual(memberTypes("page"), PAGE_SECTIONS);
+	assert.deepEqual(memberTypes("project"), PROJECT_SECTIONS);
+	assert.ok(!PROJECT_SECTIONS.includes("hero"));
+	const menu = field("page", "sections").options.insertMenu;
+	assert.deepEqual(menu.groups.flatMap((g) => g.of).sort(), [...PAGE_SECTIONS].sort());
+	assert.equal(menu.views[0].previewImageUrl("hero"), "/studio-sections/hero.jpg");
+});
+
+test("records are linked, not copied", () => {
+	const refs = (type, name) => {
+		const f = field(type, name);
+		return (f.type === "array" ? f.of : [f]).flatMap((m) => m.to?.map((t) => t.type) ?? []);
+	};
+	assert.deepEqual(refs("project", "clients"), ["client"]);
+	assert.deepEqual(refs("project", "sectors"), ["sector"]);
+	assert.deepEqual(refs("project", "services"), ["service"]);
+	assert.deepEqual(refs("project", "city"), ["city"]);
+	assert.deepEqual(refs("project", "nextProject"), ["project"]);
+	assert.deepEqual(refs("office", "city"), ["city"]);
+	assert.deepEqual(refs("siteSettings", "offices"), ["office"]);
+	assert.deepEqual(refs("works", "projects"), ["project"]);
+	const collaborators = byName("collaborators").fields.find((f) => f.name === "clients").of[0];
+	assert.deepEqual(collaborators.to, [{ type: "client" }]);
+	assert.equal(collaborators.options.filter, "defined(logo.asset)");
+	const card = byName("featuredWorks").fields.find((f) => f.name === "projects").of[0];
+	assert.deepEqual(card.fields.find((f) => f.name === "project").to, [{ type: "project" }]);
+});
+
+test("every button is a cta: words and a link", () => {
+	const cta = byName("cta");
+	assert.deepEqual(cta.fields.map((f) => [f.name, f.type]), [["label", "string"], ["link", "link"]]);
+	assert.equal(field("navigation", "cta").type, "cta");
+	assert.equal(byName("featuredWorks").fields.find((f) => f.name === "cta").type, "cta");
+});
+
+test("project details are tabs: content, details, search and sharing", () => {
+	const project = byName("project");
+	assert.deepEqual(project.groups.map((g) => g.name), ["content", "details", "seo"]);
+	for (const f of project.fields) assert.ok(f.group, `project.${f.name} has no tab`);
 });
 
 test("images carry alt and hotspot", () => {
@@ -40,19 +82,44 @@ test("every field has a description", () => {
 	assert.deepEqual(missing, []);
 });
 
-test("a link needs the target its kind asks for", async () => {
-	const { checkLinkTarget } = await import("./objects/link.js");
-	assert.notEqual(checkLinkTarget({ kind: "internal" }), true);
-	assert.notEqual(checkLinkTarget({ kind: "external" }), true);
-	assert.equal(checkLinkTarget({ kind: "internal", reference: { _ref: "x" } }), true);
-	assert.equal(checkLinkTarget({ kind: "external", url: "https://example.com" }), true);
-	assert.equal(checkLinkTarget(undefined), true);
+test("a link needs the target its kind asks for", () => {
+	const ok = [
+		{ kind: "page", page: { _ref: "works" } },
+		{ kind: "project", project: { _ref: "project-adesso" } },
+		{ kind: "url", url: "https://example.com" },
+		{ kind: "anchor", anchor: "contact" },
+		{ kind: "anchor", anchor: "#contact" },
+		{ kind: "phone", phone: "+91 88484 343 03" },
+		{ kind: "email", email: "info@noster.in" },
+	];
+	for (const link of ok) assert.equal(linkProblem(link), null, JSON.stringify(link));
+	assert.equal(linkProblem(undefined), null);
+	const bad = [
+		[{ kind: "page" }, "page"],
+		[{ kind: "project" }, "project"],
+		[{ kind: "url" }, "url"],
+		[{ kind: "url", url: "/works" }, "url"],
+		[{ kind: "url", url: "javascript:alert(1)" }, "url"],
+		[{ kind: "url", url: "https://x.com/\t/evil" }, "url"],
+		[{ kind: "anchor", anchor: "two words" }, "anchor"],
+		[{ kind: "phone", phone: "call us" }, "phone"],
+		[{ kind: "email", email: "info" }, "email"],
+		[{}, "kind"],
+	];
+	for (const [link, fieldName] of bad) assert.equal(linkProblem(link)?.field, fieldName, JSON.stringify(link));
 });
 
-test("a typed address may be a full address, a page path or a place on the page", async () => {
-	const { checkAddress } = await import("./objects/link.js");
-	for (const ok of ["https://example.com", "mailto:hi@noster.in", "tel:+919000000000", "/works", "/works/the-atomic", "#contact", undefined]) {
-		assert.equal(checkAddress(ok), true, ok);
+test("a link is described in a few words for previews", () => {
+	assert.equal(describeLink({ kind: "page", pageType: "works" }), "Page: Works");
+	assert.equal(describeLink({ kind: "project", project: "Adesso" }), "Project: Adesso");
+	assert.equal(describeLink({ kind: "anchor", anchor: "contact" }), "#contact");
+	assert.equal(describeLink({ kind: "phone", phone: "+91 1" }), "+91 1");
+});
+
+test("a page's web address can't take one the site already uses", () => {
+	for (const slug of ["about", "careers-2026", "a"]) assert.equal(checkPageSlug({ current: slug }), true, slug);
+	for (const slug of [...RESERVED_SLUGS, "Works", "about/team", "about us", "-about", undefined]) {
+		assert.notEqual(checkPageSlug(slug === undefined ? undefined : { current: slug }), true, String(slug));
 	}
-	for (const bad of ["works", "/\t/evil.com", "/\n/evil.com", "//evil.example", "/\\evil.example", "#", "ftp://x", "/with space"]) assert.notEqual(checkAddress(bad), true, bad);
+	assert.equal(slugify(" About Us! "), "about-us");
 });

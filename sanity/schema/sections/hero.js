@@ -1,10 +1,12 @@
 import { defineField, defineType } from "sanity";
+import { PlayIcon } from "@sanity/icons/Play";
 
 export const hero = defineType({
 	name: "hero",
 	title: "Hero",
 	type: "object",
-	description: "The big opening of the home page: a headline over a photo or a looping video.",
+	icon: PlayIcon,
+	description: "The big opening of a page: a headline over a photo or a looping video. Use it once, at the top.",
 	fields: [
 		defineField({
 			name: "title",
