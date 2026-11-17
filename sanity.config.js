@@ -30,9 +30,9 @@ export default defineConfig({
 		presentationTool({ resolve, previewUrl: { previewMode: { enable: "/api/draft-mode/enable" } } }),
 		// Media: every uploaded photo and video in one place, with search, tags, where each is used and
 		// clean-up of unused ones. Also what an image field's "Select" opens.
-t	// Vision: run read-only content queries against the live data, to check what the site will get. For
+		media(),
+		// Vision: run read-only content queries against the live data, to check what the site will get. For
 		// developers; editors can ignore it.
-		// unless a query says otherwise). For developers; editors can ignore it.
 		visionTool({ defaultApiVersion: apiVersion }),
 	],
 	document: {
