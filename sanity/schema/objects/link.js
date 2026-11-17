@@ -15,6 +15,7 @@ export const checkLinkTarget = (value) => {
  */
 export const checkAddress = (url) => {
 	if (!url) return true;
+	if (/[\u0000-\u001f\u007f]/.test(url)) return "Remove the tabs and line breaks from the address.";
 	if (/\s/.test(url.trim())) return "Remove the spaces from the address.";
 	if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) return true;
 	if (/^#[^#]+$/.test(url)) return true;

@@ -54,5 +54,5 @@ test("a typed address may be a full address, a page path or a place on the page"
 	for (const ok of ["https://example.com", "mailto:hi@noster.in", "tel:+919000000000", "/works", "/works/the-atomic", "#contact", undefined]) {
 		assert.equal(checkAddress(ok), true, ok);
 	}
-	for (const bad of ["works", "//evil.example", "/\\evil.example", "#", "ftp://x", "/with space"]) assert.notEqual(checkAddress(bad), true, bad);
+	for (const bad of ["works", "/\t/evil.com", "/\n/evil.com", "//evil.example", "/\\evil.example", "#", "ftp://x", "/with space"]) assert.notEqual(checkAddress(bad), true, bad);
 });

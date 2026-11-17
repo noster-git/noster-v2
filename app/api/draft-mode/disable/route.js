@@ -1,8 +1,8 @@
 import { draftMode } from "next/headers";
 import { NextResponse } from "next/server";
 
-// Leaving draft mode changes state, so it happens on a POST only: a link or image on another site can't
-// switch it off. Opening the address shows a one-button page that sends that POST.
+// Leaving draft mode changes state, so it happens on a POST from this site only: a link, image or form on
+// another site can't switch it off. Opening the address shows a one-button page that sends that POST.
 const PAGE = `<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -21,8 +21,22 @@ export function GET() {
 	return new Response(PAGE, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 }
 
-/** Leaves draft mode: back to the published site, on the home page. */
+/**
+ * Whether the request was sent from a page on this site: the browser's Sec-Fetch-Site says so, or, from a
+ * browser that doesn't send it, the Origin is this site's own.
+ *
+ * @param {Request} request
+ */
+export function fromThisSite(request) {
+	const site = request.headers.get("sec-fetch-site");
+	if (site) return site === "same-origin";
+	const origin = request.headers.get("origin");
+	return origin === new URL(request.url).origin;
+}
+
+/** Leaves draft mode: back to the published site, on the home page. Refused when sent from another site. */
 export async function POST(request) {
+	if (!fromThisSite(request)) return new Response("Forbidden", { status: 403, headers: { "Cache-Control": "no-store" } });
 	(await draftMode()).disable();
 	return NextResponse.redirect(new URL("/", request.url), 303);
 }
