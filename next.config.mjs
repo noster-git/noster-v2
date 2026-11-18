@@ -25,7 +25,9 @@ const CSP = [
   `media-src 'self' https://cdn.sanity.io/files/${PROJECT_ID}/`,
   "font-src 'self' data:",
   `connect-src 'self' ${SANITY_API}`,
-  "frame-ancestors 'self'",
+  // The studio's live preview frames the site; inside Sanity's dashboard that studio is itself framed by
+  // sanity.io, and every ancestor has to be allowed.
+  "frame-ancestors 'self' https://www.sanity.io https://sanity.io",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
