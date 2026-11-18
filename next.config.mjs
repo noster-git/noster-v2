@@ -32,7 +32,8 @@ const CSP = [
 ].join("; ");
 
 // The embedded studio (/studio) is a separate app: it talks to Sanity's API and live socket, loads images and
-// files from Sanity's CDN, and needs a looser policy than the public pages. It is never indexed.
+// files from Sanity's CDN, and needs a looser policy than the public pages. Sanity's dashboard (sanity.io) may
+// show it in a frame. It is never indexed.
 const STUDIO_CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"} https://core.sanity-cdn.com`,
@@ -43,7 +44,7 @@ const STUDIO_CSP = [
   "connect-src 'self' https://*.api.sanity.io wss://*.api.sanity.io https://*.sanity.io",
   "frame-src 'self' https://*.sanity.io",
   "worker-src 'self' blob:",
-  "frame-ancestors 'self'",
+  "frame-ancestors 'self' https://www.sanity.io https://sanity.io",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
@@ -74,9 +75,11 @@ const nextConfig = {
   cacheLife: { default: sanity },
   // Photos go through the site's image optimizer (components/Img.jsx), which fetches them from this project's
   // images on Sanity's CDN only. AVIF first, as browsers take it; WebP otherwise; quality 75. Sources never
-  // change (each upload has its own address), so optimized files are kept a year.
+  // change (each upload has its own address), so optimized files are kept a year. Widths include 1440 and 1680,
+  // so a full-width photo on a common laptop screen (1280–1680px) fetches a file near its size, not the 1920 one.
   images: {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io", pathname: `/images/${PROJECT_ID}/**` }],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1680, 1920, 2048, 3840],
     formats: ["image/avif", "image/webp"],
     qualities: [75],
     minimumCacheTTL: 31536000,
