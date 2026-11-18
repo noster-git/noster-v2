@@ -7,7 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { finishIntro, holdEntrances, shown, transitioning } from "@/lib/intro";
 import { CURTAIN_HOLD_MS, CURTAIN_MS, REVEAL_AT, cover, lift } from "@/lib/curtain";
 
-const WAIT_MS = 3000; // longest the curtain waits for the new page and its hero photo
+const ROUTE_MS = 8000; // longest the curtain waits for the new page to arrive
+const DECODE_MS = 3000; // then for its hero photo to decode
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 async function until(fn, ms) {
@@ -28,7 +29,8 @@ async function until(fn, ms) {
  * Catches clicks on internal links before next/link does (window, capture phase): next/link handles the
  * click itself and cancels it, so a listener further down never sees it. Links to the page already open,
  * in-page anchors, new-tab and modified clicks, downloads and project cards (data-card-media) are left
- * alone. Without the curtain (reduced motion, no JS) links navigate normally.
+ * alone. Without the curtain (reduced motion, no JS) links navigate normally. A link clicked while the
+ * load curtain is still lifting goes once it is off the page.
  */
 export default function PageTransition() {
 	return (
@@ -44,6 +46,28 @@ function CurtainLinks() {
 	const lenis = useLenis();
 
 	useEffect(() => {
+		const root = document.documentElement;
+		// A link clicked while the load curtain is still lifting waits for it (Intro adds intro-skip once it
+		// is off the page) and then goes, rather than being dropped. Only the last such click is kept.
+		let pending = null;
+		let watch = null;
+		const afterIntro = (href) => {
+			pending = href;
+			if (watch) return;
+			watch = new MutationObserver(() => {
+				const anim = root.classList.contains("js-anim");
+				if (anim && !root.classList.contains("intro-skip")) return;
+				watch.disconnect();
+				watch = null;
+				const next = pending;
+				pending = null;
+				// Without the curtain (it timed out, lib/intro.js) the link simply navigates.
+				if (anim) go(next);
+				else router.push(next);
+			});
+			watch.observe(root, { attributes: true, attributeFilter: ["class"] });
+		};
+
 		const onClick = (e) => {
 			if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 			const a = e.target?.closest?.("a[href]");
@@ -52,14 +76,19 @@ function CurtainLinks() {
 			const url = new URL(a.href, location.href);
 			if (url.origin !== location.origin) return;
 			if (url.pathname === location.pathname && url.search === location.search) return;
-			const root = document.documentElement;
-			const curtain = document.querySelector("[data-curtain]");
-			if (!curtain || !root.classList.contains("js-anim")) return;
+			if (!document.querySelector("[data-curtain]") || !root.classList.contains("js-anim")) return;
 			e.preventDefault();
-			// One at a time: not while a page change or project open runs, nor under the load curtain.
-			if (transitioning() || !root.classList.contains("intro-skip")) return;
-
 			const href = url.pathname + url.search + url.hash;
+			if (!root.classList.contains("intro-skip")) return afterIntro(href);
+			go(href);
+		};
+
+		const go = (href) => {
+			const curtain = document.querySelector("[data-curtain]");
+			// One at a time: not while a page change or project open runs.
+			if (!curtain || transitioning()) return;
+			const url = new URL(href, location.href);
+			if (url.pathname === location.pathname && url.search === location.search) return;
 			const from = location.pathname;
 			root.dataset.transition = "";
 			router.prefetch(href);
@@ -74,9 +103,9 @@ function CurtainLinks() {
 				.then(async () => {
 					router.push(href);
 					// The new page (or wherever Back/Forward went meanwhile) is in.
-					await until(() => location.pathname !== from, WAIT_MS);
+					await until(() => location.pathname !== from, ROUTE_MS);
 					const hero = shown("[data-hero-media] img, [data-project-hero] img");
-					if (hero?.decode) await Promise.race([hero.decode().catch(() => {}), sleep(WAIT_MS)]);
+					if (hero?.decode) await Promise.race([hero.decode().catch(() => {}), sleep(DECODE_MS)]);
 					await sleep(CURTAIN_HOLD_MS);
 					up = lift(curtain);
 					lenis?.start();
@@ -99,7 +128,10 @@ function CurtainLinks() {
 				});
 		};
 		window.addEventListener("click", onClick, { capture: true });
-		return () => window.removeEventListener("click", onClick, { capture: true });
+		return () => {
+			window.removeEventListener("click", onClick, { capture: true });
+			watch?.disconnect();
+		};
 	}, [router, lenis]);
 
 	return null;

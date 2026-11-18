@@ -3,12 +3,11 @@
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import { EASE, lineRise, reveal } from "@/lib/motion";
+import { EASE, hasPlayed, lineRise, markPlayed, reveal, splitLines } from "@/lib/motion";
 import { ready } from "@/lib/intro";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 /**
  * The <footer> element and its entrance, played once when its top reaches 70% of the screen:
@@ -24,44 +23,56 @@ export default function FooterMotion({ className = "", children }) {
 
 	useGSAP(
 		() => {
-			if (!document.documentElement.classList.contains("js-anim")) return;
 			const el = scope.current;
+			if (hasPlayed(el) || !document.documentElement.classList.contains("js-anim")) return;
 			// Built as soon as the fonts are in (not in the frame the curtain lifts); plays once in view and
-			// the entrances are released.
+			// the entrances are released. Once only: coming back shows it as it was left.
 			let split;
 			let trigger;
+			let tl;
 			let live = true;
 			document.fonts.ready.then(() => {
 				if (!live || !el.isConnected) return;
 				const q = (sel) => gsap.utils.toArray(sel, el);
-				const tl = gsap.timeline({ paused: true });
+				tl = gsap.timeline({ paused: true });
 
 				tl.fromTo(q("[data-footer-mark]"), { y: 0, yPercent: 100 }, { yPercent: 0, duration: 1.4, ease: EASE }, 0);
 				tl.fromTo(q("[data-rule]"), { scaleX: 0 }, { scaleX: 1, duration: 1.2, ease: "expo.inOut", stagger: 0.1 }, 0.15);
 
 				const heading = el.querySelector("[data-split]");
 				if (heading) {
-					split = SplitText.create(heading, { type: "lines", mask: "lines" });
-					gsap.set(heading, { autoAlpha: 1 });
-					gsap.set(split.lines, lineRise.from);
-					tl.to(split.lines, lineRise.to, 0.35);
+					split = splitLines(heading);
+					tl.to(split.lines, { ...lineRise.to, onComplete: split.restore }, 0.35);
 				}
 
 				tl.fromTo(q("[data-fade]"), reveal.from, reveal.to, 0.5);
 
-				trigger = ScrollTrigger.create({ trigger: el, start: "top 70%", once: true, onEnter: () => ready().then(() => live && tl.play()) });
+				trigger = ScrollTrigger.create({
+					trigger: el,
+					start: "top 70%",
+					once: true,
+					onEnter: () =>
+						ready().then(() => {
+							if (!live) return;
+							markPlayed(el);
+							tl.play();
+						}),
+				});
 			});
 			return () => {
 				live = false;
 				trigger?.kill();
-				split?.revert();
+				if (hasPlayed(el)) tl?.progress(1);
+				tl?.kill();
+				split?.restore();
 			};
 		},
 		{ scope },
 	);
 
 	return (
-		<footer ref={scope} className={className}>
+		// #contact: the nav's Contact link jumps here.
+		<footer ref={scope} id="contact" className={className}>
 			{children}
 		</footer>
 	);

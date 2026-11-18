@@ -16,7 +16,8 @@ function ScrollTriggerSync() {
 /**
  * Site-wide Lenis smooth scroll, driven by GSAP's ticker so scroll and animations share one frame loop.
  * lerp 0.075: each frame covers 7.5% of the remaining distance, a soft glide that settles in about a second.
- * Touch keeps the native scroll (Lenis default), so phones feel normal.
+ * Touch keeps the native scroll (Lenis default), so phones feel normal. In-page anchor links (href="#…")
+ * glide to their target (jump, under reduced motion).
  */
 export default function SmoothScroll({ children }) {
   const lenisRef = useRef(null);
@@ -33,7 +34,11 @@ export default function SmoothScroll({ children }) {
   }, []);
 
   return (
-    <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.075, wheelMultiplier: 1, smoothWheel }}>
+    <ReactLenis
+      root
+      ref={lenisRef}
+      options={{ autoRaf: false, lerp: 0.075, wheelMultiplier: 1, smoothWheel, anchors: smoothWheel ? true : { immediate: true } }}
+    >
       <ScrollTriggerSync />
       {children}
     </ReactLenis>
