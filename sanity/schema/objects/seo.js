@@ -27,5 +27,12 @@ export const seo = defineType({
 			type: "imageWithAlt",
 			description: "The picture shown when the page's link is shared on social media or in messages.",
 		}),
+		defineField({
+			name: "noIndex",
+			title: "Hide from search engines",
+			type: "boolean",
+			initialValue: false,
+			description: "Keeps the page out of Google and other search results, the sitemap and llms.txt. The page still opens for anyone with its link.",
+		}),
 	],
 });
